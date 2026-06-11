@@ -10,8 +10,12 @@
   /* Backgrounds */
   --color-bg-main: #f1f8fb;
   --color-bg-sidebar: #0a1c3a;
+  --color-bg-sidebar-dark: #0e2a5c;
+  --color-bg-tadalafil: #2c1a00;
   --color-bg-card: #ffffff;
   --color-bg-input: #f1f5f9;
+  --color-bg-patient-welcome: #e8f1fb;
+  --color-bg-announcement: #1d5fa0;
 
   /* Borders */
   --color-border-default: #cadae8;
@@ -29,6 +33,8 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-selected: #e05252;
+  --color-accent-amber: #d49a00;
+  --color-accent-amber-hover: #b88200;
 
   /* Fonts */
   --font-sans: var(--font-poppins);

@@ -16,19 +16,15 @@ export const metadata: Metadata = {
   description: "Lab Tested. Doctor Approved. Guaranteed Lowest Price.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en" className={poppins.className}>
-      <body>
-        <QueryProvider>
-          {children}
-          <ToastContainer position="bottom-right" theme="light" />
-        </QueryProvider>
-      </body>
-    </html>
-  );
-}
+const RootLayout = ({ children }: { children: React.ReactNode }) => (
+  <html lang="en" className={poppins.variable}>
+    <body>
+      <QueryProvider>
+        {children}
+        <ToastContainer position="bottom-right" theme="light" />
+      </QueryProvider>
+    </body>
+  </html>
+);
+
+export default RootLayout;

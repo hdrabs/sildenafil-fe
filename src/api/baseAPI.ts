@@ -1,9 +1,7 @@
-// import { useUserStore } from "@/store/userStore";
+import { useUserStore } from "@/store/userStore";
 
-// Base API configuration
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-// API Error class for better error handling
 export class APIError extends Error {
   constructor(
     message: string,
@@ -15,60 +13,52 @@ export class APIError extends Error {
   }
 }
 
-// Main API request function
 export const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> => {
-  // Get auth token from user store
-  const token: string = "";
+  const token = useUserStore.getState().user?.token;
+  const jti = useUserStore.getState().user?.jti;
 
-  // Prepare request headers
   const headers: Record<string, string> = {
     Accept: "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
+    ...(token && { AuthToken: jti }),
     ...((options.headers as Record<string, string>) || {}),
   };
 
   let body = options.body;
 
-  // Handle body formatting and Content-Type
   if (body && typeof body === "object" && !(body instanceof FormData)) {
     body = JSON.stringify(body);
     headers["Content-Type"] = "application/json";
   }
 
-  // Prepare request configuration
   const config: RequestInit = {
     ...options,
     headers,
     body,
   };
 
-  // Make the request
   const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-  // Handle non-JSON responses
   const contentType = response.headers.get("content-type");
   const isJSON = contentType?.includes("application/json");
+  const raw: unknown = isJSON ? await response.json() : await response.text();
 
-  // Parse response
-  const data: T = isJSON ? await response.json() : await response.text();
-
-  // Handle errors
   if (!response.ok) {
-    const err = data as Record<string, unknown>;
+    const errPayload = raw as { error?: { message?: string } };
     throw new APIError(
-      (err?.message as string) || String(data) || "An error occurred",
+      errPayload?.error?.message ?? "An error occurred",
       response.status,
-      data,
+      raw,
     );
   }
 
-  return data;
+  const payload = raw as { data?: unknown };
+  return (payload?.data !== undefined ? payload.data : raw) as T;
 };
 
-// Convenience methods for different HTTP verbs
 export const api = {
   get: <T>(endpoint: string, options?: RequestInit) =>
     apiRequest<T>(endpoint, { method: "GET", ...options }),
@@ -98,5 +88,4 @@ export const api = {
     apiRequest<T>(endpoint, { method: "DELETE", ...options }),
 };
 
-// Export default
 export default api;

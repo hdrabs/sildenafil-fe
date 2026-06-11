@@ -14,7 +14,7 @@ export const QueryProvider = ({ children }: { children: React.ReactNode }) => {
             gcTime: 10 * 60 * 1000,
             retry: (failureCount, error: unknown) => {
               const status = (error as { status?: number })?.status
-              if (status && status >= 400 && status < 500 && status !== 401) return false
+              if (status && status >= 400 && status < 500) return false
               return failureCount < 3
             },
           },
