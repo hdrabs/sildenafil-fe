@@ -24,7 +24,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
   return (
     <>
       {showAnnouncement && (
-        <div className="border-b border-border-announcement bg-bg-announcement py-2 text-center text-sm font-semibold text-text-announcement">
+        <div className="border-b border-[#b8daff] bg-[#cce5ff] py-2 text-center text-sm font-semibold text-[#004085]">
           Save Up To 90% + FREE Consultation + FREE Shipping
         </div>
       )}

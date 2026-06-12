@@ -50,14 +50,14 @@ export const EmptyState = ({
     {cta ?? (ctaHref ? (
       <Link
         href={ctaHref}
-        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-bg-sidebar-dark px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
       >
         {ctaLabel}
       </Link>
     ) : ctaLabel ? (
       <button
         onClick={onCtaClick}
-        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-bg-sidebar-dark px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
       >
         {ctaLabel}
       </button>

@@ -38,7 +38,7 @@ export const HeroSection = () => (
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row md:justify-start">
           <Link
             href={ROUTES.PRODUCT_DETAIL}
-            className="inline-flex items-center gap-2 rounded-full bg-bg-sidebar-dark px-7 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
           >
             Start My Free Visit
             <RiArrowRightLine className="h-4 w-4" />
