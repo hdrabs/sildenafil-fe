@@ -2,8 +2,8 @@
 
 @theme inline {
   /* Brand */
-  --color-primary: #1d7bc3;
-  --color-primary-hover: #1565a8;
+  --color-primary: #1b53af;
+  --color-primary-hover: #174a9e;
   --color-primary-orange: #f97316;
   --color-primary-orange-hover: #ea6700;
 
@@ -15,7 +15,9 @@
   --color-bg-card: #ffffff;
   --color-bg-input: #f1f5f9;
   --color-bg-patient-welcome: #e8f1fb;
-  --color-bg-announcement: #1d5fa0;
+  --color-bg-announcement: #cce5ff;
+  --color-border-announcement: #b8daff;
+  --color-text-announcement: #004085;
 
   /* Borders */
   --color-border-default: #cadae8;
@@ -25,7 +27,7 @@
   /* Text */
   --color-text-primary: #0f172a;
   --color-text-muted: #64748b;
-  --color-text-link: #1d7bc3;
+  --color-text-link: #1b53af;
   --color-text-error: #ef4444;
 
   /* Status */
@@ -38,6 +40,9 @@
 
   /* Fonts */
   --font-sans: var(--font-poppins);
+
+  /* Custom breakpoints */
+  --breakpoint-xs: 480px;
 }
 
 *,

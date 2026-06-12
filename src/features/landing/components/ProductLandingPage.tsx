@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { ProductSidebar, ProductConfigurator, LandingTheme } from "./ProductConfigurator";
 import { ProcessSection } from "@/features/home/components/ProcessSection";
 import { RealResultsSection } from "@/features/home/components/RealResultsSection";
@@ -8,7 +7,8 @@ import { WhatsIncludedSection } from "@/features/home/components/WhatsIncludedSe
 import { FaqSection } from "@/features/home/components/FaqSection";
 import { CtaSection } from "@/features/home/components/CtaSection";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
-import { ROUTES } from "@/constants/routes";
+import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { Modal } from "@/components/ui/Modal";
 
 interface ProductLandingPageProps {
   slug: string;
@@ -25,18 +25,28 @@ export const ProductLandingPage = ({
   landingContext,
   theme,
 }: ProductLandingPageProps) => {
-  const router = useRouter();
-  const { variants, contextVariant, activeVariant, activeDrug, effectiveQty, isLoading, handleQtyChange, handleStrengthChange, handleDrugChange } =
-    useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  const {
+    variants,
+    contextVariant,
+    activeVariant,
+    activeDrug,
+    effectiveQty,
+    isLoading,
+    handleQtyChange,
+    handleStrengthChange,
+    handleDrugChange,
+  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+
+  const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
+    useStartVisit({ landingContext, cartToken: undefined });
 
   const handleAddToCart = (qty: number) => {
-    const params = new URLSearchParams();
-    const variantSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
-    if (variantSlug) params.set("slug", variantSlug);
-    params.set("qty", String(qty));
-    if (discountCode) params.set("discount", discountCode);
-    if (landingContext) params.set("landing_context", landingContext);
-    router.push(`${ROUTES.PRODUCT_DETAIL}?${params.toString()}`);
+    const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
+    const v = activeVariant ?? contextVariant;
+    const variantLabel = v
+      ? `${v.product.drug.charAt(0).toUpperCase()}${v.product.drug.slice(1)} ${v.product.dosage}`
+      : "ED Medication";
+    startVisit({ slug: activeSlug, quantity: qty, variantLabel });
   };
 
   if (isLoading) {
@@ -65,6 +75,7 @@ export const ProductLandingPage = ({
           onStrengthChange={handleStrengthChange}
           onDrugChange={handleDrugChange}
           onAddToCart={handleAddToCart}
+          isSubmitting={isPending}
         />
       </div>
 
@@ -73,6 +84,23 @@ export const ProductLandingPage = ({
       <WhatsIncludedSection />
       <FaqSection />
       <CtaSection />
+
+      {blockingModalContent && (
+        <Modal
+          isOpen={!!blockingModal}
+          onClose={dismissModal}
+          title={blockingModalContent.title}
+          size="sm"
+        >
+          <p className="text-sm text-text-muted">{blockingModalContent.body}</p>
+          <button
+            onClick={dismissModal}
+            className="mt-4 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          >
+            Got it
+          </button>
+        </Modal>
+      )}
     </>
   );
 };

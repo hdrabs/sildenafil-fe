@@ -1,16 +1,26 @@
+import { CartBranch } from "@/types/cart";
+
+export type VisitEligibilityAction = "create_cart" | "update_cart" | "show_modal";
+
+export type VisitEligibilityModal = "retake" | "under_review" | "order_processing";
+
 /**
- * Visit / consultation types for the cart checkout flow.
+ * Matches GET /api/v2/visit_eligibility response contract.
  *
- * The backend handles consultations through the checkout controllers:
- *   GET /api/v1/checkout/welcomes
- *   GET /api/v1/checkout/visit_intro
- *   GET /api/v1/checkout/visit_consultation
- *   GET /api/v1/checkout/visit_consents
+ * action:
+ *   create_cart  — no open cart, proceed to POST /api/v2/carts
+ *   update_cart  — an open cart exists, proceed to PATCH /api/v2/carts/:cart_id
+ *   show_modal   — user is blocked; display the named modal and stop
  *
- * The UserInterview model stores consultation answers attached to a cart.
- * Exact Jbuilder shapes for these endpoints are TBD — this file will be
- * updated when the checkout flow is wired to v1.
+ * cart_id / cart_step / cart_branch are populated when action === update_cart.
  */
+export interface VisitEligibilityResponse {
+  action: VisitEligibilityAction;
+  modal: VisitEligibilityModal | null;
+  cart_id: number | null;
+  cart_step: string | null;
+  cart_branch: CartBranch | null;
+}
 
 export interface UserInterview {
   consultationWithinLastYear: boolean | null;

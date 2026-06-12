@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { RiPhoneLine, RiCloseLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { ROUTES } from "@/constants/routes";
 import { useUser, useClearUser } from "@/store";
 
@@ -107,7 +107,7 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-bg-input transition-colors shrink-0"
           >
-            <RiCloseLine className="h-6 w-6 text-text-primary" style={{ opacity: 0.6 }} />
+            <Image src="/icons/navbar/entypo-cross.svg" alt="" width={24} height={24} className="shrink-0 opacity-60" />
           </button>
         </div>
 
@@ -133,7 +133,6 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
                 onClick={handleLogout}
                 className="flex w-full items-center gap-2 py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-error hover:opacity-80 transition-opacity"
               >
-                <RiLogoutBoxRLine className="h-4 w-4 shrink-0" />
                 Log Out
               </button>
               <div className="h-px bg-[#E6E8EE]" />
@@ -246,7 +245,7 @@ const ContactUs = () => (
         href="tel:8447453362"
         className="flex items-center justify-center gap-2.5 rounded-[50px] border border-[#d1d1d1] h-[45px] min-[1040px]:h-[48px] text-[13px] min-[1040px]:text-[14px] font-medium uppercase tracking-[0.04em] text-primary no-underline hover:bg-[#f4f6fb] hover:border-primary transition-colors"
       >
-        <RiPhoneLine className="h-[18px] w-[18px] shrink-0 text-primary" />
+        <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className="shrink-0" />
         (844) 745-3362
       </a>
     </div>

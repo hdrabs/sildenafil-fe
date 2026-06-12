@@ -2,6 +2,8 @@
 
 import { ProductConfigurator } from "./ProductConfigurator";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
+import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { Modal } from "@/components/ui/Modal";
 
 interface ProductDetailPageProps {
   slug?: string;
@@ -16,8 +18,30 @@ export const ProductDetailPage = ({
   discountCode,
   landingContext,
 }: ProductDetailPageProps) => {
-  const { variants, contextVariant, activeVariant, activeDrug, effectiveQty, isLoading, handleQtyChange, handleStrengthChange, handleDrugChange } =
-    useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  const {
+    variants,
+    contextVariant,
+    activeVariant,
+    activeDrug,
+    effectiveQty,
+    isLoading,
+    handleQtyChange,
+    handleStrengthChange,
+    handleDrugChange,
+  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+
+  const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
+    useStartVisit({ landingContext });
+
+  const handleAddToCart = (qty: number) => {
+    const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
+    if (!activeSlug) return;
+    const v = activeVariant ?? contextVariant;
+    const variantLabel = v
+      ? `${v.product.drug.charAt(0).toUpperCase()}${v.product.drug.slice(1)} ${v.product.dosage}`
+      : "ED Medication";
+    startVisit({ slug: activeSlug, quantity: qty, variantLabel });
+  };
 
   if (isLoading) {
     return (
@@ -28,19 +52,40 @@ export const ProductDetailPage = ({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg-default px-4 py-12">
-      <div className="w-full max-w-lg rounded-2xl border border-border-default bg-bg-card shadow-lg">
-        <ProductConfigurator
-          contextVariant={contextVariant}
-          activeVariant={activeVariant}
-          allVariants={variants}
-          activeDrug={activeDrug}
-          selectedQty={effectiveQty}
-          onQtyChange={handleQtyChange}
-          onStrengthChange={handleStrengthChange}
-          onDrugChange={handleDrugChange}
-        />
+    <>
+      <div className="flex min-h-screen items-center justify-center bg-bg-main px-4 py-12">
+        <div className="w-full max-w-lg rounded-2xl border border-border-default bg-bg-card shadow-lg">
+          <ProductConfigurator
+            contextVariant={contextVariant}
+            activeVariant={activeVariant}
+            allVariants={variants}
+            activeDrug={activeDrug}
+            selectedQty={effectiveQty}
+            onQtyChange={handleQtyChange}
+            onStrengthChange={handleStrengthChange}
+            onDrugChange={handleDrugChange}
+            onAddToCart={handleAddToCart}
+            isSubmitting={isPending}
+          />
+        </div>
       </div>
-    </div>
+
+      {blockingModalContent && (
+        <Modal
+          isOpen={!!blockingModal}
+          onClose={dismissModal}
+          title={blockingModalContent.title}
+          size="sm"
+        >
+          <p className="text-sm text-text-muted">{blockingModalContent.body}</p>
+          <button
+            onClick={dismissModal}
+            className="mt-4 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+          >
+            Got it
+          </button>
+        </Modal>
+      )}
+    </>
   );
 };

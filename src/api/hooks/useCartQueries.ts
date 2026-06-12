@@ -1,12 +1,21 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartService } from "@/api/services/cartService";
 import { cartKeys, orderKeys } from "@/constants/queryKeys";
-import { CartListParams, OrderListParams, CreateCartRequest } from "@/types/cart";
+import {
+  CartListParams,
+  OrderListParams,
+  CreateCartRequest,
+  CreateCartV2Request,
+  UpdateCartV2Request,
+} from "@/types/cart";
 
-export const useCarts = (params?: CartListParams) =>
+// ── V1 hooks ─────────────────────────────────────────────────────────────────
+
+export const useCarts = (params?: CartListParams, options?: { enabled?: boolean }) =>
   useQuery({
     queryKey: cartKeys.list(params),
     queryFn: () => cartService.listCarts(params),
+    enabled: options?.enabled,
   });
 
 export const useCart = (id: number) =>
@@ -39,3 +48,46 @@ export const useOrder = (id: number) =>
     queryFn: () => cartService.getOrder(id),
     enabled: !!id,
   });
+
+// ── V2 hooks ─────────────────────────────────────────────────────────────────
+
+/**
+ * Lazily checks visit eligibility before cart creation.
+ * Exposed as a mutation so callers can trigger it on demand (e.g. button click).
+ */
+export const useCheckEligibility = () =>
+  useMutation({
+    mutationFn: (params?: { cart_token?: string }) =>
+      cartService.visitEligibility(params),
+  });
+
+/**
+ * Creates a new v2 cart (guest-friendly).
+ * Returns { cart, redirect_path }.
+ */
+export const useCreateCartV2 = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateCartV2Request) => cartService.createCartV2(data),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: cartKeys.all });
+    },
+  });
+};
+
+/**
+ * Updates an existing open v2 cart (guest-friendly via cart_token).
+ * Returns { cart, redirect_path }.
+ */
+export const useUpdateCartV2 = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateCartV2Request & { cart_token?: string } }) =>
+      cartService.updateCartV2(id, data),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: cartKeys.all });
+    },
+  });
+};
