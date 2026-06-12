@@ -147,3 +147,38 @@ export interface CreateCartRequest {
 export interface OrdersListResponse {
   orders: Order[];
 }
+
+// ── V2 Cart API ──────────────────────────────────────────────────────────────
+
+export interface CartV2 {
+  id: number;
+  token: string;
+  branch: CartBranch;
+  step: string;
+  stage: string;
+  quantity: number;
+  product_variant_id: number;
+  converted_from_refill: boolean;
+  marketing: boolean;
+  final_price: number | string;
+  max_quantity: number | null;
+  rx_id: string | null;
+}
+
+export interface CartV2Response {
+  cart: CartV2;
+  redirect_path: string;
+}
+
+export interface CreateCartV2Request {
+  slug: string;
+  quantity: number;
+  cart_token?: string;
+  landing_context?: string;
+}
+
+export interface UpdateCartV2Request {
+  slug: string;
+  quantity: number;
+  landing_context?: string;
+}

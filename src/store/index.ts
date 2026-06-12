@@ -1,5 +1,6 @@
 import { useShallow } from "zustand/react/shallow";
 import { useUserStore } from "./userStore";
+import { useCartStore } from "./cartStore";
 
 export const useUser = () => useUserStore((s) => s.user);
 export const useIsAuthenticated = () => useUserStore((s) => !!s.user?.token);
@@ -16,3 +17,7 @@ export const useAuthState = () =>
       isLoading: s.isLoading,
     }))
   );
+
+export const useActiveCart = () => useCartStore((s) => s.activeCart);
+export const useSetActiveCart = () => useCartStore((s) => s.setActiveCart);
+export const useClearActiveCart = () => useCartStore((s) => s.clearActiveCart);

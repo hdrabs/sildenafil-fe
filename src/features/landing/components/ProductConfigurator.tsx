@@ -144,6 +144,7 @@ interface ProductConfiguratorProps {
   onStrengthChange: (dosage: string) => void;
   onDrugChange: (drug: string) => void;
   onAddToCart?: (qty: number) => void;
+  isSubmitting?: boolean;
 }
 
 export const ProductConfigurator = ({
@@ -156,6 +157,7 @@ export const ProductConfigurator = ({
   onStrengthChange,
   onDrugChange,
   onAddToCart,
+  isSubmitting = false,
 }: Omit<ProductConfiguratorProps, "theme">) => {
   const packages = contextVariant?.packages ?? [];
 
@@ -346,10 +348,20 @@ export const ProductConfigurator = ({
 
       <button
         onClick={() => onAddToCart?.(selectedQty)}
-        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-bg-sidebar-dark py-4 text-sm font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity"
+        disabled={isSubmitting || selectedQty === 0}
+        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-bg-sidebar-dark py-4 text-sm font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Start My Free Visit
-        <RiArrowRightLine className="h-5 w-5" />
+        {isSubmitting ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            Processing...
+          </>
+        ) : (
+          <>
+            Start My Free Visit
+            <RiArrowRightLine className="h-5 w-5" />
+          </>
+        )}
       </button>
     </div>
   );

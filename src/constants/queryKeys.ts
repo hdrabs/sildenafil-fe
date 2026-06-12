@@ -7,6 +7,7 @@ export const cartKeys = {
   all: ["carts"] as const,
   list: (params?: unknown) => [...cartKeys.all, "list", params] as const,
   detail: (id: number) => [...cartKeys.all, "detail", id] as const,
+  eligibility: () => [...cartKeys.all, "eligibility"] as const,
 };
 
 export const orderKeys = {
