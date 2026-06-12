@@ -147,7 +147,7 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
               <div className="mt-auto pb-6 pt-6">
                 <button
                   onClick={handleContinueProcess}
-                  className="w-full rounded-full bg-bg-sidebar-dark py-3.5 text-[13px] min-[1040px]:text-[14px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
+                  className="w-full rounded-full bg-primary py-3.5 text-[13px] min-[1040px]:text-[14px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
                 >
                   Continue Process
                 </button>
@@ -161,7 +161,7 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
               </p>
               <button
                 onClick={handleShopMedications}
-                className="w-full rounded-full bg-bg-sidebar-dark py-3.5 text-[13px] min-[1040px]:text-[14px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
+                className="w-full rounded-full bg-primary py-3.5 text-[13px] min-[1040px]:text-[14px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-opacity"
               >
                 Shop ED Medications
               </button>

@@ -40,7 +40,7 @@ interface ProductSidebarProps {
 
 const themeConfig = {
   sildenafil: {
-    bg: "bg-bg-sidebar-dark",
+    bg: "bg-primary",
     pill: "bg-blue-400",
     accent: "text-blue-300",
     badge: "bg-blue-800/60 text-blue-200",
@@ -349,7 +349,7 @@ export const ProductConfigurator = ({
       <button
         onClick={() => onAddToCart?.(selectedQty)}
         disabled={isSubmitting || selectedQty === 0}
-        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-bg-sidebar-dark py-4 text-sm font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>

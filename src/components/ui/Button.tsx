@@ -23,7 +23,7 @@ const variantClasses = {
   coral:
     "bg-selected text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
   dark:
-    "bg-bg-sidebar-dark text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
+    "bg-primary text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
   "outline-dark":
     "bg-transparent text-text-primary border border-border-input hover:bg-bg-input disabled:opacity-60 rounded-full",
 };
