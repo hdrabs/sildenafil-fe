@@ -83,22 +83,20 @@ export const useProductConfigurator = ({
   }, [activeDosage, variants, activeDrug, contextVariant]);
 
   const packages = (activeVariant ?? contextVariant)?.packages ?? [];
-  const packageQtys = packages.map((p) => p.quantity);
 
-  // API-seeded qty: derived when user hasn't explicitly picked one
+  // API-seeded qty: only derived when auto-selection is allowed
   const apiQty = useMemo(() => {
-    if (!activeVariant) return 0;
+    if (!autoSelectPopular || !activeVariant) return 0;
     const defaultQty = activeVariant.default_package?.quantity;
-    const popularQty = autoSelectPopular
-      ? (activeVariant.packages.find((p) => p.is_popular)?.quantity ?? 0)
-      : 0;
+    const popularQty = activeVariant.packages.find((p) => p.is_popular)?.quantity ?? 0;
     return defaultQty ?? popularQty ?? 0;
   }, [activeVariant, autoSelectPopular]);
 
   const effectiveQty = useMemo(() => {
     const qty = selectedQty > 0 ? selectedQty : apiQty;
-    return packageQtys.includes(qty) ? qty : 0;
-  }, [selectedQty, apiQty, packageQtys]);
+    const validQtys = packages.map((p) => p.quantity);
+    return validQtys.includes(qty) ? qty : 0;
+  }, [selectedQty, apiQty, packages]);
 
   const handleQtyChange = (qty: number) => setSelectedQty(qty);
 
@@ -107,7 +105,9 @@ export const useProductConfigurator = ({
     const newVariantPackages =
       variants?.find((v) => v.product.drug === activeDrug && v.product.dosage === dosage)
         ?.packages ?? [];
-    const qtyExistsInNewStrength = newVariantPackages.some((p) => p.quantity === effectiveQty);
+    // Use the raw selectedQty (not effectiveQty) to avoid stale closure on the derived memo
+    const currentQty = selectedQty > 0 ? selectedQty : apiQty;
+    const qtyExistsInNewStrength = newVariantPackages.some((p) => p.quantity === currentQty);
     if (!qtyExistsInNewStrength) setSelectedQty(0);
   };
 

@@ -149,7 +149,8 @@ export const StrengthGuideModal = ({
   }, [normalizedDrug, availableDosages]);
 
 
-  const [selected, setSelected] = useState(0);
+  // null = modal just opened, no explicit user click yet
+  const [selected, setSelected] = useState<number | null>(null);
 
   const derivedSelected = useMemo(() => {
     if (currentDosage) {
@@ -162,7 +163,8 @@ export const StrengthGuideModal = ({
     return defaultIdx !== -1 ? defaultIdx : 0;
   }, [currentDosage, strengths]);
 
-  const activeSelected = selected !== 0 ? selected : derivedSelected;
+  // User click takes priority; fall back to derived (based on currentDosage or default)
+  const activeSelected = selected !== null ? selected : derivedSelected;
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
