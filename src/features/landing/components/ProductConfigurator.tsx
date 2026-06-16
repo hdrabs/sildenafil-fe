@@ -158,6 +158,7 @@ interface ProductConfiguratorProps {
   onAddToCart?: (qty: number) => void;
   isSubmitting?: boolean;
   allowDrugSwitch?: boolean;
+  className?: string;
 }
 
 export const ProductConfigurator = ({
@@ -172,6 +173,7 @@ export const ProductConfigurator = ({
   onAddToCart,
   isSubmitting = false,
   allowDrugSwitch = false,
+  className,
 }: Omit<ProductConfiguratorProps, "theme">) => {
   const [drugInfoOpen, setDrugInfoOpen] = useState(false);
   const [strengthGuideOpen, setStrengthGuideOpen] = useState(false);
@@ -244,7 +246,7 @@ export const ProductConfigurator = ({
   }, []);
 
   return (
-    <div className="flex flex-col">
+    <div className={cn("mx-auto flex flex-col", className)}>
       {/* Sticky price header — sticks just below navbar on mobile, static on sm+ */}
       <div
         ref={priceHeaderRef}
@@ -253,19 +255,19 @@ export const ProductConfigurator = ({
       >
         <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-baseline gap-3">
-            <span className="text-4xl font-bold leading-[1.4] text-text-primary">
+          <div className="flex items-baseline">
+            <span className="text-[36px] font-bold leading-[1.4] text-text-primary">
               ${total.toFixed(2)}
             </span>
             {selectedSavePct > 0 && (
-              <span className="text-3xl font-medium leading-[1.4] text-text-primary/50 line-through">
+              <span className="ml-2 text-[30px] font-medium not-italic leading-[140%] line-through opacity-[0.36] text-[rgb(38,42,50)]">
                 ${selectedOriginalTotal.toFixed(2)}
               </span>
             )}
           </div>
           {selectedPkg && (
-            <p className="mt-0.5 text-sm text-text-muted">
-              ${selectedPkg.per_tablet.toFixed(2)}/tablet
+            <p className="mb-2 text-[14px] font-semibold leading-normal text-[#262a32]">
+              (${selectedPkg.per_tablet.toFixed(2)}/tablet)
             </p>
           )}
           {activeVariant && selectedQty > 0 && (
@@ -338,16 +340,16 @@ export const ProductConfigurator = ({
                       : { "--hover-border": d === "tadalafil" ? "#cd8f24" : "#204ad7" } as React.CSSProperties
                   }
                   className={cn(
-                    "cursor-pointer flex-1 rounded px-3 py-3 text-center transition-colors",
+                    "cursor-pointer flex-1 rounded px-[18px] py-[14px] text-center transition-colors",
                     isActive
                       ? "border-[2.5px]"
                       : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
                   )}
                 >
-                  <span className="block text-sm font-semibold text-text-primary sm:inline">
+                  <span className="block not-italic font-medium text-text-primary sm:inline sm:text-[14px] sm:font-medium">
                     {lines?.name ?? d}
                   </span>
-                  <span className="block text-xs font-medium text-text-muted sm:inline sm:text-sm sm:font-medium">
+                  <span className="block text-xs not-italic font-medium text-text-muted sm:inline sm:text-[14px]">
                     {lines?.generic}
                   </span>
                 </button>
@@ -357,7 +359,7 @@ export const ProductConfigurator = ({
         ) : (
           <div
             style={selectorSelectedStyle}
-            className="rounded border-[2.5px] px-3 py-3 text-sm font-medium text-text-primary"
+            className="rounded border-[2.5px] px-[18px] py-[14px] text-center text-sm font-medium text-text-primary"
           >
             {activeDrug ? (DRUG_DISPLAY_NAMES[activeDrug] ?? activeDrug) : "—"}
           </div>
@@ -384,7 +386,7 @@ export const ProductConfigurator = ({
         className="sticky z-10 bg-white px-6 pb-3 sm:px-10"
         style={{ top: navbarHeight + priceHeaderHeight }}
       >
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${dosages.length}, 1fr)` }}>
+        <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${dosages.length}, 1fr)` }}>
           {dosages.map((d) => {
             const isActive = activeVariant?.product.dosage === d;
             return (
@@ -393,7 +395,7 @@ export const ProductConfigurator = ({
                 onClick={() => onStrengthChange(d)}
                 style={isActive ? selectorSelectedStyle : { "--hover-border": selectedBorderColor } as React.CSSProperties}
                 className={cn(
-                  "cursor-pointer rounded py-2 text-sm font-medium text-text-primary transition-colors",
+                  "cursor-pointer rounded py-[10px] text-sm font-medium text-text-primary transition-colors",
                   isActive
                     ? "border-[2.5px]"
                     : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
@@ -415,8 +417,8 @@ export const ProductConfigurator = ({
           <p className="font-semibold text-text-primary">Quantity</p>
           <span className="text-xs text-text-muted">Buy more &amp; save</span>
         </div>
-        <div className="flex flex-col gap-2">
-          {packages.map((pkg) => {
+        <div className="flex flex-col gap-4">
+          {packages.map((pkg, pkgIdx) => {
             const isSelected = pkg.quantity === selectedQty;
             const pkgSavePct = basePerTablet > pkg.per_tablet
               ? Math.round((1 - pkg.per_tablet / basePerTablet) * 100)
@@ -433,7 +435,7 @@ export const ProductConfigurator = ({
                 onClick={() => onQtyChange(pkg.quantity)}
                 style={isSelected ? selectorSelectedStyle : { "--hover-border": selectedBorderColor } as React.CSSProperties}
                 className={cn(
-                  "cursor-pointer flex items-center justify-between rounded px-4 py-3 text-sm transition-colors",
+                  `cursor-pointer flex items-center justify-between rounded px-[30px] ${pkgIdx === 0 ? "py-[15px]" : "py-[10px]"} text-[14px] transition-colors`,
                   isSelected
                     ? "border-[2.5px]"
                     : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
@@ -474,7 +476,7 @@ export const ProductConfigurator = ({
                 <div className="text-right">
                   <div className="flex items-baseline justify-end gap-1.5">
                     {pkgSavePct > 0 && (
-                      <span className="text-xs text-text-muted line-through">
+                      <span className="text-text-muted line-through">
                         ${pkgOriginalPrice.toFixed(2)}
                       </span>
                     )}
@@ -483,7 +485,7 @@ export const ProductConfigurator = ({
                     </span>
                   </div>
                   {pkgSavePct > 0 && (
-                    <div className="text-xs font-semibold text-save">
+                    <div className="font-medium text-save">
                       save {pkgSavePct}%
                     </div>
                   )}

@@ -65,6 +65,7 @@ export const ProductLandingPage = ({
           productName={(activeVariant ?? contextVariant)?.product.display_name ?? "Sildenafil"}
           dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
         />
+        <div className="bg-white pt-[90px]">
         <ProductConfigurator
           contextVariant={contextVariant}
           activeVariant={activeVariant}
@@ -76,7 +77,9 @@ export const ProductLandingPage = ({
           onDrugChange={handleDrugChange}
           onAddToCart={handleAddToCart}
           isSubmitting={isPending}
+          className="w-[75%]"
         />
+        </div>
       </div>
 
       <RealResultsSection />

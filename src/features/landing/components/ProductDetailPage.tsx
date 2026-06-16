@@ -61,7 +61,7 @@ export const ProductDetailPage = ({
   return (
     <>
       <div className="flex-1 bg-white">
-        <div className="mx-auto max-w-2xl pt-5 sm:pt-[120px]">
+          <div className="mx-auto max-w-2xl pt-5 sm:pt-[60px]">
           <ProductConfigurator
             contextVariant={contextVariant}
             activeVariant={activeVariant}
