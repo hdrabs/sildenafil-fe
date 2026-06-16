@@ -8,6 +8,14 @@ const DEFAULT_SLUG = "sildenafil-citrate-20-mg";
 // Variants only shown when the URL slug explicitly requests them
 const GATED_SLUGS = ["sildenafil-citrate-20-mg"];
 
+// The API slug uses "tadalafi" (missing trailing 'l') — accept either spelling in the URL
+// so /try/tadalafil-generic-10-mg and /try/tadalafi-generic-10-mg both resolve correctly.
+const normalizeSlug = (s: string) => s.replace("tadalafil-generic", "tadalafi-generic");
+
+// The API occasionally returns drug: "tadalafi" — normalise to the canonical "tadalafil"
+// so all downstream comparisons (theme, display names, image paths) work consistently.
+const normalizeDrug = (drug: string) => (drug === "tadalafi" ? "tadalafil" : drug);
+
 interface UseProductConfiguratorOptions {
   slug?: string;
   initialQty?: number;
@@ -25,7 +33,7 @@ export const useProductConfigurator = ({
   autoSelectPopular = true,
   autoSelectDosage = true,
 }: UseProductConfiguratorOptions) => {
-  const catalogSlug = slug ?? DEFAULT_SLUG;
+  const catalogSlug = normalizeSlug(slug ?? DEFAULT_SLUG);
 
   const { data: rawVariants, isLoading } = useCatalog({
     slug: catalogSlug,
@@ -34,7 +42,12 @@ export const useProductConfigurator = ({
     ...(landingContext && { landing_context: landingContext }),
   });
 
-  const variants = rawVariants?.filter(
+  const normalizedVariants = rawVariants?.map((v) => ({
+    ...v,
+    product: { ...v.product, drug: normalizeDrug(v.product.drug) },
+  }));
+
+  const variants = normalizedVariants?.filter(
     (v) => !GATED_SLUGS.includes(v.product.slug) || v.product.slug === catalogSlug,
   );
 
@@ -118,7 +131,7 @@ export const useProductConfigurator = ({
   };
 
   return {
-    variants: variants ?? rawVariants ?? [],
+    variants: variants ?? normalizedVariants ?? [],
     contextVariant,
     activeVariant,
     activeDrug,

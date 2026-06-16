@@ -38,6 +38,10 @@ export const ProductLandingPage = ({
     handleDrugChange,
   } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
 
+  // Derive theme from the resolved drug so routes that hardcode theme="sildenafil"
+  // still render correctly when a tadalafil slug is passed.
+  const effectiveTheme: LandingTheme = activeDrug === "tadalafil" ? "tadalafil" : theme;
+
   const cartToken = useCartToken();
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
@@ -64,7 +68,7 @@ export const ProductLandingPage = ({
     <>
       <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
         <ProductSidebar
-          theme={theme}
+          theme={effectiveTheme}
           productName={(activeVariant ?? contextVariant)?.product.display_name ?? "Sildenafil"}
           dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
         />
