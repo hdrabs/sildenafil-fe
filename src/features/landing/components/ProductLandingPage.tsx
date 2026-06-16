@@ -8,6 +8,7 @@ import { FaqSection } from "@/features/home/components/FaqSection";
 import { CtaSection } from "@/features/home/components/CtaSection";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { useCartToken } from "@/store";
 import { Modal } from "@/components/ui/Modal";
 
 interface ProductLandingPageProps {
@@ -37,8 +38,14 @@ export const ProductLandingPage = ({
     handleDrugChange,
   } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
 
+  // Derive theme from the resolved drug so routes that hardcode theme="sildenafil"
+  // still render correctly when a tadalafil slug is passed.
+  const effectiveTheme: LandingTheme = activeDrug === "tadalafil" ? "tadalafil" : theme;
+
+  const cartToken = useCartToken();
+
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, cartToken: undefined });
+    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
@@ -61,10 +68,11 @@ export const ProductLandingPage = ({
     <>
       <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
         <ProductSidebar
-          theme={theme}
+          theme={effectiveTheme}
           productName={(activeVariant ?? contextVariant)?.product.display_name ?? "Sildenafil"}
           dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
         />
+        <div className="bg-white pt-[90px]">
         <ProductConfigurator
           contextVariant={contextVariant}
           activeVariant={activeVariant}
@@ -76,7 +84,9 @@ export const ProductLandingPage = ({
           onDrugChange={handleDrugChange}
           onAddToCart={handleAddToCart}
           isSubmitting={isPending}
+          className="w-[75%]"
         />
+        </div>
       </div>
 
       <RealResultsSection />

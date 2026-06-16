@@ -14,7 +14,7 @@ const BestValuePage = async ({ params, searchParams }: Props) => {
       slug={slug}
       initialQty={qty ? parseInt(qty, 10) : undefined}
       discountCode={discount}
-      landingContext={landing_context}
+      landingContext={landing_context ?? "best-value"}
       theme="sildenafil"
     />
   );

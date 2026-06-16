@@ -91,3 +91,18 @@ export const useUpdateCartV2 = () => {
     },
   });
 };
+
+/**
+ * Deletes an open v2 cart (guest-friendly via cart_token).
+ */
+export const useDeleteCartV2 = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, cartToken }: { id: number; cartToken?: string }) =>
+      cartService.deleteCartV2(id, cartToken),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: cartKeys.all });
+    },
+  });
+};

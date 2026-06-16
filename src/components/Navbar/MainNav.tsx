@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
-import { useUser } from "@/store";
+import { useUser, useActiveCart } from "@/store";
 import { NavDrawer } from "@/components/Navbar/NavDrawer";
 import { CartDrawer } from "@/components/Navbar/CartDrawer";
 
@@ -15,11 +15,13 @@ interface MainNavProps {
 
 export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
   const user = useUser();
+  const activeCart = useActiveCart();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
   const isHome = pathname === "/";
+  const isAccountPath = pathname.startsWith("/account");
 
   return (
     <>
@@ -30,7 +32,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
       )}
 
       <header className="sticky top-0 z-30 border-b border-border-default bg-bg-card">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div className="flex h-14 w-full items-center justify-between px-[18px]">
           {/* Left group: Logo + nav links */}
           <div className="flex items-center gap-6 md:gap-8">
             <Link href={ROUTES.HOME} className="flex shrink-0 items-center">
@@ -53,45 +55,47 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             </Link>
 
             {/* Nav links — desktop only */}
-            <nav className="hidden items-center gap-6 md:flex">
-              {user && isHome ? (
-                <>
-                  <Link
-                    href={ROUTES.ORDER_REFILL}
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                  >
-                    Order Refill
-                  </Link>
-                  <Link
-                    href={ROUTES.ORDERS}
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                  >
-                    Orders History
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/#process"
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                  >
-                    How It Works
-                  </Link>
-                  <Link
-                    href="/#labtested"
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                  >
-                    Pricing
-                  </Link>
-                  <Link
-                    href="/#help"
-                    className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
-                  >
-                    FAQ
-                  </Link>
-                </>
-              )}
-            </nav>
+            {!isAccountPath && (
+              <nav className="hidden items-center gap-6 md:flex">
+                {user && isHome ? (
+                  <>
+                    <Link
+                      href={ROUTES.ORDER_REFILL}
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                    >
+                      Order Refill
+                    </Link>
+                    <Link
+                      href={ROUTES.ORDERS}
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                    >
+                      Orders History
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/#process"
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                    >
+                      How It Works
+                    </Link>
+                    <Link
+                      href="/#labtested"
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                    >
+                      Pricing
+                    </Link>
+                    <Link
+                      href="/#help"
+                      className="text-sm font-medium text-text-primary hover:text-primary transition-colors"
+                    >
+                      FAQ
+                    </Link>
+                  </>
+                )}
+              </nav>
+            )}
           </div>
 
           {/* Right actions */}
@@ -109,7 +113,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <a
               href="tel:8447453362"
               aria-label="Call us"
-              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors sm:hidden"
+              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors sm:hidden"
             >
               <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Call Us</span>
@@ -119,9 +123,12 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <button
               aria-label="Cart"
               onClick={() => setCartDrawerOpen(true)}
-              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors"
+              className="relative flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors"
             >
               <Image src="/icons/navbar/shopping-cart-solid.svg" alt="" width={20} height={20} className="shrink-0" />
+              {activeCart && (
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+              )}
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Cart</span>
             </button>
 
@@ -138,7 +145,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <button
               aria-label="Open menu"
               onClick={() => setDrawerOpen(true)}
-              className={`flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors${!user ? " md:hidden" : ""}`}
+              className={`flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors${!user ? " md:hidden" : ""}`}
             >
               <Image src="/icons/navbar/burger-menu.svg" alt="" width={20} height={20} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Menu</span>

@@ -3,6 +3,7 @@
 import { ProductConfigurator } from "./ProductConfigurator";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { useCartToken } from "@/store";
 import { Modal } from "@/components/ui/Modal";
 
 interface ProductDetailPageProps {
@@ -28,10 +29,19 @@ export const ProductDetailPage = ({
     handleQtyChange,
     handleStrengthChange,
     handleDrugChange,
-  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  } = useProductConfigurator({
+    slug,
+    initialQty,
+    discountCode,
+    landingContext,
+    autoSelectDosage: false,
+    autoSelectPopular: false,
+  });
+
+  const cartToken = useCartToken();
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext });
+    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
@@ -53,8 +63,8 @@ export const ProductDetailPage = ({
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center bg-bg-main px-4 py-12">
-        <div className="w-full max-w-lg rounded-2xl border border-border-default bg-bg-card shadow-lg">
+      <div className="flex-1 bg-white">
+          <div className="mx-auto max-w-2xl pt-5 sm:pt-[60px]">
           <ProductConfigurator
             contextVariant={contextVariant}
             activeVariant={activeVariant}
@@ -66,6 +76,8 @@ export const ProductDetailPage = ({
             onDrugChange={handleDrugChange}
             onAddToCart={handleAddToCart}
             isSubmitting={isPending}
+            allowDrugSwitch
+            className="w-full sm:w-[90%]"
           />
         </div>
       </div>
