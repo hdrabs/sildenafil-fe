@@ -340,7 +340,7 @@ export const ProductConfigurator = ({
                       : { "--hover-border": d === "tadalafil" ? "#cd8f24" : "#204ad7" } as React.CSSProperties
                   }
                   className={cn(
-                    "cursor-pointer flex-1 rounded px-[18px] py-[14px] text-center transition-colors",
+                    "cursor-pointer flex-1 rounded px-[18px] py-[10px] text-center transition-colors",
                     isActive
                       ? "border-[2.5px]"
                       : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",

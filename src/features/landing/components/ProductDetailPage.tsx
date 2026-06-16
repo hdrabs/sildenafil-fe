@@ -3,6 +3,7 @@
 import { ProductConfigurator } from "./ProductConfigurator";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { useCartToken } from "@/store";
 import { Modal } from "@/components/ui/Modal";
 
 interface ProductDetailPageProps {
@@ -37,8 +38,10 @@ export const ProductDetailPage = ({
     autoSelectPopular: false,
   });
 
+  const cartToken = useCartToken();
+
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext });
+    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
@@ -74,6 +77,7 @@ export const ProductDetailPage = ({
             onAddToCart={handleAddToCart}
             isSubmitting={isPending}
             allowDrugSwitch
+            className="w-full sm:w-[90%]"
           />
         </div>
       </div>

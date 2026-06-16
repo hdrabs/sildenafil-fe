@@ -14,7 +14,7 @@ const NewUserPage = async ({ params, searchParams }: Props) => {
       slug={slug}
       initialQty={qty ? parseInt(qty, 10) : undefined}
       discountCode={discount}
-      landingContext={landing_context ?? "marketing"}
+      landingContext={landing_context ?? "new-user"}
       theme="sildenafil"
     />
   );

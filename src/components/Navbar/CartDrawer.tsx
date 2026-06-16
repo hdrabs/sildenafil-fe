@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { useActiveCart, useClearActiveCart } from "@/store";
+import { useDeleteCartV2 } from "@/api/hooks/useCartQueries";
 import { ROUTES } from "@/constants/routes";
 
 const DEFAULT_PRODUCT_SLUG = "sildenafil-citrate-20-mg";
@@ -17,6 +19,7 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
   const router = useRouter();
   const activeCart = useActiveCart();
   const clearActiveCart = useClearActiveCart();
+  const { mutateAsync: deleteCart, isPending: isDeleting } = useDeleteCartV2();
   const drawerRef = useRef<HTMLDivElement>(null);
   const [headerShadow, setHeaderShadow] = useState(false);
 
@@ -62,8 +65,17 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
     }
   };
 
-  const handleDelete = () => {
-    clearActiveCart();
+  const handleDelete = async () => {
+    if (!activeCart) return;
+    try {
+      await deleteCart({
+        id: activeCart.cart.id,
+        cartToken: activeCart.cart.token,
+      });
+      clearActiveCart();
+    } catch {
+      toast.error("Failed to delete cart. Please try again.");
+    }
   };
 
   const handleShopMedications = () => {
@@ -134,9 +146,10 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
                   </p>
                   <button
                     onClick={handleDelete}
-                    className="text-[12px] min-[1040px]:text-[13px] font-semibold uppercase tracking-wide text-text-error hover:opacity-80 transition-opacity"
+                    disabled={isDeleting}
+                    className="text-[12px] min-[1040px]:text-[13px] font-semibold uppercase tracking-wide text-text-error hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    Delete
+                    {isDeleting ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               </div>

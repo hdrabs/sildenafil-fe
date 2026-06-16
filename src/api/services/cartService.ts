@@ -63,4 +63,7 @@ export const cartService = {
 
   getCartV2: (id: number): Promise<CartV2> =>
     api.get<CartV2>(`/v2/carts/${id}`),
+
+  deleteCartV2: (id: number, cartToken?: string): Promise<void> =>
+    api.delete<void>(`/v2/carts/${id}${cartToken ? `?cart_token=${encodeURIComponent(cartToken)}` : ""}`),
 };

@@ -14,7 +14,7 @@ const ProductSelectionPage = async ({ params, searchParams }: Props) => {
       slug={slug}
       initialQty={qty ? parseInt(qty, 10) : undefined}
       discountCode={discount}
-      landingContext={landing_context ?? "try"}
+      landingContext={landing_context ?? "product-selection"}
       theme="tadalafil"
     />
   );

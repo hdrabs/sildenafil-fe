@@ -109,7 +109,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <a
               href="tel:8447453362"
               aria-label="Call us"
-              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors sm:hidden"
+              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors sm:hidden"
             >
               <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Call Us</span>
@@ -119,7 +119,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <button
               aria-label="Cart"
               onClick={() => setCartDrawerOpen(true)}
-              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors"
+              className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors"
             >
               <Image src="/icons/navbar/shopping-cart-solid.svg" alt="" width={20} height={20} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Cart</span>
@@ -138,7 +138,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
             <button
               aria-label="Open menu"
               onClick={() => setDrawerOpen(true)}
-              className={`flex flex-col items-center justify-center gap-0 px-1.5 py-1 hover:bg-bg-input rounded-lg transition-colors${!user ? " md:hidden" : ""}`}
+              className={`flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors${!user ? " md:hidden" : ""}`}
             >
               <Image src="/icons/navbar/burger-menu.svg" alt="" width={20} height={20} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Menu</span>

@@ -8,6 +8,7 @@ import { FaqSection } from "@/features/home/components/FaqSection";
 import { CtaSection } from "@/features/home/components/CtaSection";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
+import { useCartToken } from "@/store";
 import { Modal } from "@/components/ui/Modal";
 
 interface ProductLandingPageProps {
@@ -37,8 +38,10 @@ export const ProductLandingPage = ({
     handleDrugChange,
   } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
 
+  const cartToken = useCartToken();
+
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, cartToken: undefined });
+    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;

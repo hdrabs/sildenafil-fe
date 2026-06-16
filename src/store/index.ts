@@ -19,5 +19,6 @@ export const useAuthState = () =>
   );
 
 export const useActiveCart = () => useCartStore((s) => s.activeCart);
+export const useCartToken = () => useCartStore((s) => s.activeCart?.cart.token ?? null);
 export const useSetActiveCart = () => useCartStore((s) => s.setActiveCart);
 export const useClearActiveCart = () => useCartStore((s) => s.clearActiveCart);
