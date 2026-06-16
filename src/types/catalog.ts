@@ -5,11 +5,25 @@ export interface CatalogProductInfo {
   slug: string;
 }
 
+export interface CatalogDrugInfo {
+  name: string;
+  subtitle: string | null;
+  overview: string | null;
+  description: string | null;
+  usage: string | null;
+  side_effects: string | null;
+  precautions: string | null;
+  drug_interactions: string | null;
+  storage: string | null;
+  other_info: string | null;
+}
+
 export interface CatalogPackage {
   quantity: number;
   original_price: number;
   final_price: number;
   per_tablet: number;
+  discount_percentage: number;
   is_popular: boolean;
   extra_tablets: number;
 }
@@ -40,6 +54,7 @@ export interface CatalogPrescription {
 
 export interface CatalogVariant {
   product: CatalogProductInfo;
+  drug_info: CatalogDrugInfo;
   min_order_quantity: number;
   packages: CatalogPackage[];
   discount: CatalogDiscount | null;

@@ -5,11 +5,16 @@ import { useCatalog } from "@/api/hooks/useCatalogQueries";
 
 const DEFAULT_SLUG = "sildenafil-citrate-20-mg";
 
+// Variants only shown when the URL slug explicitly requests them
+const GATED_SLUGS = ["sildenafil-citrate-20-mg"];
+
 interface UseProductConfiguratorOptions {
   slug?: string;
   initialQty?: number;
   discountCode?: string;
   landingContext?: string;
+  autoSelectPopular?: boolean;
+  autoSelectDosage?: boolean;
 }
 
 export const useProductConfigurator = ({
@@ -17,23 +22,27 @@ export const useProductConfigurator = ({
   initialQty,
   discountCode,
   landingContext,
+  autoSelectPopular = true,
+  autoSelectDosage = true,
 }: UseProductConfiguratorOptions) => {
   const catalogSlug = slug ?? DEFAULT_SLUG;
 
-  const { data: variants, isLoading } = useCatalog({
+  const { data: rawVariants, isLoading } = useCatalog({
     slug: catalogSlug,
     ...(discountCode && { discount: discountCode }),
     ...(initialQty && { custom_quantity: [initialQty] }),
     ...(landingContext && { landing_context: landingContext }),
   });
 
+  const variants = rawVariants?.filter(
+    (v) => !GATED_SLUGS.includes(v.product.slug) || v.product.slug === catalogSlug,
+  );
+
   // Drug selected by user — null means derive from the initial slug
   const [selectedDrug, setSelectedDrug] = useState<string | null>(null);
 
-  // Dosage and qty reset whenever drug changes
-  const [selectedDosage, setSelectedDosage] = useState<string | null>(
-    slug ? (variants?.find((v) => v.product.slug === slug)?.product.dosage ?? null) : null,
-  );
+  // null = no explicit user selection yet; a value = user has picked this dosage/qty
+  const [selectedDosage, setSelectedDosage] = useState<string | null>(null);
   const [selectedQty, setSelectedQty] = useState<number>(initialQty ?? 0);
 
   // Resolved drug: explicit selection > slug-derived > first variant
@@ -55,26 +64,51 @@ export const useProductConfigurator = ({
     return variants.find((v) => v.product.slug === catalogSlug) ?? variants[0] ?? null;
   }, [variants, activeDrug, catalogSlug]);
 
+  // API-seeded dosage: derived from the slug-matched variant when user hasn't picked yet
+  const apiDosage = useMemo(() => {
+    if (!autoSelectDosage || !variants) return null;
+    return variants.find((v) => v.product.slug === catalogSlug)?.product.dosage ?? null;
+  }, [variants, catalogSlug, autoSelectDosage]);
+
+  const activeDosage = selectedDosage ?? apiDosage;
+
   // Variant used for highlighting — null = nothing highlighted
   const activeVariant = useMemo(() => {
-    if (!selectedDosage) return null;
+    if (!activeDosage) return null;
     return (
       variants?.find(
-        (v) => v.product.drug === activeDrug && v.product.dosage === selectedDosage,
+        (v) => v.product.drug === activeDrug && v.product.dosage === activeDosage,
       ) ?? contextVariant
     );
-  }, [selectedDosage, variants, activeDrug, contextVariant]);
+  }, [activeDosage, variants, activeDrug, contextVariant]);
 
-  const packages = contextVariant?.packages ?? [];
+  const packages = (activeVariant ?? contextVariant)?.packages ?? [];
   const packageQtys = packages.map((p) => p.quantity);
-  const effectiveQty =
-    selectedQty > 0 && packageQtys.includes(selectedQty) ? selectedQty : 0;
+
+  // API-seeded qty: derived when user hasn't explicitly picked one
+  const apiQty = useMemo(() => {
+    if (!activeVariant) return 0;
+    const defaultQty = activeVariant.default_package?.quantity;
+    const popularQty = autoSelectPopular
+      ? (activeVariant.packages.find((p) => p.is_popular)?.quantity ?? 0)
+      : 0;
+    return defaultQty ?? popularQty ?? 0;
+  }, [activeVariant, autoSelectPopular]);
+
+  const effectiveQty = useMemo(() => {
+    const qty = selectedQty > 0 ? selectedQty : apiQty;
+    return packageQtys.includes(qty) ? qty : 0;
+  }, [selectedQty, apiQty, packageQtys]);
 
   const handleQtyChange = (qty: number) => setSelectedQty(qty);
 
   const handleStrengthChange = (dosage: string) => {
     setSelectedDosage(dosage);
-    setSelectedQty(0);
+    const newVariantPackages =
+      variants?.find((v) => v.product.drug === activeDrug && v.product.dosage === dosage)
+        ?.packages ?? [];
+    const qtyExistsInNewStrength = newVariantPackages.some((p) => p.quantity === effectiveQty);
+    if (!qtyExistsInNewStrength) setSelectedQty(0);
   };
 
   const handleDrugChange = (drug: string) => {
@@ -84,7 +118,7 @@ export const useProductConfigurator = ({
   };
 
   return {
-    variants: variants ?? [],
+    variants: variants ?? rawVariants ?? [],
     contextVariant,
     activeVariant,
     activeDrug,

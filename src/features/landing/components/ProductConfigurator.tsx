@@ -1,14 +1,26 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import {
   RiCheckLine,
-  RiArrowRightLine,
   RiTruckLine,
   RiTimeLine,
 } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { CatalogVariant } from "@/types/catalog";
+import { DrugInfoModal } from "@/features/landing/components/DrugInfoModal";
+import { StrengthGuideModal } from "@/features/landing/components/StrengthGuideModal";
+
+const DRUG_DISPLAY_NAMES: Record<string, string> = {
+  sildenafil: "Sildenafil(Generic Viagra)",
+  tadalafil: "Tadalafil(Generic Cialis)",
+};
+
+const DRUG_DISPLAY_LINES: Record<string, { name: string; generic: string }> = {
+  sildenafil: { name: "Sildenafil", generic: "(Generic Viagra)" },
+  tadalafil: { name: "Tadalafil", generic: "(Generic Cialis)" },
+};
 
 // Normalises a dosage string (e.g. "20 mg", "2.5 mg") into the image-file prefix
 // used under public/images/tablets/{drug}/
@@ -145,6 +157,7 @@ interface ProductConfiguratorProps {
   onDrugChange: (drug: string) => void;
   onAddToCart?: (qty: number) => void;
   isSubmitting?: boolean;
+  allowDrugSwitch?: boolean;
 }
 
 export const ProductConfigurator = ({
@@ -158,20 +171,24 @@ export const ProductConfigurator = ({
   onDrugChange,
   onAddToCart,
   isSubmitting = false,
+  allowDrugSwitch = false,
 }: Omit<ProductConfiguratorProps, "theme">) => {
-  const packages = contextVariant?.packages ?? [];
+  const [drugInfoOpen, setDrugInfoOpen] = useState(false);
+  const [strengthGuideOpen, setStrengthGuideOpen] = useState(false);
 
-  // Only highlight a package when qty is explicitly selected (> 0)
+  const packages = (activeVariant ?? contextVariant)?.packages ?? [];
+
   const selectedPkg = selectedQty > 0
     ? (packages.find((p) => p.quantity === selectedQty) ?? null)
     : null;
   const total = selectedPkg?.final_price ?? 0;
-  const originalTotal = selectedPkg?.original_price ?? 0;
-  const pricePerTablet = selectedPkg?.per_tablet ?? 0;
-  const discountPct =
-    originalTotal > total && originalTotal > 0
-      ? Math.round((1 - total / originalTotal) * 100)
-      : 0;
+
+  // Base per-tablet price is the first (smallest) package — all savings are relative to it
+  const basePerTablet = packages[0]?.per_tablet ?? 0;
+  const selectedSavePct = selectedPkg && basePerTablet > selectedPkg.per_tablet
+    ? Math.round((1 - selectedPkg.per_tablet / basePerTablet) * 100)
+    : 0;
+  const selectedOriginalTotal = selectedPkg ? basePerTablet * selectedPkg.quantity : 0;
 
   const currentDrug = contextVariant?.product.drug;
   const dosages = Array.from(
@@ -182,187 +199,340 @@ export const ProductConfigurator = ({
     ),
   );
 
+  const uniqueDrugs = Array.from(new Set(allVariants.map((v) => v.product.drug)));
+
+  // Best Value = the last (highest qty) non-popular package that has savings vs base
+  const bestValuePkg =
+    [...packages].reverse().find((pkg) => !pkg.is_popular && pkg.per_tablet < basePerTablet) ?? null;
+
+  const drug = (activeVariant ?? contextVariant)?.product.drug;
+  const dosage = activeVariant?.product.dosage ?? dosages[0];
+  const tabletImgs = getTabletImages(drug, dosage);
+
+  const isTadalafil = activeDrug === "tadalafil";
+  const selectedBorderColor = isTadalafil ? "#cd8f24" : "#204ad7";
+  const selectedBgColor = isTadalafil ? "#f8e9d6" : "#d6e0f8";
+  const selectorSelectedStyle = {
+    borderColor: selectedBorderColor,
+    backgroundColor: selectedBgColor,
+  };
+  const badgeColor = isTadalafil ? "#cd8f24" : "#0657dd";
+  const badgeStyle = { backgroundColor: badgeColor, borderColor: badgeColor };
+
+  const priceHeaderRef = useRef<HTMLDivElement>(null);
+  const [priceHeaderHeight, setPriceHeaderHeight] = useState(0);
+  const [navbarHeight, setNavbarHeight] = useState(0);
+
+  useEffect(() => {
+    const el = priceHeaderRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setPriceHeaderHeight(el.getBoundingClientRect().height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const navbar = document.querySelector("header");
+    if (!navbar) return;
+    const ro = new ResizeObserver(() => {
+      setNavbarHeight(navbar.getBoundingClientRect().height);
+    });
+    ro.observe(navbar);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div className="flex flex-col px-6 py-10 sm:px-10">
-      {/* Price */}
-      <div className="flex items-start justify-between">
+    <div className="flex flex-col">
+      {/* Sticky price header — sticks just below navbar on mobile, static on sm+ */}
+      <div
+        ref={priceHeaderRef}
+        className="sticky z-20 bg-white px-6 sm:px-10"
+        style={{ top: navbarHeight }}
+      >
+        <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-text-primary">
+          <div className="flex items-baseline gap-3">
+            <span className="text-4xl font-bold leading-[1.4] text-text-primary">
               ${total.toFixed(2)}
             </span>
-            {discountPct > 0 && (
-              <span className="text-lg text-text-muted line-through">
-                ${originalTotal.toFixed(2)}
+            {selectedSavePct > 0 && (
+              <span className="text-3xl font-medium leading-[1.4] text-text-primary/50 line-through">
+                ${selectedOriginalTotal.toFixed(2)}
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-sm text-text-muted">
-            (${pricePerTablet.toFixed(2)}/tablet)
-            {discountPct > 0 && (
-              <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                {discountPct}% discount applied
-              </span>
-            )}
-          </p>
-          <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-green-600">
-            <RiTruckLine className="h-4 w-4" />
-            FREE 1 to 3 Day Priority Shipping
-          </div>
-        </div>
-        {(() => {
-          const drug = (activeVariant ?? contextVariant)?.product.drug;
-          const dosage = activeVariant?.product.dosage ?? dosages[0];
-          const imgs = getTabletImages(drug, dosage);
-          if (!imgs) return null;
-          return (
-            <div className="flex items-center">
-              <Image
-                src={imgs[0]}
-                alt="tablet 1"
-                width={56}
-                height={56}
-                className="object-contain drop-shadow-sm"
-              />
-              <Image
-                src={imgs[1]}
-                alt="tablet 2"
-                width={56}
-                height={56}
-                className="object-contain drop-shadow-sm"
-              />
+          {selectedPkg && (
+            <p className="mt-0.5 text-sm text-text-muted">
+              ${selectedPkg.per_tablet.toFixed(2)}/tablet
+            </p>
+          )}
+          {activeVariant && selectedQty > 0 && (
+            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-save">
+              <RiTruckLine className="h-4 w-4" />
+              FREE 1 to 3 Day Priority Shipping
             </div>
-          );
-        })()}
+          )}
+        </div>
+        {tabletImgs && (
+          <div className={cn(
+            "flex flex-col items-center sm:flex-row sm:[&>*+*]:mt-0",
+            drug === "tadalafil" ? "[&>*+*]:-mt-6" : "[&>*+*]:-mt-1",
+          )}>
+            {tabletImgs.map((src, i) => {
+              const isTada = drug === "tadalafil";
+              return (
+                <div key={i} className="relative flex flex-col items-center">
+                  <Image
+                    src={src}
+                    alt="tablet"
+                    width={isTada ? 110 : 81}
+                    height={isTada ? 110 : 81}
+                    className={cn(
+                      "relative z-10 object-contain",
+                      isTada ? "w-24 h-24 sm:w-[110px] sm:h-[110px]" : "w-[67px] h-[67px] sm:w-[81px] sm:h-[81px]",
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "absolute bottom-0 rounded-full bg-black/20 blur-md",
+                      isTada ? "w-[67px] h-[14px] sm:w-[77px] sm:h-[17px]" : "w-[47px] h-[10px] sm:w-[57px] sm:h-[12px]",
+                    )}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+        </div>
       </div>
 
       {/* Drug selector */}
-      <div className="mt-8">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+      <div className="mt-5 px-6 sm:px-10">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bg-step-badge text-xs font-bold text-white">
             1
           </span>
           <p className="font-semibold text-text-primary">Drug</p>
+          <button
+            type="button"
+            onClick={() => setDrugInfoOpen(true)}
+            className="cursor-pointer text-xs font-medium text-primary no-underline hover:underline"
+          >
+            View drug details
+          </button>
         </div>
-        <div className="mt-3 flex gap-3">
-          {Array.from(new Set(allVariants.map((v) => v.product.drug))).map((drug) => {
-            const isActive = activeDrug === drug;
+        {allowDrugSwitch ? (
+          <div className="flex gap-3">
+            {uniqueDrugs.map((d) => {
+              const isActive = activeDrug === d;
+              const lines = DRUG_DISPLAY_LINES[d];
+              return (
+                <button
+                  key={d}
+                  onClick={() => onDrugChange(d)}
+                  style={
+                    isActive
+                      ? selectorSelectedStyle
+                      : { "--hover-border": d === "tadalafil" ? "#cd8f24" : "#204ad7" } as React.CSSProperties
+                  }
+                  className={cn(
+                    "cursor-pointer flex-1 rounded px-3 py-3 text-center transition-colors",
+                    isActive
+                      ? "border-[2.5px]"
+                      : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
+                  )}
+                >
+                  <span className="block text-sm font-semibold text-text-primary sm:inline">
+                    {lines?.name ?? d}
+                  </span>
+                  <span className="block text-xs font-medium text-text-muted sm:inline sm:text-sm sm:font-medium">
+                    {lines?.generic}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            style={selectorSelectedStyle}
+            className="rounded border-[2.5px] px-3 py-3 text-sm font-medium text-text-primary"
+          >
+            {activeDrug ? (DRUG_DISPLAY_NAMES[activeDrug] ?? activeDrug) : "—"}
+          </div>
+        )}
+      </div>
+
+      {/* Strength title — not sticky, direct flex child */}
+      <div className="mt-6 mb-3 flex items-center gap-2 px-6 sm:px-10">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bg-step-badge text-xs font-bold text-white">
+          2
+        </span>
+        <p className="font-semibold text-text-primary">Strength</p>
+        <button
+          type="button"
+          onClick={() => setStrengthGuideOpen(true)}
+          className="cursor-pointer text-xs font-medium text-primary no-underline hover:underline"
+        >
+          Which strength is right for me?
+        </button>
+      </div>
+
+      {/* Sticky dosage buttons — direct flex child so parent height spans full page */}
+      <div
+        className="sticky z-10 bg-white px-6 pb-3 sm:px-10"
+        style={{ top: navbarHeight + priceHeaderHeight }}
+      >
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${dosages.length}, 1fr)` }}>
+          {dosages.map((d) => {
+            const isActive = activeVariant?.product.dosage === d;
             return (
               <button
-                key={drug}
-                onClick={() => onDrugChange(drug)}
+                key={d}
+                onClick={() => onStrengthChange(d)}
+                style={isActive ? selectorSelectedStyle : { "--hover-border": selectedBorderColor } as React.CSSProperties}
                 className={cn(
-                  "flex-1 rounded-lg border-2 px-4 py-3 text-sm font-semibold capitalize transition-colors",
+                  "cursor-pointer rounded py-2 text-sm font-medium text-text-primary transition-colors",
                   isActive
-                    ? "border-primary bg-bg-patient-welcome text-primary"
-                    : "border-border-input bg-bg-card text-text-primary hover:border-primary",
+                    ? "border-[2.5px]"
+                    : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
                 )}
               >
-                {drug}
+                {d}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Strength selector */}
-      <div className="mt-6">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-            2
-          </span>
-          <p className="font-semibold text-text-primary">Strength</p>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {dosages.map((d) => (
-            <button
-              key={d}
-              onClick={() => onStrengthChange(d)}
-              className={cn(
-                "rounded-lg border px-4 py-2 text-sm font-medium transition-colors",
-                activeVariant?.product.dosage === d
-                  ? "border-primary bg-primary text-white"
-                  : "border-border-input bg-bg-card text-text-primary hover:border-primary",
-              )}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Quantity selector */}
-      <div className="mt-6">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+      <div className="mt-6 px-6 sm:px-10">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bg-step-badge text-xs font-bold text-white">
             3
           </span>
           <p className="font-semibold text-text-primary">Quantity</p>
           <span className="text-xs text-text-muted">Buy more &amp; save</span>
         </div>
-        <div className="mt-3 flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           {packages.map((pkg) => {
             const isSelected = pkg.quantity === selectedQty;
+            const pkgSavePct = basePerTablet > pkg.per_tablet
+              ? Math.round((1 - pkg.per_tablet / basePerTablet) * 100)
+              : 0;
+            const pkgOriginalPrice = basePerTablet * pkg.quantity;
+            const isBestValue = bestValuePkg?.quantity === pkg.quantity;
+            const label = pkg.extra_tablets > 0
+              ? `${pkg.quantity} + ${pkg.extra_tablets} tablets`
+              : `${pkg.quantity} tablets`;
 
             return (
               <button
                 key={pkg.quantity}
                 onClick={() => onQtyChange(pkg.quantity)}
+                style={isSelected ? selectorSelectedStyle : { "--hover-border": selectedBorderColor } as React.CSSProperties}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border-2 px-4 py-3 text-sm transition-colors",
+                  "cursor-pointer flex items-center justify-between rounded px-4 py-3 text-sm transition-colors",
                   isSelected
-                    ? "border-primary bg-bg-patient-welcome"
-                    : "border-border-input bg-bg-card hover:border-primary",
+                    ? "border-[2.5px]"
+                    : "border-2 border-border-input bg-bg-card hover:border-(--hover-border)",
                 )}
               >
                 <div className="flex items-center gap-3">
                   <div
+                    style={isSelected ? { borderColor: selectedBorderColor } : undefined}
                     className={cn(
-                      "flex h-4 w-4 items-center justify-center rounded-full border-2",
-                      isSelected ? "border-primary bg-primary" : "border-border-input",
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                      isSelected ? "" : "border-border-input",
                     )}
                   >
                     {isSelected && (
-                      <div className="h-2 w-2 rounded-full bg-white" />
+                      <div className="h-2 w-2 rounded-full" style={{ backgroundColor: selectedBorderColor }} />
                     )}
                   </div>
-                  <span className="font-medium text-text-primary">
-                    {pkg.extra_tablets > 0
-                      ? `${pkg.quantity} + ${pkg.extra_tablets} Tablets`
-                      : `${pkg.quantity} Tablets`}
-                  </span>
-                  {pkg.is_popular && (
-                    <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-white">
-                      Popular
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-text-primary capitalize">{label}</span>
+                    {pkg.is_popular && (
+                      <span
+                        style={badgeStyle}
+                        className="rounded border px-2 py-0.5 text-xs font-semibold text-white"
+                      >
+                        Popular
+                      </span>
+                    )}
+                    {isBestValue && !pkg.is_popular && (
+                      <span
+                        style={badgeStyle}
+                        className="rounded border px-2 py-0.5 text-xs font-semibold text-white"
+                      >
+                        Best Value
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-baseline justify-end gap-1.5">
+                    {pkgSavePct > 0 && (
+                      <span className="text-xs text-text-muted line-through">
+                        ${pkgOriginalPrice.toFixed(2)}
+                      </span>
+                    )}
+                    <span className="font-semibold text-text-primary">
+                      ${pkg.final_price.toFixed(2)}
                     </span>
+                  </div>
+                  {pkgSavePct > 0 && (
+                    <div className="text-xs font-semibold text-save">
+                      save {pkgSavePct}%
+                    </div>
                   )}
                 </div>
-                <span className="font-semibold text-text-primary">
-                  ${pkg.final_price.toFixed(2)}
-                </span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <button
-        onClick={() => onAddToCart?.(selectedQty)}
-        disabled={isSubmitting || selectedQty === 0}
-        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-4 text-sm font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <>
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            Processing...
-          </>
-        ) : (
-          <>
-            Start My Free Visit
-            <RiArrowRightLine className="h-5 w-5" />
-          </>
-        )}
-      </button>
+      <div className="px-6 pb-8 sm:px-10">
+        <button
+          onClick={() => onAddToCart?.(selectedQty)}
+          disabled={isSubmitting || !activeVariant || selectedQty === 0}
+          style={
+            isSubmitting || !activeVariant || selectedQty === 0
+              ? undefined
+              : { backgroundColor: badgeColor, borderColor: badgeColor }
+          }
+          className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border-2 py-4 text-base font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:bg-border-input disabled:border-border-input disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <span>Total ${total.toFixed(2)} — Add to Cart</span>
+              <Image src="/icons/arrow-right-chevron.svg" alt="" width={9} height={18} />
+            </>
+          )}
+        </button>
+      </div>
+
+      <DrugInfoModal
+        isOpen={drugInfoOpen}
+        onClose={() => setDrugInfoOpen(false)}
+        drugInfo={(activeVariant ?? contextVariant)?.drug_info ?? null}
+        drugDisplayName={activeDrug ? DRUG_DISPLAY_NAMES[activeDrug] : undefined}
+        activeDrug={activeDrug}
+      />
+      <StrengthGuideModal
+        isOpen={strengthGuideOpen}
+        onClose={() => setStrengthGuideOpen(false)}
+        drug={activeDrug}
+        currentDosage={activeVariant?.product.dosage}
+        availableDosages={dosages}
+      />
     </div>
   );
 };

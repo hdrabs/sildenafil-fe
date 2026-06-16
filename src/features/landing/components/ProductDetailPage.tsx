@@ -28,7 +28,14 @@ export const ProductDetailPage = ({
     handleQtyChange,
     handleStrengthChange,
     handleDrugChange,
-  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  } = useProductConfigurator({
+    slug,
+    initialQty,
+    discountCode,
+    landingContext,
+    autoSelectDosage: false,
+    autoSelectPopular: false,
+  });
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
     useStartVisit({ landingContext });
@@ -53,8 +60,8 @@ export const ProductDetailPage = ({
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center bg-bg-main px-4 py-12">
-        <div className="w-full max-w-lg rounded-2xl border border-border-default bg-bg-card shadow-lg">
+      <div className="flex-1 bg-white">
+        <div className="mx-auto max-w-2xl pt-5 sm:pt-[120px]">
           <ProductConfigurator
             contextVariant={contextVariant}
             activeVariant={activeVariant}
@@ -66,6 +73,7 @@ export const ProductDetailPage = ({
             onDrugChange={handleDrugChange}
             onAddToCart={handleAddToCart}
             isSubmitting={isPending}
+            allowDrugSwitch
           />
         </div>
       </div>

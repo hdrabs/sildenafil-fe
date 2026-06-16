@@ -4,12 +4,18 @@
   /* Brand */
   --color-primary: #1b53af;
   --color-primary-hover: #174a9e;
+  --color-primary-blue: #204ad7;
+  --color-primary-blue-badge: #0657dd;
+  --color-bg-selector-selected: #d6e0f8;
+  --color-primary-yellow: #cd8f24;
+  --color-bg-selector-selected-yellow: #f8e9d6;
   --color-primary-orange: #f97316;
   --color-primary-orange-hover: #ea6700;
 
   /* Backgrounds */
   --color-bg-main: #f1f8fb;
   --color-bg-sidebar: #0a1c3a;
+  --color-bg-step-badge: #0e2836;
   --color-bg-sidebar-dark: #0e2a5c;
   --color-bg-tadalafil: #2c1a00;
   --color-bg-card: #ffffff;
@@ -30,6 +36,7 @@
 
   /* Status */
   --color-success: #22c55e;
+  --color-save: #2bb673;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-selected: #e05252;
