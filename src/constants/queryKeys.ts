@@ -39,3 +39,20 @@ export const catalogKeys = {
   all: ["catalog"] as const,
   list: (params?: unknown) => [...catalogKeys.all, "list", params] as const,
 };
+
+export const questionnaireKeys = {
+  all: ["questionnaire"] as const,
+  introStep: (stepLabel: string, cartId: number) =>
+    [...questionnaireKeys.all, "intro", stepLabel, cartId] as const,
+  step: (stepLabel: string, cartId: number) =>
+    [...questionnaireKeys.all, "step", stepLabel, cartId] as const,
+  medications: (name: string) =>
+    [...questionnaireKeys.all, "medications", name] as const,
+  allergies: (name: string) =>
+    [...questionnaireKeys.all, "allergies", name] as const,
+};
+
+export const visitKeys = {
+  all: ["visits"] as const,
+  eligibleStates: () => [...visitKeys.all, "eligible_states"] as const,
+};

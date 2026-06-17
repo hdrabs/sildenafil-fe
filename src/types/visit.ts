@@ -22,9 +22,11 @@ export interface VisitEligibilityResponse {
   cart_branch: CartBranch | null;
 }
 
-export interface UserInterview {
-  consultationWithinLastYear: boolean | null;
-  dysfunctionConsulted: boolean | null;
-  previousDrugs: string | null;
-  cartId: number;
+export interface EligibleState {
+  name: string;
+  code: string;
+}
+
+export interface VisitEligibleStatesResponse {
+  states: EligibleState[];
 }

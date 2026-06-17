@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { authService } from "@/api/services/authService";
 import type {
   RegisterRequest,
@@ -7,6 +7,7 @@ import type {
   ResetPasswordRequest,
   AuthTokenResponse,
 } from "@/api/services/authService";
+import type { PatientInfoRequest } from "@/types/user";
 
 export const useRegister = () =>
   useMutation({
@@ -32,6 +33,18 @@ export const useForgotPassword = () =>
 export const useResetPassword = () =>
   useMutation({
     mutationFn: (data: ResetPasswordRequest) => authService.resetPassword(data),
+  });
+
+export const useGetMe = (enabled = true) =>
+  useQuery({
+    queryKey: ["me"],
+    queryFn: () => authService.me(),
+    enabled,
+  });
+
+export const useUpdateMe = () =>
+  useMutation({
+    mutationFn: (data: PatientInfoRequest) => authService.updateMe(data),
   });
 
 export type { AuthTokenResponse };

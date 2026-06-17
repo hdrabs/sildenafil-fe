@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useRegister } from "@/api/hooks/useAuthQueries";
 import { authService } from "@/api/services/authService";
-import { useSetUser } from "@/store";
+import { useSetUser, useCartToken, useSetActiveCart } from "@/store";
 import { ROUTES } from "@/constants/routes";
 import { SignupFormValues } from "../schemas/signupSchema";
 
 export const useSignupUser = () => {
   const router = useRouter();
   const setUser = useSetUser();
+  const setActiveCart = useSetActiveCart();
+  const cartToken = useCartToken();
   const { mutate, isPending } = useRegister();
   const [signupError, setSignupError] = useState<string | null>(null);
 
@@ -27,10 +29,11 @@ export const useSignupUser = () => {
           password_confirmation: values.password,
           terms_of_service: true,
           time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          ...(cartToken && { cart_token: cartToken }),
         },
       },
       {
-        onSuccess: async ({ token }) => {
+        onSuccess: async ({ token, cart, redirect_path }) => {
           setUser({
             id: 0,
             email: values.email,
@@ -49,7 +52,13 @@ export const useSignupUser = () => {
               token,
               jti: me.jti,
             });
-            router.replace(ROUTES.DASHBOARD);
+
+            if (cart && redirect_path) {
+              setActiveCart({ cart, variantLabel: "", redirectPath: redirect_path });
+              router.replace(redirect_path);
+            } else {
+              router.replace(ROUTES.DASHBOARD);
+            }
           } catch {
             toast.error("Could not load your profile. Please try again.");
           }

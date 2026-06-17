@@ -27,4 +27,8 @@ export const ROUTES = {
   LOWEST_PRICE:     (slug: string) => `/lowest-price/${slug}`,
   PRODUCT_SELECTION:(slug: string) => `/product-selection/${slug}`,
   PRODUCT_DETAIL:   "/product-detail",
+
+  // ── Checkout flow ──────────────────────────────────────────────────────────
+  INTRO_QUESTIONS:            (slug: string) => `/intro-questions/${slug}`,
+  VISIT_CONSULTATION_STEP:    (slug: string) => `/checkout/visit-consultation/${slug}`,
 } as const;

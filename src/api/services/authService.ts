@@ -1,5 +1,6 @@
 import api from "@/api/baseAPI";
-import { UserMeResponse } from "@/types/user";
+import { UserMeResponse, PatientInfoRequest } from "@/types/user";
+import { CartV2 } from "@/types/cart";
 
 export interface RegisterRequest {
   user: {
@@ -10,6 +11,7 @@ export interface RegisterRequest {
     password_confirmation: string;
     terms_of_service: boolean;
     time_zone?: string;
+    cart_token?: string;
   };
 }
 
@@ -30,6 +32,8 @@ export interface ResetPasswordRequest {
 
 export interface AuthTokenResponse {
   token: string;
+  cart?: CartV2;
+  redirect_path?: string;
 }
 
 export interface CheckEmailResponse {
@@ -76,6 +80,9 @@ export const authService = {
 
   me: (): Promise<UserMeResponse> =>
     api.get<UserMeResponse>("/v2/me"),
+
+  updateMe: (data: PatientInfoRequest): Promise<UserMeResponse> =>
+    api.put<UserMeResponse>("/v2/me", data),
 
   resendEmailVerification: (): Promise<{ sent: boolean }> =>
     api.post<{ sent: boolean }>("/v2/email_verifications", {}),

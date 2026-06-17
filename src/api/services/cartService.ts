@@ -66,4 +66,14 @@ export const cartService = {
 
   deleteCartV2: (id: number, cartToken?: string): Promise<void> =>
     api.delete<void>(`/v2/carts/${id}${cartToken ? `?cart_token=${encodeURIComponent(cartToken)}` : ""}`),
+
+  /**
+   * PATCH /api/v2/carts/:id with { advance: true }
+   * Moves the cart from product_detail → intro_questions without changing variant or quantity.
+   */
+  advanceCartStep: (id: number, cartToken?: string): Promise<CartV2Response> =>
+    api.patch<CartV2Response>(`/v2/carts/${id}`, {
+      advance: true,
+      ...(cartToken && { cart_token: cartToken }),
+    }),
 };
