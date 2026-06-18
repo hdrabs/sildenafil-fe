@@ -6,6 +6,7 @@ import {
   QuestionaireStepParams,
   QuestionairePayload,
   CartAuthParams,
+  GoBackParams,
   VisitCreateRequest,
 } from "@/types/questionnaire";
 
@@ -16,6 +17,7 @@ export const useGetIntroStep = (params: IntroStepParams, enabled = true) =>
     queryKey: questionnaireKeys.introStep(params.step_label, params.cart_id),
     queryFn: () => questionnaireService.getIntroStep(params),
     enabled,
+    staleTime: 0,
   });
 
 // ── Main questionnaire ────────────────────────────────────────────────────────
@@ -35,7 +37,7 @@ export const useSaveQuestionaireStep = () =>
 
 export const useGoBackQuestionaire = () =>
   useMutation({
-    mutationFn: (params: CartAuthParams) => questionnaireService.goBack(params),
+    mutationFn: (params: GoBackParams) => questionnaireService.goBack(params),
   });
 
 // ── Search ────────────────────────────────────────────────────────────────────
@@ -76,6 +78,14 @@ export const useGetEligibleStates = (enabled = true) =>
     enabled,
   });
 
+export const useGetVisitState = (cartId: number, cartToken?: string, enabled = true) =>
+  useQuery({
+    queryKey: ["visit_state", cartId],
+    queryFn: () => questionnaireService.getVisitState(cartId, cartToken),
+    enabled: enabled && cartId > 0,
+    staleTime: 0,
+  });
+
 // ── Checkout step advancement ─────────────────────────────────────────────────
 
 export const useAdvanceIntroQuestions = () =>
@@ -106,4 +116,16 @@ export const useAdvanceVisitConsultation = () =>
   useMutation({
     mutationFn: (params: CartAuthParams) =>
       questionnaireService.advanceVisitConsultation(params),
+  });
+
+export const useFinishNoCheckup = () =>
+  useMutation({
+    mutationFn: (params: CartAuthParams) =>
+      questionnaireService.finishNoCheckup(params),
+  });
+
+export const useFinishNoBloodPressure = () =>
+  useMutation({
+    mutationFn: (params: CartAuthParams) =>
+      questionnaireService.finishNoBloodPressure(params),
   });

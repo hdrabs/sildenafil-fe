@@ -58,5 +58,6 @@ export interface PatientInfoRequest {
     home_phone?: string;
     phone_contact_allowed?: boolean;
     drugs_names_included?: boolean;
+    otp_verified?: boolean;
   };
 }

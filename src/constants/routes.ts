@@ -30,5 +30,11 @@ export const ROUTES = {
 
   // ── Checkout flow ──────────────────────────────────────────────────────────
   INTRO_QUESTIONS:            (slug: string) => `/intro-questions/${slug}`,
+  INTRO_QUESTIONS_START:      "/intro-questions",
+  VISIT_CONSENT:              "/checkout/visit-consent",
+  PATIENT_INFO:               "/checkout/patient-info",
+  VISIT_INTRO:                "/checkout/visit-intro",
   VISIT_CONSULTATION_STEP:    (slug: string) => `/checkout/visit-consultation/${slug}`,
+  CHECKOUT_NO_CHECKUP:        "/checkout/no-checkup",
+  CHECKOUT_NO_BLOOD_PRESSURE: "/checkout/no-blood-pressure",
 } as const;

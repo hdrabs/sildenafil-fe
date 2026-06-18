@@ -8,6 +8,7 @@ export const cartKeys = {
   list: (params?: unknown) => [...cartKeys.all, "list", params] as const,
   detail: (id: number) => [...cartKeys.all, "detail", id] as const,
   eligibility: () => [...cartKeys.all, "eligibility"] as const,
+  active: () => [...cartKeys.all, "active"] as const,
 };
 
 export const orderKeys = {

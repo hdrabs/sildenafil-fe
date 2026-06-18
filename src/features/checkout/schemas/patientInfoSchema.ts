@@ -7,20 +7,20 @@ export const patientInfoSchema = z
     first_name: z
       .string()
       .trim()
-      .min(1, "First name is required")
+      .min(1, "Required")
       .regex(NAME_REGEX, "Must enter a proper first name"),
 
     last_name: z
       .string()
       .trim()
-      .min(1, "Last name is required")
+      .min(1, "Required")
       .regex(NAME_REGEX, "Must enter a proper last name"),
 
-    gender: z.enum(["male", "female"], { message: "Gender is required" }),
+    gender: z.enum(["male", "female"], { message: "Required" }),
 
-    dob_month: z.string().min(1, "Month is required"),
-    dob_day: z.string().min(1, "Day is required"),
-    dob_year: z.string().min(1, "Year is required"),
+    dob_month: z.string().min(1, "Required"),
+    dob_day: z.string().min(1, "Required"),
+    dob_year: z.string().min(1, "Required"),
 
     phone_type: z.enum(["mobile", "home"]),
 

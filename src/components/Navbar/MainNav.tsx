@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
-import { useUser, useActiveCart } from "@/store";
+import { useUser, useActiveCart, useSetActiveCart } from "@/store";
+import { useGetActiveCart } from "@/api/hooks/useCartQueries";
 import { NavDrawer } from "@/components/Navbar/NavDrawer";
 import { CartDrawer } from "@/components/Navbar/CartDrawer";
 
@@ -16,9 +17,17 @@ interface MainNavProps {
 export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
   const user = useUser();
   const activeCart = useActiveCart();
+  const setActiveCart = useSetActiveCart();
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  // Restore cart from backend when authenticated but store is empty (e.g. new browser/tab)
+  const { data: backendCart } = useGetActiveCart(!!user && !activeCart);
+
+  useEffect(() => {
+    if (backendCart) setActiveCart(backendCart);
+  }, [backendCart, setActiveCart]);
 
   const isHome = pathname === "/";
   const isAccountPath = pathname.startsWith("/account");

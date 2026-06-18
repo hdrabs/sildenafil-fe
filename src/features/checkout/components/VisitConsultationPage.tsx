@@ -2,6 +2,12 @@
 
 import { useVisitConsultation } from "@/features/checkout/hooks/useVisitConsultation";
 import { Question } from "./Question";
+import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { AnswerOption } from "@/types/questionnaire";
+
+const BP_CATEGORIES = new Set(["Low", "Normal", "Elevated", "High"]);
+const isBpQuestion = (q: { answer_options: AnswerOption[] }) =>
+  q.answer_options.some((a) => a.extra_label && BP_CATEGORIES.has(a.extra_label));
 
 interface Props {
   slug: string;
@@ -30,48 +36,54 @@ export const VisitConsultationPage = ({ slug }: Props) => {
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
-      <div className="mb-6">
-        <button
-          onClick={onBack}
-          disabled={isGoingBack}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50"
-        >
-          {isGoingBack ? (
-            <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-          ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="h-4 w-4"
-            >
-              <path
-                fillRule="evenodd"
-                d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-          Back
-        </button>
-      </div>
+    <>
+      <SecondaryNav onBack={onBack} isLoading={isGoingBack} />
+      <main className="min-h-screen bg-bg-main">
+      <div className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
+      {currentStep.questions.map((question, index) => {
+        const isFirstBpQuestion =
+          isBpQuestion(question) &&
+          !currentStep.questions.slice(0, index).some(isBpQuestion);
 
-      {currentStep.questions.map((question) => (
-        <Question
-          key={question.id}
-          question={question}
-          dispatch={dispatch}
-          response={responses.questions[question.id] ?? {}}
-        />
-      ))}
+        // Hide multi-select questions until the preceding Yes/No radio has "Yes" selected
+        if (index > 0 && question.question_type === "multi") {
+          const prev = currentStep.questions[index - 1];
+          const isYesNoRadio =
+            prev.question_type === "radio" &&
+            prev.answer_options.some((a) => a.label === "Yes") &&
+            prev.answer_options.some((a) => a.label === "No");
+          if (isYesNoRadio) {
+            const prevResp = responses.questions[prev.id];
+            const selectedId = prevResp
+              ? Object.keys(prevResp).find((k) => k !== "question_id" && k !== "position")
+              : undefined;
+            const selectedLabel = selectedId
+              ? prev.answer_options.find((a) => a.id.toString() === selectedId)?.label
+              : undefined;
+            if (selectedLabel !== "Yes") return null;
+          }
+        }
+
+        const isTreatmentDetailStep = /^q_6_02_\d{2}$/.test(slug);
+
+        return (
+          <Question
+            key={question.id}
+            question={question}
+            dispatch={dispatch}
+            response={responses.questions[question.id] ?? {}}
+            showBpSampleCard={isFirstBpQuestion}
+            showLearnMore={isTreatmentDetailStep && index === 0}
+          />
+        );
+      })}
 
       {!isSingleRadioStep && (
         <div className="mt-6">
           <button
             onClick={onContinue}
             disabled={!enableButton || isSubmitting}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-full bg-red-400 px-6 py-4 text-sm font-bold uppercase tracking-widest text-white transition-colors hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -84,6 +96,8 @@ export const VisitConsultationPage = ({ slug }: Props) => {
           </button>
         </div>
       )}
-    </main>
+      </div>
+      </main>
+    </>
   );
 };

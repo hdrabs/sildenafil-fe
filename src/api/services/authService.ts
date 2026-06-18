@@ -86,4 +86,10 @@ export const authService = {
 
   resendEmailVerification: (): Promise<{ sent: boolean }> =>
     api.post<{ sent: boolean }>("/v2/email_verifications", {}),
+
+  generateOtp: (): Promise<void> =>
+    api.post<void>("/v2/otp", {}),
+
+  verifyOtp: (code: string): Promise<{ message: string }> =>
+    api.post<{ message: string }>("/v2/otp/code_verification", { code }),
 };

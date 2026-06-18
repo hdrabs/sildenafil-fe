@@ -2,6 +2,7 @@
 
 import { useIntroQuestions } from "@/features/checkout/hooks/useIntroQuestions";
 import { Question } from "./Question";
+import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 
 interface Props {
   slug: string;
@@ -14,6 +15,7 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
     dispatch,
     enableButton,
     onContinue,
+    onBack,
     isLoading,
     isSubmitting,
     isSingleRadioStep,
@@ -28,7 +30,10 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
+    <>
+      <SecondaryNav onBack={onBack} />
+      <main className="min-h-screen bg-bg-main">
+      <div className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
       {currentStep.questions.map((question) => (
         <Question
           key={question.id}
@@ -56,6 +61,8 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
           </button>
         </div>
       )}
-    </main>
+      </div>
+      </main>
+    </>
   );
 };

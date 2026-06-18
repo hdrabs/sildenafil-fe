@@ -41,7 +41,12 @@ export const questionnaireReducer = (
 
   const { answerOption, question } = action.payload;
   const { id: answer_option_id } = answerOption;
-  const isSolo = answerOption.solo || question.question_type === "radio";
+  const isSolo =
+    answerOption.solo ||
+    question.question_type === "radio" ||
+    question.question_type === "blood_pressure" ||
+    question.question_type === "allergy_search" ||
+    question.question_type === "medication_search";
   const questions = state.questions;
 
   if (action.type === "SELECT_ANSWER") {

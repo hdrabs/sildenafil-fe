@@ -47,4 +47,14 @@ export const useUpdateMe = () =>
     mutationFn: (data: PatientInfoRequest) => authService.updateMe(data),
   });
 
+export const useGenerateOtp = () =>
+  useMutation({
+    mutationFn: () => authService.generateOtp(),
+  });
+
+export const useVerifyOtp = () =>
+  useMutation({
+    mutationFn: (code: string) => authService.verifyOtp(code),
+  });
+
 export type { AuthTokenResponse };

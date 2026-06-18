@@ -1,6 +1,9 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useVisitIntro } from "../hooks/useVisitIntro";
+import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { ROUTES } from "@/constants/routes";
 
 const DoctorIllustration = () => (
   <svg
@@ -53,10 +56,13 @@ const DoctorIllustration = () => (
 );
 
 export const VisitIntroPage = () => {
+  const router = useRouter();
   const { onContinue, isPending } = useVisitIntro();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-start bg-[#dff0f5] px-4 pt-16">
+    <>
+      <SecondaryNav onBack={() => router.push(ROUTES.PATIENT_INFO)} />
+      <main className="flex min-h-screen flex-col items-center justify-start bg-bg-main px-4 pt-16">
       <div className="w-full max-w-xl">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">
           Let&apos;s talk about your health
@@ -89,5 +95,6 @@ export const VisitIntroPage = () => {
         </button>
       </div>
     </main>
+    </>
   );
 };

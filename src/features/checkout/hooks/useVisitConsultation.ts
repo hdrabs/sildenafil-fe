@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetQuestionaireStep,
   useSaveQuestionaireStep,
@@ -11,10 +12,12 @@ import {
 import { useActiveCart } from "@/store";
 import { questionnaireReducer } from "./questionnaireReducer";
 import { ROUTES } from "@/constants/routes";
+import { questionnaireKeys } from "@/constants/queryKeys";
 import { Question } from "@/types/questionnaire";
 
 export const useVisitConsultation = (slug: string) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const activeCart = useActiveCart();
 
   const cartId = activeCart?.cart.id ?? 0;
@@ -55,13 +58,31 @@ export const useVisitConsultation = (slug: string) => {
 
   const enableButton = useMemo(() => {
     if (!currentStep) return false;
-    const requiredQuestions = currentStep.questions.filter(
-      (q: Question) =>
-        !["medication_search", "allergy_search", "statement"].includes(q.question_type),
-    );
-    return requiredQuestions.every((q: Question) =>
-      Object.keys(responses.questions).includes(q.id.toString()),
-    );
+
+    return currentStep.questions.every((q: Question) => {
+      if (q.question_type === "statement") return true;
+
+      const hasResponse = Object.keys(responses.questions).includes(q.id.toString());
+      if (!hasResponse) return false;
+
+      if (["allergy_search", "medication_search"].includes(q.question_type)) {
+        const qResponse = responses.questions[q.id.toString()];
+        const selectedId = Object.keys(qResponse).find(
+          (k) => k !== "question_id" && k !== "position",
+        );
+        if (!selectedId) return false;
+
+        const selectedOption = q.answer_options.find((ao) => ao.id.toString() === selectedId);
+        if (selectedOption?.label?.toLowerCase() === "yes") {
+          const searchKey =
+            q.question_type === "allergy_search" ? "allergy_search" : "medication_search";
+          const entry = qResponse[selectedId] as import("@/types/questionnaire").AnswerResponseEntry;
+          return (entry?.metadata?.[searchKey]?.length ?? 0) > 0;
+        }
+      }
+
+      return true;
+    });
   }, [responses.questions, currentStep]);
 
   const onContinue = useCallback(async () => {
@@ -94,22 +115,26 @@ export const useVisitConsultation = (slug: string) => {
 
   const onBack = useCallback(async () => {
     try {
-      const prevStep = await goBackMutation(cartAuth);
+      const prevStep = await goBackMutation({ ...cartAuth, step_label: slug });
+      queryClient.invalidateQueries({
+        queryKey: questionnaireKeys.step(prevStep.label, cartId),
+      });
       router.push(ROUTES.VISIT_CONSULTATION_STEP(prevStep.label));
     } catch {
-      // stay on page
+      // No previous consultation step — go back to visit intro
+      router.push(ROUTES.VISIT_INTRO);
     }
-  }, [goBackMutation, cartAuth, router]);
-
-  // Auto-advance for single radio steps
-  useEffect(() => {
-    if (!responses.hasInteracted || !enableButton) return;
-    onContinue();
-  }, [enableButton, responses.hasInteracted, onContinue]);
+  }, [goBackMutation, cartAuth, slug, cartId, queryClient, router]);
 
   const isSingleRadioStep =
     currentStep?.questions.length === 1 &&
     currentStep.questions[0].question_type === "radio";
+
+  // Auto-advance only for single-radio steps (not allergy/medication search or multi-question steps)
+  useEffect(() => {
+    if (!isSingleRadioStep || !responses.hasInteracted || !enableButton) return;
+    onContinue();
+  }, [isSingleRadioStep, enableButton, responses.hasInteracted, onContinue]);
 
   return {
     currentStep,

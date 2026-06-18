@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { useGetIntroStep, useAdvanceIntroQuestions } from "@/api/hooks/useQuestionnaireQueries";
-import { useActiveCart, useAddIntroResponse } from "@/store";
+import { useActiveCart, useAddIntroResponse, useIntroResponses } from "@/store";
 import { questionnaireReducer } from "./questionnaireReducer";
 import { ROUTES } from "@/constants/routes";
 import { Question } from "@/types/questionnaire";
@@ -13,10 +13,17 @@ import { Question } from "@/types/questionnaire";
 // step — we advance the cart instead of navigating to another intro step.
 const isIntroStepLabel = (label: string) => label.startsWith("ed_");
 
+// Static back map — each intro slug knows its predecessor.
+// Add entries here as new intro steps are introduced.
+const INTRO_PREV_STEP: Record<string, string> = {
+  ed_onset: "ed_problem",
+};
+
 export const useIntroQuestions = (slug: string) => {
   const router = useRouter();
   const activeCart = useActiveCart();
   const addIntroResponse = useAddIntroResponse();
+  const introResponses = useIntroResponses();
 
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token;
@@ -34,10 +41,16 @@ export const useIntroQuestions = (slug: string) => {
     hasInteracted: false,
   });
 
-  // Seed reducer when step changes
+  // Seed reducer when step (or saved responses) change.
+  // Prefer the local store — it keeps EVERY answered step keyed by step_id, so
+  // back-navigation pre-fills any prior step. The backend's currentStep.responses
+  // is only a fallback (e.g. fresh cross-session restore after the store was
+  // cleared on visit-consent submit) and may omit earlier steps.
   useEffect(() => {
-    dispatch({ type: "SET_INITIAL", payload: null });
-  }, [currentStep]);
+    if (!currentStep) return;
+    const fromStore = introResponses.find((r) => r.step_id === currentStep.id)?.responses;
+    dispatch({ type: "SET_INITIAL", payload: fromStore ?? currentStep.responses ?? null });
+  }, [currentStep, introResponses]);
 
   // Derived — no setState in effect needed
   const enableButton = useMemo(() => {
@@ -99,6 +112,15 @@ export const useIntroQuestions = (slug: string) => {
     }
   }, [currentStep, responses.questions, addIntroResponse, advanceIntroQuestions, cartId, cartToken, router]);
 
+  const onBack = useCallback(() => {
+    const prev = INTRO_PREV_STEP[slug];
+    if (prev) {
+      router.push(ROUTES.INTRO_QUESTIONS(prev));
+    } else {
+      router.back();
+    }
+  }, [slug, router]);
+
   // Auto-advance for single radio steps
   useEffect(() => {
     if (!responses.hasInteracted || !enableButton) return;
@@ -115,6 +137,7 @@ export const useIntroQuestions = (slug: string) => {
     dispatch,
     enableButton,
     onContinue,
+    onBack,
     isLoading,
     isSubmitting: isAdvancing,
     isSingleRadioStep,

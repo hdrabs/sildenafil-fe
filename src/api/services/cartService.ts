@@ -10,6 +10,7 @@ import {
   CreateCartV2Request,
   UpdateCartV2Request,
   OrdersListResponse,
+  ActiveCartEntry,
 } from "@/types/cart";
 import { VisitEligibilityResponse } from "@/types/visit";
 
@@ -76,4 +77,25 @@ export const cartService = {
       advance: true,
       ...(cartToken && { cart_token: cartToken }),
     }),
+
+  /**
+   * GET /api/v2/active_cart
+   * Returns the authenticated user's most recent in-progress cart, mapped into
+   * the client-side ActiveCartEntry shape, or null when there is no active cart.
+   * Used to restore cart state on page load / cross-browser sessions.
+   */
+  getActiveCart: async (): Promise<ActiveCartEntry | null> => {
+    const res = await api.get<
+      | { cart: CartV2; variant_label: string; redirect_path: string }
+      | { cart: null }
+    >("/v2/active_cart");
+
+    if (!res.cart) return null;
+
+    return {
+      cart: res.cart,
+      variantLabel: res.variant_label,
+      redirectPath: res.redirect_path,
+    };
+  },
 };

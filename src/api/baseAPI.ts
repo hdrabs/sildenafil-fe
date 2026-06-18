@@ -84,8 +84,12 @@ export const api = {
       ...options,
     }),
 
-  delete: <T>(endpoint: string, options?: RequestInit) =>
-    apiRequest<T>(endpoint, { method: "DELETE", ...options }),
+  delete: <T>(endpoint: string, data?: unknown, options?: RequestInit) =>
+    apiRequest<T>(endpoint, {
+      method: "DELETE",
+      body: data as BodyInit,
+      ...options,
+    }),
 };
 
 export default api;

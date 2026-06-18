@@ -1,14 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useGetEligibleStates,
+  useGetVisitState,
   useCreateVisit,
   useAdvanceVisitConsent,
 } from "@/api/hooks/useQuestionnaireQueries";
-import { useActiveCart, useIntroResponses, useClearIntroResponses } from "@/store";
+import {
+  useActiveCart,
+  useIntroResponses,
+  useClearIntroResponses,
+  useVisitConsentState,
+  useSetVisitConsentState,
+} from "@/store";
 import { visitConsentSchema, VisitConsentFormValues } from "../schemas/visitConsentSchema";
 import { questionnaireService } from "@/api/services/questionnaireService";
 import type { EligibleState } from "@/types/visit";
@@ -18,24 +26,51 @@ export const useVisitConsent = () => {
   const activeCart = useActiveCart();
   const introResponses = useIntroResponses();
   const clearIntroResponses = useClearIntroResponses();
+  const savedConsentState = useVisitConsentState();
+  const setVisitConsentState = useSetVisitConsentState();
 
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token;
   const cartAuth = { cart_id: cartId, cart_token: cartToken };
 
   const { data: statesData, isLoading: isLoadingStates } = useGetEligibleStates(cartId > 0);
+  const { data: edVisitData, isLoading: isLoadingVisit } = useGetVisitState(cartId, cartToken);
   const { mutateAsync: createVisit, isPending, error } = useCreateVisit();
   const { mutateAsync: advanceVisitConsent, isPending: isAdvancing } = useAdvanceVisitConsent();
 
+  // Backend state takes priority (works cross-browser); fall back to localStorage for same cart
+  const localState = savedConsentState?.cartId === cartId ? savedConsentState.state : "";
+  const initialState = edVisitData?.state || localState;
+
   const form = useForm<VisitConsentFormValues>({
     resolver: zodResolver(visitConsentSchema),
-    defaultValues: { state: "", terms: false, state_ack: false },
+    defaultValues: {
+      state: initialState,
+      terms: edVisitData?.terms ?? false,
+      state_ack: edVisitData?.state_ack ?? false,
+    },
   });
 
-  const selectedState = form.watch("state");
+  // When backend data arrives, apply each field if the user hasn't touched it yet
+  useEffect(() => {
+    if (!edVisitData) return;
+    if (edVisitData.state && !form.getValues("state")) {
+      form.setValue("state", edVisitData.state);
+    }
+    if (edVisitData.terms && !form.getValues("terms")) {
+      form.setValue("terms", true);
+    }
+    if (edVisitData.state_ack && !form.getValues("state_ack")) {
+      form.setValue("state_ack", true);
+    }
+  }, [edVisitData, form]);
+
+  const [selectedState, watchedTerms, watchedStateAck] = form.watch(["state", "terms", "state_ack"]);
+  const canSubmit = !!selectedState && watchedTerms === true && watchedStateAck === true;
 
   const submit = form.handleSubmit(async (values) => {
     try {
+      setVisitConsentState(cartId, values.state);
       await createVisit({
         cart_id: cartId,
         cart_token: cartToken,
@@ -71,9 +106,10 @@ export const useVisitConsent = () => {
     form,
     submit,
     eligibleStates,
-    isLoadingStates,
+    isLoadingStates: isLoadingStates || isLoadingVisit,
     isPending: isPending || isAdvancing,
     submitError,
     selectedState,
+    canSubmit,
   };
 };

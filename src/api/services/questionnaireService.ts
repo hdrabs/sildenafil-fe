@@ -6,6 +6,7 @@ import {
   QuestionaireStepParams,
   QuestionairePayload,
   CartAuthParams,
+  GoBackParams,
   SearchParams,
   VisitCreateRequest,
   VisitResponse,
@@ -39,16 +40,33 @@ export const questionnaireService = {
   saveStep: (data: QuestionairePayload): Promise<QuestionaireStep> =>
     api.post<QuestionaireStep>("/v2/questionaire", data),
 
-  goBack: (params: CartAuthParams): Promise<QuestionaireStep> =>
-    api.delete<QuestionaireStep>(`/v2/questionaire${buildCartQs(params)}`),
+  goBack: (params: GoBackParams): Promise<QuestionaireStep> =>
+    api.delete<QuestionaireStep>("/v2/questionaire", params),
 
   // ── Search (medications / allergies) ─────────────────────────────────────
 
   searchMedications: (params: SearchParams): Promise<MedicationResult[]> =>
-    api.get<MedicationResult[]>(`/v2/medications${buildCartQs(params)}`),
+    api
+      .get<Record<string, unknown>[]>(`/v2/medications${buildCartQs(params)}`)
+      .then((items) =>
+        items.map((item) => ({
+          ...item,
+          id: item["DispensableDrugId"] ?? item["RoutedDoseFormDrugId"],
+          name: (item["NameWithRouteDoseForm"] ?? item["Name"]) as string,
+          strength: (item["Strength"] as string | null) ?? undefined,
+        })),
+      ),
 
   searchAllergies: (params: SearchParams): Promise<AllergyResult[]> =>
-    api.get<AllergyResult[]>(`/v2/allergies${buildCartQs(params)}`),
+    api
+      .get<Record<string, unknown>[]>(`/v2/allergies${buildCartQs(params)}`)
+      .then((items) =>
+        items.map((item) => ({
+          ...item,
+          id: item["AllergenId"],
+          name: item["Name"] as string,
+        })),
+      ),
 
   // ── Visits ────────────────────────────────────────────────────────────────
 
@@ -57,6 +75,11 @@ export const questionnaireService = {
 
   getEligibleStates: (): Promise<VisitEligibleStatesResponse> =>
     api.get<VisitEligibleStatesResponse>("/v2/visits"),
+
+  getVisitState: (cartId: number, cartToken?: string): Promise<{ state: string | null; terms: boolean; state_ack: boolean }> =>
+    api.get<{ state: string | null; terms: boolean; state_ack: boolean }>(
+      `/v2/visits/${cartId}${buildCartQs({ cart_id: cartId, cart_token: cartToken })}`
+    ),
 
   // ── Checkout step advancement ─────────────────────────────────────────────
 
@@ -74,4 +97,10 @@ export const questionnaireService = {
 
   advanceVisitConsultation: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
     api.put<CheckoutStepResponse>("/v2/checkout/visit_consultation", params),
+
+  finishNoCheckup: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
+    api.put<CheckoutStepResponse>("/v2/checkout/no_checkup", params),
+
+  finishNoBloodPressure: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
+    api.put<CheckoutStepResponse>("/v2/checkout/no_blood_pressure", params),
 };

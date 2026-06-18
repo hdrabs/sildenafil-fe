@@ -5,9 +5,12 @@ export type QuestionType =
   | "multi"
   | "text"
   | "textfield"
+  | "textfield_disabled"
+  | "dropdown"
   | "medication_search"
   | "allergy_search"
-  | "statement";
+  | "statement"
+  | "blood_pressure";
 
 export type RejectionType = "no_checkup" | "no_blood_pressure";
 
@@ -20,6 +23,7 @@ export interface AnswerOption {
   solo: boolean;
   disqualify: boolean;
   next_step_label: string | null;
+  immediate_step: { id: number; label: string; intro: boolean } | null;
   is_medication: boolean;
 }
 
@@ -39,6 +43,7 @@ export interface IntroStep {
   button_text: string;
   intro: boolean;
   questions: Question[];
+  responses: Record<string, ResponseShape> | null;
 }
 
 export interface AnswerResponseEntry {
@@ -51,7 +56,7 @@ export interface AnswerResponseEntry {
     height?: { feet: number; inches: number };
     weight?: string;
     result?: number;
-    medication_search?: unknown[];
+    medication_search?: MedItem[];
     allergy_search?: unknown[];
     medication_option?: Record<string, unknown>;
   };
@@ -89,6 +94,10 @@ export interface CartAuthParams {
   cart_token?: string;
 }
 
+export interface GoBackParams extends CartAuthParams {
+  step_label?: string;
+}
+
 export interface IntroStepParams extends CartAuthParams {
   step_label: string;
 }
@@ -121,6 +130,14 @@ export interface VisitResponse {
 export interface CheckoutStepResponse {
   cart: CartV2;
   redirect_path: string;
+}
+
+export interface MedItem {
+  id: string | number;
+  name: string;
+  strength?: string;
+  duration?: string;
+  condition?: string;
 }
 
 export interface MedicationResult {
