@@ -125,16 +125,15 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
         return;
       }
 
-      // Send initial OTP then show modal
+      // Open the modal immediately and send the code in the background — the
+      // modal shouldn't be gated on the (slow) SMS request.
       setOtpLimitExceeded(false);
-      try {
-        await generateOtp();
-      } catch (e) {
+      setShowOtpModal(true);
+      void generateOtp().catch((e) => {
         if (e instanceof APIError && e.status === 429) {
           setOtpLimitExceeded(true);
         }
-      }
-      setShowOtpModal(true);
+      });
     } catch {
       // updateMe error surfaced via mutation error state
     }

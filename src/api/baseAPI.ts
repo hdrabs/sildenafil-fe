@@ -44,7 +44,12 @@ export const apiRequest = async <T>(
 
   const contentType = response.headers.get("content-type");
   const isJSON = contentType?.includes("application/json");
-  const raw: unknown = isJSON ? await response.json() : await response.text();
+  // Read the body as text first. An empty body (e.g. Rails `head :created`)
+  // served with a JSON content-type makes response.json() throw, which TanStack
+  // treats as a retryable error and re-fires the mutation (so a single OTP send
+  // ended up hitting the endpoint 3×). Only parse when there's actually a body.
+  const text = await response.text();
+  const raw: unknown = isJSON && text ? JSON.parse(text) : text;
 
   if (!response.ok) {
     const errPayload = raw as { error?: { message?: string } };
