@@ -54,7 +54,7 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
           <button
             onClick={onContinue}
             disabled={!enableButton || isSubmitting}
-            className="w-full rounded-lg bg-blue-600 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-600 px-6 py-3.5 text-base font-semibold uppercase text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">

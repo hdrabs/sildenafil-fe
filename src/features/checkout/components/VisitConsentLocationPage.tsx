@@ -208,7 +208,7 @@ export const VisitConsentLocationPage = () => {
             <button
               type="submit"
               disabled={isPending || isLoadingStates || !canSubmit}
-              className="mt-6 w-full cursor-pointer rounded-full border border-coral bg-coral px-[22px] py-3 text-base font-normal text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400"
+              className="mt-6 w-full cursor-pointer rounded-full border border-coral bg-coral px-[22px] py-3 text-base font-normal uppercase text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400"
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">

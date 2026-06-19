@@ -50,6 +50,9 @@ export const useUpdateMe = () =>
 export const useGenerateOtp = () =>
   useMutation({
     mutationFn: () => authService.generateOtp(),
+    // Never auto-retry an OTP send: each attempt dispatches another SMS and
+    // counts against the per-window rate limit.
+    retry: false,
   });
 
 export const useVerifyOtp = () =>

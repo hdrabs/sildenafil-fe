@@ -62,41 +62,32 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
       <div className="mb-3">
         <div
           onClick={onToggle}
-          className={`flex cursor-pointer items-center gap-3 rounded-lg border-2 bg-white p-4 transition-colors ${
-            isChecked ? "border-red-400" : "border-slate-200 hover:border-slate-300"
+          className={`relative flex w-full cursor-pointer items-center justify-between rounded-[5px] border-[3px] bg-white py-6 pr-[18px] pl-[60px] text-sm transition-all duration-200 ${
+            isChecked ? "border-coral" : "border-border-dropdown hover:border-[#a9cbd9]"
           }`}
         >
-          {isCheckbox ? (
-            <div
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 ${
-                isChecked ? "border-red-400 bg-red-400" : "border-gray-300 bg-white"
-              }`}
-            >
-              {isChecked && (
-                <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M2 6l3 3 5-5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </div>
-          ) : (
-            <div
-              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                isChecked ? "border-red-400 bg-red-400" : "border-gray-300 bg-white"
-              }`}
-            >
-              {isChecked && <div className="h-2 w-2 rounded-full bg-white" />}
-            </div>
-          )}
+          {/* Selection indicator — aum .answer-option:before */}
+          <span
+            className={`absolute left-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full border-[3px] transition-all duration-200 ${
+              isChecked ? "border-coral bg-coral" : "border-border-dropdown bg-white"
+            }`}
+          >
+            {isChecked && (
+              <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M2 6l3 3 5-5"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </span>
 
           {isBpOption ? (
             <>
-              <p className="flex-1 text-sm font-medium text-gray-900">{answerOption.label}</p>
+              <p className="flex-1 font-medium text-gray-900">{answerOption.label}</p>
               {bpTagClass && (
                 <span className={`rounded px-2 py-0.5 text-xs font-semibold ${bpTagClass}`}>
                   {answerOption.extra_label}
@@ -105,7 +96,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
             </>
           ) : (
             <div>
-              <p className="text-sm font-medium text-gray-900">{answerOption.label}</p>
+              <p className="font-medium text-gray-900">{answerOption.label}</p>
               {answerOption.extra_label && (
                 <p className="mt-0.5 text-xs text-gray-500">{answerOption.extra_label}</p>
               )}

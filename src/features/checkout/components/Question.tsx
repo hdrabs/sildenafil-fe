@@ -432,14 +432,7 @@ export const Question = ({
       {showBpSampleCard && <BloodPressureSampleCard />}
 
       <div className="mb-4">
-        <h3
-          className={
-            ["text", "textfield"].includes(question.question_type) ||
-            (question.question_type === "statement" && showLearnMore)
-              ? "text-3xl font-bold leading-tight"
-              : "text-xl font-semibold leading-8"
-          }
-        >
+        <h3 className="mb-4 text-[20px] font-semibold leading-[34px] xs:text-2xl">
           {question.text}
         </h3>
         {showLearnMore && question.subtitle && (
