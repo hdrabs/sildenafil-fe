@@ -1,6 +1,6 @@
 "use client";
 
-import { LegalDrawer } from "./LegalDrawer";
+import { LegalDrawer } from "@/components/legal/LegalDrawer";
 
 type Props = {
   show: boolean;

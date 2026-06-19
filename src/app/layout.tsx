@@ -21,7 +21,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     <body>
       <QueryProvider>
         {children}
-        <ToastContainer position="bottom-right" theme="light" />
+        <ToastContainer position="top-right" theme="light" />
       </QueryProvider>
     </body>
   </html>

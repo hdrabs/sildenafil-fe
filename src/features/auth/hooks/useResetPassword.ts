@@ -33,6 +33,7 @@ export const useResetPassword = (resetToken: string) => {
               firstName: me.first_name,
               lastName: me.last_name,
               token,
+              jti: me.jti,
             });
             router.replace(ROUTES.DASHBOARD);
           } catch {

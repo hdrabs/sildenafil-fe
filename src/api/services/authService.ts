@@ -91,5 +91,5 @@ export const authService = {
     api.post<void>("/v2/otp", {}),
 
   verifyOtp: (code: string): Promise<{ message: string }> =>
-    api.post<{ message: string }>("/v2/otp/code_verification", { code }),
+    api.put<{ message: string }>("/v2/otp/verify", { code }),
 };

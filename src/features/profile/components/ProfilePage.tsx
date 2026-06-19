@@ -4,18 +4,18 @@ import { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  RiUserLine,
   RiCalendarLine,
   RiUserSettingsLine,
   RiSmartphoneLine,
   RiPhoneLine,
-  RiMailLine,
-  RiLockLine,
-  RiEyeLine,
-  RiEyeOffLine,
   RiCheckboxCircleLine,
 } from "react-icons/ri";
 import { toast } from "react-toastify";
+import { EmailIcon } from "@/components/icons/EmailIcon";
+import { PersonIcon } from "@/components/icons/PersonIcon";
+import { PasswordIcon } from "@/components/icons/PasswordIcon";
+import { EyeIcon } from "@/components/icons/EyeIcon";
+import { EyeOffIcon } from "@/components/icons/EyeOffIcon";
 import { useUser, useUpdateUser } from "@/store";
 import { useCurrentUser, useUpdateProfile } from "@/api/hooks/useUserQueries";
 import { authService } from "@/api/services/authService";
@@ -56,7 +56,7 @@ const PasswordInput = ({
   return (
     <div className="flex flex-col gap-1">
       <div className="relative">
-        <RiLockLine className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+        <PasswordIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
         <input
           type={show ? "text" : "password"}
           className="h-11 w-full rounded-lg border border-border-input bg-bg-card pl-9 pr-10 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -68,9 +68,9 @@ const PasswordInput = ({
           className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
         >
           {show ? (
-            <RiEyeOffLine className="h-4 w-4" />
+            <EyeIcon className="h-4 w-4" />
           ) : (
-            <RiEyeLine className="h-4 w-4" />
+            <EyeOffIcon className="h-4 w-4" />
           )}
         </button>
       </div>
@@ -231,7 +231,7 @@ export const ProfilePage = () => {
           <div>
             <FormLabel>First Name</FormLabel>
             <FieldInput
-              icon={RiUserLine}
+              icon={PersonIcon}
               error={profileErrors.firstName?.message}
               onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
               {...registerProfile("firstName")}
@@ -240,7 +240,7 @@ export const ProfilePage = () => {
           <div>
             <FormLabel>Last Name</FormLabel>
             <FieldInput
-              icon={RiUserLine}
+              icon={PersonIcon}
               error={profileErrors.lastName?.message}
               onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
               {...registerProfile("lastName")}
@@ -311,7 +311,7 @@ export const ProfilePage = () => {
           <div>
             <FormLabel>Email</FormLabel>
             <FieldInput
-              icon={RiMailLine}
+              icon={EmailIcon}
               type="email"
               error={profileErrors.email?.message}
               {...registerProfile("email")}

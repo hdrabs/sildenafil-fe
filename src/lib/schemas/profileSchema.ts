@@ -3,7 +3,7 @@ import { z } from "zod";
 export const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
   gender: z.enum(["male", "female", "other", ""]).optional(),
   mobilePhone: z
     .string()

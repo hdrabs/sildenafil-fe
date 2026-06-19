@@ -4,15 +4,24 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { MdMailOutline } from "react-icons/md";
-import { FiUser, FiLock, FiEye, FiEyeOff, FiCheckCircle, FiCircle } from "react-icons/fi";
+import { FaCheckCircle } from "react-icons/fa";
+import { EmailIcon } from "@/components/icons/EmailIcon";
+import { PersonIcon } from "@/components/icons/PersonIcon";
+import { PasswordIcon } from "@/components/icons/PasswordIcon";
+import { EyeIcon } from "@/components/icons/EyeIcon";
+import { EyeOffIcon } from "@/components/icons/EyeOffIcon";
 import { signupSchema, SignupFormValues } from "../schemas/signupSchema";
 import { useSignupUser } from "../hooks/useSignupUser";
 import { authService } from "@/api/services/authService";
 import { APIError } from "@/api/baseAPI";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { TermsOfUseDrawer } from "@/components/legal/TermsOfUseDrawer";
+import { PrivacyPolicyDrawer } from "@/components/legal/PrivacyPolicyDrawer";
 import { ROUTES } from "@/constants/routes";
+
+// Shared field styling — matches the signin email/phone inputs.
+const fieldClass =
+  "w-full rounded-lg border border-border-input bg-bg-card py-4 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent";
 
 const passwordChecks = [
   {
@@ -31,6 +40,8 @@ export const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [emailCheckError, setEmailCheckError] = useState<string | null>(null);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const {
     register,
@@ -41,9 +52,20 @@ export const SignupForm = () => {
     formState: { errors },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
+    mode: "onTouched",
   });
 
   const passwordValue = watch("password") ?? "";
+  const firstNameValue = watch("firstName") ?? "";
+  const lastNameValue = watch("lastName") ?? "";
+
+  // Gate the Create Account button on the same rules shown to the user — both
+  // names filled and the password meeting the regex checks below. (handleSubmit
+  // still enforces the full zod schema on submit.)
+  const isStep2Valid =
+    firstNameValue.trim().length > 0 &&
+    lastNameValue.trim().length > 0 &&
+    passwordChecks.every((c) => c.test(passwordValue));
 
   const handleContinue = async () => {
     setEmailCheckError(null);
@@ -66,9 +88,9 @@ export const SignupForm = () => {
   };
 
   const alreadyHaveAccount = (
-    <p className="text-center text-sm text-text-muted">
-      Already have an account?{" "}
-      <Link href={ROUTES.LOGIN} className="font-semibold text-text-link hover:underline">
+    <p className="mb-5 flex items-center gap-1.5 text-sm text-text-muted">
+      <span>Already have an account?</span>
+      <Link href={ROUTES.LOGIN} className="text-link-blue hover:underline">
         Sign In!
       </Link>
     </p>
@@ -76,29 +98,36 @@ export const SignupForm = () => {
 
   if (step === 1) {
     return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">
+      <div className="flex flex-col">
+        <div className="mb-5">
+          <h1 className="mb-2 text-[20px] font-bold leading-[142.5%] text-text-primary">
             Continue with your ED visit.
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-text-muted">
+          <p className="text-sm font-normal leading-[175%] text-[#262a32]">
             Next, you&apos;ll provide some basic information about yourself, your lifestyle,
             and your medical history. Your doctor will use information to evaluate your
             symptoms and, if appropriate, prescribe medication for treatment.
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            placeholder="Enter your email"
-            startAdornment={<MdMailOutline size={18} />}
-            error={errors.email?.message}
-            {...register("email", { onChange: () => setEmailCheckError(null) })}
-          />
-
+        <div className="mb-6 flex flex-col gap-1.5">
+          <label htmlFor="signup-email" className="text-xs font-normal text-text-muted">
+            Email
+          </label>
+          <div className="relative">
+            <EmailIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-[21px] text-text-muted" />
+            <input
+              id="signup-email"
+              type="email"
+              autoComplete="email"
+              placeholder="Enter your email"
+              className={`${fieldClass} pl-10 pr-3`}
+              {...register("email", { onChange: () => setEmailCheckError(null) })}
+            />
+          </div>
+          {errors.email && (
+            <p className="text-xs text-text-error">{errors.email.message}</p>
+          )}
           {emailCheckError === "email_taken" && (
             <p className="text-sm text-text-error">
               This email has an existing account, to sign in click{" "}
@@ -115,90 +144,118 @@ export const SignupForm = () => {
               Something went wrong. Please try again.
             </p>
           )}
-
-          <Button
-            type="button"
-            variant="coral"
-            size="lg"
-            fullWidth
-            loading={isCheckingEmail}
-            onClick={handleContinue}
-          >
-            Continue
-          </Button>
-
-          {alreadyHaveAccount}
         </div>
+
+        <Button
+          type="button"
+          variant="coral"
+          size="lg"
+          fullWidth
+          loading={isCheckingEmail}
+          onClick={handleContinue}
+          className="mb-6"
+        >
+          Continue
+        </Button>
+
+        {alreadyHaveAccount}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-text-primary">
+    <div className="flex flex-col">
+      <h1 className="mb-5 text-[20px] font-bold leading-[142.5%] text-text-primary">
         Continue with your ED visit.
       </h1>
 
-      <form onSubmit={handleSubmit(signup)} className="flex flex-col gap-4">
-        <Input
-          placeholder="First name"
-          autoComplete="given-name"
-          startAdornment={<FiUser size={16} />}
-          error={errors.firstName?.message}
-          onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
-          {...register("firstName")}
-        />
-        <Input
-          placeholder="Last name"
-          autoComplete="family-name"
-          startAdornment={<FiUser size={16} />}
-          error={errors.lastName?.message}
-          onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
-          {...register("lastName")}
-        />
-        <Input
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-          autoComplete="new-password"
-          startAdornment={<FiLock size={16} />}
-          endAdornment={
+      <form onSubmit={handleSubmit(signup)} className="flex flex-col">
+        <div className="mb-4 flex flex-col gap-1">
+          <div className="relative">
+            <PersonIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
+            <input
+              placeholder="First name"
+              autoComplete="given-name"
+              onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
+              className={`${fieldClass} pl-10 pr-3`}
+              {...register("firstName")}
+            />
+          </div>
+          {errors.firstName && (
+            <p className="text-xs text-text-error">{errors.firstName.message}</p>
+          )}
+        </div>
+
+        <div className="mb-4 flex flex-col gap-1">
+          <div className="relative">
+            <PersonIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
+            <input
+              placeholder="Last name"
+              autoComplete="family-name"
+              onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
+              className={`${fieldClass} pl-10 pr-3`}
+              {...register("lastName")}
+            />
+          </div>
+          {errors.lastName && (
+            <p className="text-xs text-text-error">{errors.lastName.message}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <div className="relative">
+            <PasswordIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              autoComplete="new-password"
+              className={`${fieldClass} pl-10 pr-11`}
+              {...register("password")}
+            />
             <button
               type="button"
               onClick={() => setShowPassword((p) => !p)}
-              className="text-text-muted hover:text-text-primary transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
               tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <FiEye size={16} /> : <FiEyeOff size={16} />}
+              {showPassword ? <EyeIcon className="h-5 w-5" /> : <EyeOffIcon className="h-5 w-5" />}
             </button>
-          }
-          error={errors.password?.message}
-          {...register("password")}
-        />
+          </div>
+          {errors.password && (
+            <p className="text-xs text-text-error">{errors.password.message}</p>
+          )}
+        </div>
 
-        <ul className="flex flex-col gap-1.5">
+        <ul className="my-8 flex flex-col gap-2">
           {passwordChecks.map(({ label, test }) => {
             const passed = test(passwordValue);
             return (
-              <li key={label} className={`flex items-start gap-2 text-sm transition-colors ${passed ? "text-green-600" : "text-text-muted"}`}>
-                {passed
-                  ? <FiCheckCircle size={14} className="mt-0.5 shrink-0 text-green-600" />
-                  : <FiCircle size={14} className="mt-0.5 shrink-0" />
-                }
+              <li key={label} className="flex items-start gap-2 text-sm text-text-primary">
+                <FaCheckCircle size={16} className={`mt-0.5 shrink-0 transition-colors ${passed ? "text-primary" : "text-gray-300"}`} />
                 {label}
               </li>
             );
           })}
         </ul>
 
-        <p className="text-sm text-text-muted">
+        <p className="mb-2 text-xs text-text-muted">
           By Continuing, you agree to our{" "}
-          <Link href="/terms" className="text-text-link hover:underline">
+          <button
+            type="button"
+            onClick={() => setShowTerms(true)}
+            className="cursor-pointer text-text-link hover:underline"
+          >
             Terms
-          </Link>{" "}
-          and Privacy{" "}
-          <Link href="/privacy" className="text-text-link hover:underline">
-            Policy.
-          </Link>
+          </button>{" "}
+          and{" "}
+          <button
+            type="button"
+            onClick={() => setShowPrivacy(true)}
+            className="cursor-pointer text-text-link hover:underline"
+          >
+            Privacy Policy
+          </button>
         </p>
 
         {signupError && (
@@ -207,12 +264,27 @@ export const SignupForm = () => {
           </p>
         )}
 
-        <Button type="submit" variant="dark" size="lg" loading={isPending} fullWidth>
+        <Button
+          type="submit"
+          variant="coral"
+          size="lg"
+          loading={isPending}
+          disabled={!isStep2Valid}
+          fullWidth
+          className="my-2 border border-coral disabled:cursor-not-allowed disabled:border-[#a8a8ae] disabled:bg-[#a8a8ae] disabled:opacity-100 disabled:hover:bg-[#a8a8ae]"
+        >
           Create Account
         </Button>
 
         {alreadyHaveAccount}
       </form>
+
+      <TermsOfUseDrawer
+        show={showTerms}
+        onClose={() => setShowTerms(false)}
+        onOpenPrivacyPolicy={() => setShowPrivacy(true)}
+      />
+      <PrivacyPolicyDrawer show={showPrivacy} onClose={() => setShowPrivacy(false)} />
     </div>
   );
 };

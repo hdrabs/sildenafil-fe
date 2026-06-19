@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { useUser, useClearUser } from "@/store";
@@ -105,9 +106,9 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
           <button
             aria-label="Close menu"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-bg-input transition-colors shrink-0"
+            className="flex items-center justify-center rounded-full p-1.5 text-text-muted hover:bg-bg-input transition-colors shrink-0"
           >
-            <Image src="/icons/navbar/entypo-cross.svg" alt="" width={24} height={24} className="shrink-0 opacity-60" />
+            <CloseIcon className="h-7 w-7 shrink-0" />
           </button>
         </div>
 

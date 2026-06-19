@@ -6,8 +6,8 @@ import { useVisitConsent } from "../hooks/useVisitConsent";
 import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
-import { TermsOfUseDrawer } from "./drawers/TermsOfUseDrawer";
-import { PrivacyPolicyDrawer } from "./drawers/PrivacyPolicyDrawer";
+import { TermsOfUseDrawer } from "@/components/legal/TermsOfUseDrawer";
+import { PrivacyPolicyDrawer } from "@/components/legal/PrivacyPolicyDrawer";
 import { TelehealthDrawer } from "./drawers/TelehealthDrawer";
 import { PrivacyPracticesDrawer } from "./drawers/PrivacyPracticesDrawer";
 

@@ -48,9 +48,9 @@ export const questionnaireService = {
     api
       .get<Record<string, unknown>[]>(`/v2/medications${buildCartQs(params)}`)
       .then((items) =>
-        items.map((item) => ({
+        items.map((item): MedicationResult => ({
           ...item,
-          id: item["DispensableDrugId"] ?? item["RoutedDoseFormDrugId"],
+          id: (item["DispensableDrugId"] ?? item["RoutedDoseFormDrugId"]) as string | number,
           name: (item["NameWithRouteDoseForm"] ?? item["Name"]) as string,
           strength: (item["Strength"] as string | null) ?? undefined,
         })),
@@ -60,9 +60,9 @@ export const questionnaireService = {
     api
       .get<Record<string, unknown>[]>(`/v2/allergies${buildCartQs(params)}`)
       .then((items) =>
-        items.map((item) => ({
+        items.map((item): AllergyResult => ({
           ...item,
-          id: item["AllergenId"],
+          id: item["AllergenId"] as string | number,
           name: item["Name"] as string,
         })),
       ),

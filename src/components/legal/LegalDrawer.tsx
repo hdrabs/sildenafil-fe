@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 type LegalDrawerProps = {
   show: boolean;
@@ -46,12 +47,10 @@ export const LegalDrawer = ({ show, onClose, title, children }: LegalDrawerProps
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+            className="flex cursor-pointer items-center justify-center rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
             aria-label="Close"
           >
-            <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-              <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-            </svg>
+            <CloseIcon className="h-7 w-7" />
           </button>
         </div>
 
