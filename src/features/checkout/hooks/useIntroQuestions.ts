@@ -3,18 +3,15 @@
 import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { useGetIntroStep, useAdvanceIntroQuestions } from "@/api/hooks/useQuestionnaireQueries";
-import { useActiveCart, useAddIntroResponse, useIntroResponses } from "@/store";
+import { useActiveCart, useAddIntroResponse, useIntroResponses, useSetLastIntroStep } from "@/store";
 import { questionnaireReducer } from "./questionnaireReducer";
 import { ROUTES } from "@/constants/routes";
 import { Question } from "@/types/questionnaire";
 
-// Intro step labels live in the ed_* namespace. Any next_step_label outside
-// this prefix (e.g. "q_3_01") is PocketMed signalling the first questionnaire
-// step — we advance the cart instead of navigating to another intro step.
-const isIntroStepLabel = (label: string) => label.startsWith("ed_");
-
 // Static back map — each intro slug knows its predecessor.
 // Add entries here as new intro steps are introduced.
+// (Intro is pre-visit, so PocketMed offers no server-side "previous" to defer to;
+// contrast the post-visit consultation flow, which uses a goBack endpoint.)
 const INTRO_PREV_STEP: Record<string, string> = {
   ed_onset: "ed_problem",
 };
@@ -27,6 +24,14 @@ export const useIntroQuestions = (slug: string) => {
 
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token;
+  const hasVisit = !!activeCart?.cart.visit_uuid;
+
+  // Remember the intro step being viewed so the consent page's back button can
+  // resume the intro sub-flow here instead of restarting it.
+  const setLastIntroStep = useSetLastIntroStep();
+  useEffect(() => {
+    setLastIntroStep(slug);
+  }, [slug, setLastIntroStep]);
 
   const { data: currentStep, isLoading } = useGetIntroStep(
     { step_label: slug, cart_id: cartId, cart_token: cartToken },
@@ -41,16 +46,21 @@ export const useIntroQuestions = (slug: string) => {
     hasInteracted: false,
   });
 
-  // Seed reducer when step (or saved responses) change.
-  // Prefer the local store — it keeps EVERY answered step keyed by step_id, so
-  // back-navigation pre-fills any prior step. The backend's currentStep.responses
-  // is only a fallback (e.g. fresh cross-session restore after the store was
-  // cleared on visit-consent submit) and may omit earlier steps.
+  // Seed reducer when the step (or saved responses) change.
+  // Before a visit exists, the backend has no saved responses (it only enriches
+  // once cart.visit_uuid + pocketmed_uuid are set), so the local store buffer —
+  // which keeps EVERY answered step keyed by step_id for back-navigation — is the
+  // only source. Once a visit exists, the backend is authoritative (returning to a
+  // step cross-session, or answers saved on another device), so prefer it and fall
+  // back to the buffer.
   useEffect(() => {
     if (!currentStep) return;
     const fromStore = introResponses.find((r) => r.step_id === currentStep.id)?.responses;
-    dispatch({ type: "SET_INITIAL", payload: fromStore ?? currentStep.responses ?? null });
-  }, [currentStep, introResponses]);
+    const payload = hasVisit
+      ? currentStep.responses ?? fromStore ?? null
+      : fromStore ?? currentStep.responses ?? null;
+    dispatch({ type: "SET_INITIAL", payload });
+  }, [currentStep, introResponses, hasVisit]);
 
   // Derived — no setState in effect needed
   const enableButton = useMemo(() => {
@@ -72,7 +82,9 @@ export const useIntroQuestions = (slug: string) => {
       responses: responses.questions,
     });
 
-    // Determine next_step_label from the selected answer option
+    // Find the selected answer option. The backend tags each option with
+    // next_intro_step: a label to navigate to, or null when the answer ends the
+    // intro flow — so the FE doesn't decode PocketMed's label convention.
     const firstQuestionResponses = Object.values(responses.questions)[0];
     const selectedAnswerId = firstQuestionResponses
       ? Object.keys(firstQuestionResponses).find(
@@ -86,20 +98,16 @@ export const useIntroQuestions = (slug: string) => {
         )
       : null;
 
-    const nextStepLabel = currentQuestion?.answer_options.find(
+    const nextIntroStep = currentQuestion?.answer_options.find(
       (ao) => ao.id === Number(selectedAnswerId),
-    )?.next_step_label;
+    )?.next_intro_step;
 
-    // Only follow next_step_label when it points to another intro step.
-    // Questionnaire step labels (e.g. "q_3_01") are PocketMed signalling the
-    // first questionnaire step — treat them as "no next intro step" and
-    // advance the cart instead.
-    if (nextStepLabel && isIntroStepLabel(nextStepLabel)) {
-      router.push(ROUTES.INTRO_QUESTIONS(nextStepLabel));
+    if (nextIntroStep) {
+      router.push(ROUTES.INTRO_QUESTIONS(nextIntroStep));
       return;
     }
 
-    // Last intro step — advance cart. Backend returns the correct redirect_path:
+    // No further intro step — advance cart. Backend returns the correct redirect_path:
     //   authenticated → /visit-consent   guest → /sign-up
     try {
       const result = await advanceIntroQuestions({
@@ -117,7 +125,8 @@ export const useIntroQuestions = (slug: string) => {
     if (prev) {
       router.push(ROUTES.INTRO_QUESTIONS(prev));
     } else {
-      router.back();
+      // First intro step — back exits to the product page.
+      router.push(ROUTES.PRODUCT_DETAIL);
     }
   }, [slug, router]);
 

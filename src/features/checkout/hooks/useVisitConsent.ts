@@ -7,8 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useGetEligibleStates,
   useGetVisitState,
-  useCreateVisit,
-  useAdvanceVisitConsent,
+  useSubmitVisitConsent,
 } from "@/api/hooks/useQuestionnaireQueries";
 import {
   useActiveCart,
@@ -18,7 +17,6 @@ import {
   useSetVisitConsentState,
 } from "@/store";
 import { visitConsentSchema, VisitConsentFormValues } from "../schemas/visitConsentSchema";
-import { questionnaireService } from "@/api/services/questionnaireService";
 import type { EligibleState } from "@/types/visit";
 
 export const useVisitConsent = () => {
@@ -31,12 +29,10 @@ export const useVisitConsent = () => {
 
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token;
-  const cartAuth = { cart_id: cartId, cart_token: cartToken };
 
   const { data: statesData, isLoading: isLoadingStates } = useGetEligibleStates(cartId > 0);
   const { data: edVisitData, isLoading: isLoadingVisit } = useGetVisitState(cartId, cartToken);
-  const { mutateAsync: createVisit, isPending, error } = useCreateVisit();
-  const { mutateAsync: advanceVisitConsent, isPending: isAdvancing } = useAdvanceVisitConsent();
+  const { mutateAsync: submitVisitConsent, isPending, error } = useSubmitVisitConsent();
 
   // Backend state takes priority (works cross-browser); fall back to localStorage for same cart
   const localState = savedConsentState?.cartId === cartId ? savedConsentState.state : "";
@@ -71,7 +67,11 @@ export const useVisitConsent = () => {
   const submit = form.handleSubmit(async (values) => {
     try {
       setVisitConsentState(cartId, values.state);
-      await createVisit({
+
+      // One server-side call creates the visit, persists the intro responses the
+      // user answered before the visit existed, and advances the cart step
+      // (backend returns redirect_path: "/checkout/patient-info").
+      const { redirect_path } = await submitVisitConsent({
         cart_id: cartId,
         cart_token: cartToken,
         visit: {
@@ -79,20 +79,10 @@ export const useVisitConsent = () => {
           terms: values.terms,
           state_ack: values.state_ack,
         },
+        intro_responses: introResponses.map((r) => ({ responses: r.responses })),
       });
 
-      // Bulk-save accumulated intro responses into the questionnaire now that
-      // the visit exists. These must be persisted before the questionnaire starts.
-      for (const response of introResponses) {
-        await questionnaireService.saveStep({
-          ...cartAuth,
-          responses: response.responses,
-        });
-      }
       clearIntroResponses();
-
-      // Advance visit_consent cart step → backend returns redirect_path: "/checkout/patient-info"
-      const { redirect_path } = await advanceVisitConsent(cartAuth);
       router.push(redirect_path);
     } catch {
       // error surfaced via mutation error state
@@ -107,7 +97,7 @@ export const useVisitConsent = () => {
     submit,
     eligibleStates,
     isLoadingStates: isLoadingStates || isLoadingVisit,
-    isPending: isPending || isAdvancing,
+    isPending,
     submitError,
     selectedState,
     canSubmit,

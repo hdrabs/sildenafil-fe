@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useVisitIntro } from "../hooks/useVisitIntro";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
-import { ROUTES } from "@/constants/routes";
+import { CheckoutProgressBar } from "./CheckoutProgressBar";
 
 const DoctorIllustration = () => (
   <svg
@@ -56,12 +56,13 @@ const DoctorIllustration = () => (
 );
 
 export const VisitIntroPage = () => {
-  const router = useRouter();
+  const { back, steps } = useStepNavigation("visit_intro");
   const { onContinue, isPending } = useVisitIntro();
 
   return (
     <>
-      <SecondaryNav onBack={() => router.push(ROUTES.PATIENT_INFO)} />
+      <SecondaryNav onBack={back} />
+      <CheckoutProgressBar steps={steps} />
       <main className="flex min-h-screen flex-col items-center justify-start bg-bg-main px-4 pt-16">
       <div className="w-full max-w-xl">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">

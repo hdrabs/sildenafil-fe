@@ -8,8 +8,7 @@ import {
   CartAuthParams,
   GoBackParams,
   SearchParams,
-  VisitCreateRequest,
-  VisitResponse,
+  VisitConsentSubmissionRequest,
   CheckoutStepResponse,
   MedicationResult,
   AllergyResult,
@@ -70,9 +69,6 @@ export const questionnaireService = {
 
   // ── Visits ────────────────────────────────────────────────────────────────
 
-  createVisit: (data: VisitCreateRequest): Promise<VisitResponse> =>
-    api.post<VisitResponse>("/v2/visits", data),
-
   getEligibleStates: (): Promise<VisitEligibleStatesResponse> =>
     api.get<VisitEligibleStatesResponse>("/v2/visits"),
 
@@ -92,8 +88,9 @@ export const questionnaireService = {
   advanceVisitIntro: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
     api.put<CheckoutStepResponse>("/v2/checkout/visit_intro", params),
 
-  advanceVisitConsent: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
-    api.put<CheckoutStepResponse>("/v2/checkout/visit_consent", params),
+  // One call: creates the visit, saves buffered intro responses, advances the step.
+  submitVisitConsent: (data: VisitConsentSubmissionRequest): Promise<CheckoutStepResponse> =>
+    api.post<CheckoutStepResponse>("/v2/checkout/visit_consent_submission", data),
 
   advanceVisitConsultation: (params: CartAuthParams): Promise<CheckoutStepResponse> =>
     api.put<CheckoutStepResponse>("/v2/checkout/visit_consultation", params),

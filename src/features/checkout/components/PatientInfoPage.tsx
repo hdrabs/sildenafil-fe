@@ -1,10 +1,10 @@
 "use client";
 
 import { Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { usePatientInfo } from "../hooks/usePatientInfo";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
-import { ROUTES } from "@/constants/routes";
+import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { OtpVerificationModal } from "./OtpVerificationModal";
 
 const blockDigits = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -85,7 +85,7 @@ const inputClass = (hasError: boolean) =>
   }`;
 
 export const PatientInfoPage = () => {
-  const router = useRouter();
+  const { back, steps } = useStepNavigation("patient_info");
   const {
     form,
     submit,
@@ -120,7 +120,8 @@ export const PatientInfoPage = () => {
 
   return (
     <>
-      <SecondaryNav onBack={() => router.push(ROUTES.VISIT_CONSENT)} />
+      <SecondaryNav onBack={back} />
+      <CheckoutProgressBar steps={steps} />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
         <div className="w-full max-w-xl">
           <h1 className="mb-2 text-2xl font-bold text-gray-900">Patient info</h1>

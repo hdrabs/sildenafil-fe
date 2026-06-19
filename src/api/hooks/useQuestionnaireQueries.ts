@@ -7,7 +7,7 @@ import {
   QuestionairePayload,
   CartAuthParams,
   GoBackParams,
-  VisitCreateRequest,
+  VisitConsentSubmissionRequest,
 } from "@/types/questionnaire";
 
 // ── Intro questions ───────────────────────────────────────────────────────────
@@ -66,11 +66,6 @@ export const useSearchAllergies = (
 
 // ── Visits ────────────────────────────────────────────────────────────────────
 
-export const useCreateVisit = () =>
-  useMutation({
-    mutationFn: (data: VisitCreateRequest) => questionnaireService.createVisit(data),
-  });
-
 export const useGetEligibleStates = (enabled = true) =>
   useQuery({
     queryKey: visitKeys.eligibleStates(),
@@ -106,10 +101,10 @@ export const useAdvanceVisitIntro = () =>
       questionnaireService.advanceVisitIntro(params),
   });
 
-export const useAdvanceVisitConsent = () =>
+export const useSubmitVisitConsent = () =>
   useMutation({
-    mutationFn: (params: CartAuthParams) =>
-      questionnaireService.advanceVisitConsent(params),
+    mutationFn: (data: VisitConsentSubmissionRequest) =>
+      questionnaireService.submitVisitConsent(data),
   });
 
 export const useAdvanceVisitConsultation = () =>

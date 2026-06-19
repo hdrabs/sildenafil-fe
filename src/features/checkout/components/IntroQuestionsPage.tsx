@@ -1,8 +1,10 @@
 "use client";
 
 import { useIntroQuestions } from "@/features/checkout/hooks/useIntroQuestions";
+import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
 import { Question } from "./Question";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { CheckoutProgressBar } from "./CheckoutProgressBar";
 
 interface Props {
   slug: string;
@@ -21,6 +23,9 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
     isSingleRadioStep,
   } = useIntroQuestions(slug);
 
+  // Progress bar only — back here is the intro sub-flow's own (onBack above).
+  const { steps } = useStepNavigation("intro_questions");
+
   if (isLoading || !currentStep) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -32,6 +37,7 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
   return (
     <>
       <SecondaryNav onBack={onBack} />
+      <CheckoutProgressBar steps={steps} />
       <main className="min-h-screen bg-bg-main">
       <div className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
       {currentStep.questions.map((question) => (

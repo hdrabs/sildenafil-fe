@@ -23,6 +23,12 @@ export interface AnswerOption {
   solo: boolean;
   disqualify: boolean;
   next_step_label: string | null;
+  /**
+   * Backend-resolved: the intro step to navigate to when this answer is chosen,
+   * or null when choosing it ends the intro flow (advance the cart). The FE no
+   * longer needs to know PocketMed's "ed_"/"q_" label convention.
+   */
+  next_intro_step: string | null;
   immediate_step: { id: number; label: string; intro: boolean } | null;
   is_medication: boolean;
 }
@@ -110,7 +116,7 @@ export interface SearchParams extends CartAuthParams {
   name: string;
 }
 
-export interface VisitCreateRequest {
+export interface VisitConsentSubmissionRequest {
   cart_id: number;
   cart_token?: string;
   visit: {
@@ -118,13 +124,8 @@ export interface VisitCreateRequest {
     terms: boolean;
     state_ack: boolean;
   };
-}
-
-export interface VisitResponse {
-  uuid: string;
-  state: string;
-  terms: boolean;
-  state_ack: boolean;
+  /** Intro answers buffered client-side before the visit existed; persisted server-side here. */
+  intro_responses: { responses: Record<string, ResponseShape> }[];
 }
 
 export interface CheckoutStepResponse {

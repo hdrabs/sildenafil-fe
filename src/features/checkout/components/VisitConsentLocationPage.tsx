@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useVisitConsent } from "../hooks/useVisitConsent";
+import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
-import { ROUTES } from "@/constants/routes";
+import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { TermsOfUseDrawer } from "./drawers/TermsOfUseDrawer";
 import { PrivacyPolicyDrawer } from "./drawers/PrivacyPolicyDrawer";
 import { TelehealthDrawer } from "./drawers/TelehealthDrawer";
 import { PrivacyPracticesDrawer } from "./drawers/PrivacyPracticesDrawer";
 
 export const VisitConsentLocationPage = () => {
-  const router = useRouter();
+  const { back, steps } = useStepNavigation("visit_consent");
   const {
     form,
     submit,
@@ -37,7 +37,8 @@ export const VisitConsentLocationPage = () => {
 
   return (
     <>
-      <SecondaryNav onBack={() => router.push(ROUTES.INTRO_QUESTIONS("ed_onset"))} />
+      <SecondaryNav onBack={back} />
+      <CheckoutProgressBar steps={steps} />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
         <div className="w-full max-w-xl">
           <h1 className="mb-3 text-2xl font-bold text-gray-900">

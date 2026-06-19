@@ -4,21 +4,22 @@ import { IntroStepResponse } from "@/types/questionnaire";
 
 interface QuestionnaireStoreState {
   introResponses: IntroStepResponse[];
-  introStepHistory: string[];
   visitConsentState: { cartId: number; state: string } | null;
+  // The intro step the user last viewed — lets the consent page's back button
+  // resume the intro sub-flow where they left off instead of restarting it.
+  lastIntroStep: string | null;
   addIntroResponse: (response: IntroStepResponse) => void;
   clearIntroResponses: () => void;
-  pushIntroStep: (slug: string) => void;
-  popIntroStep: () => string | undefined;
   setVisitConsentState: (cartId: number, state: string) => void;
+  setLastIntroStep: (slug: string) => void;
 }
 
 export const useQuestionnaireStore = create<QuestionnaireStoreState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       introResponses: [],
-      introStepHistory: [],
       visitConsentState: null,
+      lastIntroStep: null,
 
       addIntroResponse: (response) =>
         set((state) => ({
@@ -28,30 +29,19 @@ export const useQuestionnaireStore = create<QuestionnaireStoreState>()(
           ],
         })),
 
-      clearIntroResponses: () => set({ introResponses: [], introStepHistory: [] }),
+      clearIntroResponses: () => set({ introResponses: [] }),
 
       setVisitConsentState: (cartId, state) => set({ visitConsentState: { cartId, state } }),
 
-      pushIntroStep: (slug) =>
-        set((state) => ({
-          introStepHistory: [...state.introStepHistory.filter((s) => s !== slug), slug],
-        })),
-
-      popIntroStep: () => {
-        const history = get().introStepHistory;
-        if (history.length === 0) return undefined;
-        const prev = history[history.length - 1];
-        set({ introStepHistory: history.slice(0, -1) });
-        return prev;
-      },
+      setLastIntroStep: (slug) => set({ lastIntroStep: slug }),
     }),
     {
       name: "sildenafil-questionnaire",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         introResponses: state.introResponses,
-        introStepHistory: state.introStepHistory,
         visitConsentState: state.visitConsentState,
+        lastIntroStep: state.lastIntroStep,
       }),
     },
   ),

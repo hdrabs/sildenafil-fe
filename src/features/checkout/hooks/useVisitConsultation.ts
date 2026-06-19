@@ -116,6 +116,13 @@ export const useVisitConsultation = (slug: string) => {
   const onBack = useCallback(async () => {
     try {
       const prevStep = await goBackMutation({ ...cartAuth, step_label: slug });
+      // PocketMed returns the SAME step at the start of the questionnaire (no
+      // earlier question to go to). That's the boundary — exit back to the
+      // previous funnel step instead of looping on the same page.
+      if (prevStep.label === slug) {
+        router.push(ROUTES.VISIT_INTRO);
+        return;
+      }
       queryClient.invalidateQueries({
         queryKey: questionnaireKeys.step(prevStep.label, cartId),
       });

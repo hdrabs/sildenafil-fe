@@ -57,3 +57,9 @@ export const visitKeys = {
   all: ["visits"] as const,
   eligibleStates: () => [...visitKeys.all, "eligible_states"] as const,
 };
+
+export const checkoutKeys = {
+  all: ["checkout"] as const,
+  navigation: (step: string, cartId: number) =>
+    [...checkoutKeys.all, "navigation", step, cartId] as const,
+};
