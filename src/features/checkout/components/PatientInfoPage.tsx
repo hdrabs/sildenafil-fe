@@ -5,7 +5,8 @@ import { usePatientInfo } from "../hooks/usePatientInfo";
 import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
-import { OtpVerificationModal } from "./OtpVerificationModal";
+import { OtpModal } from "@/components/modals/OtpModal";
+import { useGenerateOtp, useVerifyOtp } from "@/api/hooks/useAuthQueries";
 
 const blockDigits = (e: React.KeyboardEvent<HTMLInputElement>) => {
   if (/\d/.test(e.key)) e.preventDefault();
@@ -100,6 +101,9 @@ export const PatientInfoPage = () => {
     onOtpSkip,
     onOtpClose,
   } = usePatientInfo();
+
+  const { mutateAsync: generateOtp } = useGenerateOtp();
+  const { mutateAsync: verifyOtp } = useVerifyOtp();
 
   const {
     register,
@@ -405,13 +409,17 @@ export const PatientInfoPage = () => {
         </div>
       </main>
 
-      <OtpVerificationModal
+      <OtpModal
         show={showOtpModal}
         phone={otpPhone}
-        initialLimitExceeded={otpLimitExceeded}
-        onVerified={onOtpVerified}
-        onSkip={onOtpSkip}
+        initiallyExhausted={otpLimitExceeded}
+        onSubmit={async (code) => { await verifyOtp(code); await onOtpVerified(); }}
+        onResend={async () => { await generateOtp(); }}
+        onAlternative={onOtpSkip}
         onClose={onOtpClose}
+        alternativeText="We're sorry you're having trouble verifying your number. Let's continue with your visit for now, but later on we'll need you to upload a government-issued ID."
+        alternativeButtonLabel="Continue with visit"
+        showSignUpPrompt={false}
       />
     </>
   );

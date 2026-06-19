@@ -40,6 +40,9 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-selected: #e05252;
+  --color-coral: #ec534b;
+  --color-coral-hover: #d8463e;
+  --color-link-blue: #0077fa;
   --color-accent-amber: #d49a00;
   --color-accent-amber-hover: #b88200;
 
@@ -60,4 +63,13 @@ textarea {
 
 body {
   background-color: #f1f8fb;
+}
+
+/* Interactive elements show the pointer cursor on hover (disabled controls keep their own). */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href],
+label[for],
+summary {
+  cursor: pointer;
 }

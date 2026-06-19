@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 interface StrengthData {
   mg: string;
@@ -196,7 +197,7 @@ export const StrengthGuideModal = ({
 
       <div className="relative z-10 flex h-[60vh] w-full flex-col bg-white pb-5 sm:max-w-2xl" style={{ borderRadius: "4.8px" }}>
         {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-5 pb-4">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4">
           <h2
             id="strength-guide-modal-title"
             className="text-2xl font-bold leading-tight text-text-primary"
@@ -205,12 +206,10 @@ export const StrengthGuideModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="ml-4 mt-1 flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted hover:bg-bg-card"
+            className="ml-4 flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1.5 text-text-muted hover:bg-bg-card"
             aria-label="Close"
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <CloseIcon className="h-7 w-7 shrink-0" />
           </button>
         </div>
 

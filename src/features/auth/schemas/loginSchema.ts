@@ -6,7 +6,9 @@ export const emailStepSchema = z.object({
 });
 
 export const passwordStepSchema = z.object({
-  password: passwordSchema,
+  // Login only needs the password entered — the backend verifies it, so we
+  // don't surface signup's "at least 8 characters" rule here.
+  password: z.string().min(1, "Please enter your password"),
 });
 
 export const loginSchema = z.object({

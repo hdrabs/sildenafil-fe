@@ -21,11 +21,11 @@ const variantClasses = {
   danger:
     "bg-error text-white hover:opacity-90 disabled:opacity-60",
   coral:
-    "bg-selected text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
+    "bg-coral text-white hover:bg-coral-hover disabled:opacity-60 rounded-full uppercase tracking-wide font-bold whitespace-nowrap",
   dark:
     "bg-primary text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
   "outline-dark":
-    "bg-transparent text-text-primary border border-border-input hover:bg-bg-input disabled:opacity-60 rounded-full",
+    "bg-transparent text-primary border border-[#bfd9e4] hover:bg-primary hover:text-white disabled:opacity-60 rounded-full font-bold",
 };
 
 const sizeClasses = {

@@ -1,15 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { toast } from "react-toastify";
 import { LoginPhoneStep } from "./LoginPhoneStep";
 import { LoginEmailStep } from "./LoginEmailStep";
 import { LoginPasswordStep } from "./LoginPasswordStep";
-import { OtpModal } from "./OtpModal";
+import { OtpModal } from "@/components/modals/OtpModal";
 import { useLoginUser } from "../hooks/useLoginUser";
 import { authService } from "@/api/services/authService";
-import { APIError } from "@/api/baseAPI";
 import { useSetUser } from "@/store";
 import { ROUTES } from "@/constants/routes";
 
@@ -33,9 +31,28 @@ export const LoginPage = () => {
   // OTP modal state — tracks which method (phone raw value or email) triggered it
   const [otpIdentifier, setOtpIdentifier] = useState<string | null>(null); // phone or email
   const [otpPhone, setOtpPhone] = useState<string | null>(null);           // phone only (for modal display)
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpChannel, setOtpChannel] = useState<"phone" | "email">("phone");
 
   const { login, isPending: isPasswordPending, loginError } = useLoginUser();
+
+  // Each step change pushes a same-URL history entry carrying a marker (the
+  // legacy app does the same via react-router `navigate(path, { state })`).
+  // The URL stays /login; only browser history grows, so the navbar back
+  // button walks back through the steps and finally exits the page.
+  const pushStep = (next: Step) => {
+    window.history.pushState({ ...window.history.state, loginStep: next }, "");
+    setStep(next);
+  };
+
+  // Sync the visible step with browser back/forward navigation.
+  useEffect(() => {
+    const onPopState = () => {
+      const marker = (window.history.state as { loginStep?: Step } | null)?.loginStep;
+      setStep(marker === "phone" || marker === "password" ? marker : "email");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   const handleEmailNext = async (email: string) => {
     setIdentifier(email);
@@ -46,38 +63,34 @@ export const LoginPage = () => {
     } catch {
       setHints({ email, phone: null });
     }
-    setStep("password");
+    pushStep("password");
   };
 
   // The `_maskedPhone` arg is just for display — we pass the email to the
   // backend so it can find the user's actual registered phone number.
   const handleSendPhoneOtp = async (_maskedPhone: string) => {
     try { await authService.sendPhoneOtp(identifier); } catch { /* silent */ }
+    setOtpChannel("phone");
     setOtpPhone(hints?.phone ?? null); // masked display string
     setOtpIdentifier(identifier);      // email for OTP verification
   };
 
   const handleSendEmailOtp = async (email: string) => {
     try { await authService.sendEmailOtp(email); } catch { /* silent */ }
+    setOtpChannel("email");
     setOtpPhone(null);
     setOtpIdentifier(email);
   };
 
   const handleOtpSubmit = async (code: string) => {
     if (!otpIdentifier) return;
-    setIsVerifyingOtp(true);
-    try {
-      const { token } = await authService.verifyPhoneOtp(otpIdentifier, code);
-      setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "" });
-      const me = await authService.me();
-      setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti });
-      const redirectTo = searchParams.get("redirectTo");
-      router.replace(redirectTo ?? ROUTES.DASHBOARD);
-    } catch (err) {
-      toast.error((err as APIError)?.message ?? "Invalid code. Please try again.");
-    } finally {
-      setIsVerifyingOtp(false);
-    }
+    // Let errors propagate so the modal surfaces them inline.
+    const { token } = await authService.verifyPhoneOtp(otpIdentifier, code);
+    setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "" });
+    const me = await authService.me();
+    setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti });
+    const redirectTo = searchParams.get("redirectTo");
+    router.replace(redirectTo ?? ROUTES.DASHBOARD);
   };
 
   return (
@@ -85,11 +98,12 @@ export const LoginPage = () => {
       {step === "phone" && (
         <LoginPhoneStep
           onNext={(phone) => {
+            setOtpChannel("phone");
             setIdentifier(phone);
             setOtpPhone(phone);
             setOtpIdentifier(phone);
           }}
-          onSwitchToEmail={() => setStep("email")}
+          onSwitchToEmail={() => pushStep("email")}
         />
       )}
 
@@ -97,7 +111,7 @@ export const LoginPage = () => {
         <LoginEmailStep
           defaultEmail={prefillEmail}
           onNext={handleEmailNext}
-          onSwitchToPhone={() => setStep("phone")}
+          onSwitchToPhone={() => pushStep("phone")}
         />
       )}
 
@@ -117,13 +131,17 @@ export const LoginPage = () => {
       {otpIdentifier && (
         <OtpModal
           phone={otpPhone ?? identifier}
-          isPending={isVerifyingOtp}
+          channel={otpChannel}
           onSubmit={handleOtpSubmit}
+          onResend={async () => {
+            if (otpChannel === "email") await authService.sendEmailOtp(otpIdentifier);
+            else await authService.sendPhoneOtp(otpIdentifier);
+          }}
           onClose={() => { setOtpIdentifier(null); setOtpPhone(null); }}
-          onSwitchToEmail={() => {
+          onAlternative={() => {
             setOtpIdentifier(null);
             setOtpPhone(null);
-            setStep("email");
+            pushStep("email");
           }}
         />
       )}

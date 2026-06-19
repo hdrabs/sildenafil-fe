@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 import { toast } from "react-toastify";
 import { useActiveCart, useClearActiveCart } from "@/store";
 import { useDeleteCartV2 } from "@/api/hooks/useCartQueries";
@@ -114,15 +114,9 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
           <button
             aria-label="Close cart"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-bg-input transition-colors shrink-0"
+            className="flex items-center justify-center rounded-full p-1.5 text-text-muted hover:bg-bg-input transition-colors shrink-0"
           >
-            <Image
-              src="/icons/navbar/entypo-cross.svg"
-              alt=""
-              width={24}
-              height={24}
-              className="shrink-0 opacity-60"
-            />
+            <CloseIcon className="h-7 w-7 shrink-0" />
           </button>
         </div>
 

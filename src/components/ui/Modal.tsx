@@ -3,6 +3,7 @@
 import { useEffect, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
+import { CloseIcon } from "@/components/icons/CloseIcon";
 
 interface ModalProps {
   isOpen: boolean;
@@ -71,10 +72,10 @@ export const Modal = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text-primary transition-colors"
+              className="flex items-center justify-center rounded-full p-1.5 text-text-muted hover:text-text-primary transition-colors"
               aria-label="Close modal"
             >
-              ✕
+              <CloseIcon className="h-7 w-7" />
             </button>
           </div>
         )}

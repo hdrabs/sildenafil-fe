@@ -5,12 +5,12 @@ import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => (
   <AuthGuard requireAuth={false}>
-    <div className="relative flex min-h-screen flex-col bg-bg-main">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-bg-main">
       <SecondaryNav />
 
-      <div className="flex flex-1 items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-border-default bg-bg-card p-8 shadow-sm">
+      <div className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-4 pb-8 pt-[120px]">
+        <div className="w-full max-w-[500px]">
+          <div className="rounded-lg bg-bg-card p-8">
             {children}
           </div>
         </div>
