@@ -164,6 +164,8 @@ export interface CartV2 {
   max_quantity: number | null;
   rx_id: string | null;
   visit_uuid: string | null;
+  shipping_address_id: number | null;
+  delivery_type: string | null;
 }
 
 export interface CartV2Response {

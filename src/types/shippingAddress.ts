@@ -49,3 +49,54 @@ export interface GetUserResponse {
 export interface ShippingAddressesResponse {
   shipping_addresses: ShippingAddress[];
 }
+
+// ── v2 checkout shipping (POST/PATCH /api/v2/shipping_addresses) ──────────────
+
+/** The address fields the user actually fills in the checkout form. */
+export interface AddressFields {
+  street_1: string;
+  street_2?: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
+/**
+ * v2 create/update payload. first_name/last_name/phone are not shown in the
+ * form — they're sourced from the authenticated user. `verified` reflects the
+ * Smarty drawer choice (true = accepted the suggested/clean address).
+ */
+export interface ShippingAddressV2Payload {
+  shipping_address: AddressFields & {
+    first_name: string;
+    last_name: string;
+    phone: string;
+    verified: boolean;
+  };
+}
+
+// ── Smarty validation (POST /api/v2/address_validations) ─────────────────────
+
+export type AddressValidationStatus =
+  | "ok"
+  | "suggestion"
+  | "missing_secondary"
+  | "unrecognized_secondary"
+  | "undeliverable";
+
+export interface AddressValidationResult {
+  status: AddressValidationStatus;
+  suggested_address: AddressFields | null;
+  message: string | null;
+}
+
+// ── Smarty autocomplete (GET /api/v2/address_suggestions) ────────────────────
+
+export interface AddressSuggestion {
+  street_line: string;
+  secondary: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  entries: number;
+}

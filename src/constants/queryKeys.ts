@@ -63,3 +63,22 @@ export const checkoutKeys = {
   navigation: (step: string, cartId: number) =>
     [...checkoutKeys.all, "navigation", step, cartId] as const,
 };
+
+// v2 checkout shipping list — kept separate from the v1 account list above so
+// the two endpoints don't share a cache entry.
+export const shippingAddressV2Keys = {
+  all: ["shippingAddressesV2"] as const,
+  list: () => [...shippingAddressV2Keys.all, "list"] as const,
+};
+
+export const addressKeys = {
+  all: ["address"] as const,
+  suggestions: (prefix: string, selected: string) =>
+    [...addressKeys.all, "suggestions", prefix, selected] as const,
+};
+
+export const deliveryKeys = {
+  all: ["deliveryOptions"] as const,
+  list: (cartId: number, destinationZip: string) =>
+    [...deliveryKeys.all, "list", cartId, destinationZip] as const,
+};

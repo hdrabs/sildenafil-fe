@@ -37,4 +37,5 @@ export const ROUTES = {
   VISIT_CONSULTATION_STEP:    (slug: string) => `/checkout/visit-consultation/${slug}`,
   CHECKOUT_NO_CHECKUP:        "/checkout/no-checkup",
   CHECKOUT_NO_BLOOD_PRESSURE: "/checkout/no-blood-pressure",
+  SHIPPING:                   "/checkout/shipping",
 } as const;
