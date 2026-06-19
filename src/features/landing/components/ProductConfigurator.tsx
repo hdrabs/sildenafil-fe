@@ -245,6 +245,25 @@ export const ProductConfigurator = ({
     return () => ro.disconnect();
   }, []);
 
+  // Warm the browser cache with every tablet image in the catalog so switching
+  // drug/strength is instant — no fetch flash. The displayed pills below are
+  // `unoptimized`, so they request the raw /public path that this preload hits.
+  const tabletImageSignature = allVariants
+    .map((v) => `${v.product.drug}:${v.product.dosage}`)
+    .join(",");
+  useEffect(() => {
+    tabletImageSignature
+      .split(",")
+      .filter(Boolean)
+      .forEach((combo) => {
+        const [d, dose] = combo.split(":");
+        getTabletImages(d, dose)?.forEach((src) => {
+          const img = new window.Image();
+          img.src = src;
+        });
+      });
+  }, [tabletImageSignature]);
+
   return (
     <div className={cn("mx-auto flex flex-col", className)}>
       {/* Sticky price header — sticks just below navbar on mobile, static on sm+ */}
@@ -278,33 +297,39 @@ export const ProductConfigurator = ({
           )}
         </div>
         {tabletImgs && (
-          <div className={cn(
-            "flex flex-col items-center sm:flex-row sm:[&>*+*]:mt-0",
-            drug === "tadalafil" ? "[&>*+*]:-mt-6" : "[&>*+*]:-mt-1",
-          )}>
-            {tabletImgs.map((src, i) => {
-              const isTada = drug === "tadalafil";
-              return (
-                <div key={i} className="relative flex flex-col items-center">
-                  <Image
-                    src={src}
-                    alt="tablet"
-                    width={isTada ? 110 : 81}
-                    height={isTada ? 110 : 81}
-                    className={cn(
-                      "relative z-10 object-contain",
-                      isTada ? "w-24 h-24 sm:w-[110px] sm:h-[110px]" : "w-[67px] h-[67px] sm:w-[81px] sm:h-[81px]",
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      "absolute bottom-0 rounded-full bg-black/20 blur-md",
-                      isTada ? "w-[67px] h-[14px] sm:w-[77px] sm:h-[17px]" : "w-[47px] h-[10px] sm:w-[57px] sm:h-[12px]",
-                    )}
-                  />
-                </div>
-              );
-            })}
+          // Fixed footprint sized to the largest (tadalafil) pills, so switching
+          // drug/strength never resizes the sticky price header — that resize, and
+          // the ResizeObserver-driven sticky-offset recalc it triggered, was the "jerk".
+          <div className="flex h-[168px] w-[112px] shrink-0 items-center justify-center sm:h-[112px] sm:w-[230px]">
+            <div className={cn(
+              "flex flex-col items-center sm:flex-row sm:[&>*+*]:mt-0",
+              drug === "tadalafil" ? "[&>*+*]:-mt-6" : "[&>*+*]:-mt-1",
+            )}>
+              {tabletImgs.map((src, i) => {
+                const isTada = drug === "tadalafil";
+                return (
+                  <div key={i} className="relative flex flex-col items-center">
+                    <Image
+                      src={src}
+                      alt="tablet"
+                      width={isTada ? 110 : 81}
+                      height={isTada ? 110 : 81}
+                      unoptimized
+                      className={cn(
+                        "relative z-10 object-contain",
+                        isTada ? "w-24 h-24 sm:w-[110px] sm:h-[110px]" : "w-[67px] h-[67px] sm:w-[81px] sm:h-[81px]",
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        "absolute bottom-0 rounded-full bg-black/20 blur-md",
+                        isTada ? "w-[67px] h-[14px] sm:w-[77px] sm:h-[17px]" : "w-[47px] h-[10px] sm:w-[57px] sm:h-[12px]",
+                      )}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
         </div>

@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { CartV2 } from "@/types/cart";
-
-export interface ActiveCartEntry {
-  cart: CartV2;
-  variantLabel: string;
-  redirectPath: string;
-}
+import { ActiveCartEntry } from "@/types/cart";
 
 interface CartStoreState {
   activeCart: ActiveCartEntry | null;

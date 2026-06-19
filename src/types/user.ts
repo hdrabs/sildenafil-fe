@@ -47,3 +47,17 @@ export interface UpdateProfileRequest {
     drugs_names_included?: boolean;
   };
 }
+
+export interface PatientInfoRequest {
+  user: {
+    first_name: string;
+    last_name: string;
+    gender: string;
+    date_of_birth: string;
+    mobile_phone?: string;
+    home_phone?: string;
+    phone_contact_allowed?: boolean;
+    drugs_names_included?: boolean;
+    otp_verified?: boolean;
+  };
+}

@@ -1,6 +1,7 @@
 import { useShallow } from "zustand/react/shallow";
 import { useUserStore } from "./userStore";
 import { useCartStore } from "./cartStore";
+import { useQuestionnaireStore } from "./questionnaireStore";
 
 export const useUser = () => useUserStore((s) => s.user);
 export const useIsAuthenticated = () => useUserStore((s) => !!s.user?.token);
@@ -22,3 +23,11 @@ export const useActiveCart = () => useCartStore((s) => s.activeCart);
 export const useCartToken = () => useCartStore((s) => s.activeCart?.cart.token ?? null);
 export const useSetActiveCart = () => useCartStore((s) => s.setActiveCart);
 export const useClearActiveCart = () => useCartStore((s) => s.clearActiveCart);
+
+export const useIntroResponses = () => useQuestionnaireStore((s) => s.introResponses);
+export const useAddIntroResponse = () => useQuestionnaireStore((s) => s.addIntroResponse);
+export const useClearIntroResponses = () => useQuestionnaireStore((s) => s.clearIntroResponses);
+export const useVisitConsentState = () => useQuestionnaireStore((s) => s.visitConsentState);
+export const useSetVisitConsentState = () => useQuestionnaireStore((s) => s.setVisitConsentState);
+export const useLastIntroStep = () => useQuestionnaireStore((s) => s.lastIntroStep);
+export const useSetLastIntroStep = () => useQuestionnaireStore((s) => s.setLastIntroStep);

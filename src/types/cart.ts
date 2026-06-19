@@ -163,11 +163,23 @@ export interface CartV2 {
   final_price: number | string;
   max_quantity: number | null;
   rx_id: string | null;
+  visit_uuid: string | null;
 }
 
 export interface CartV2Response {
   cart: CartV2;
   redirect_path: string;
+}
+
+/**
+ * The active cart restored from GET /api/v2/active_cart, mapped into the
+ * client-side shape held by cartStore. `variantLabel` / `redirectPath` are
+ * server-computed presentation hints that sit beside the cart entity.
+ */
+export interface ActiveCartEntry {
+  cart: CartV2;
+  variantLabel: string;
+  redirectPath: string;
 }
 
 export interface CreateCartV2Request {

@@ -5,21 +5,32 @@ import { useRouter } from "next/navigation";
 import { RiPhoneLine } from "react-icons/ri";
 import { ROUTES } from "@/constants/routes";
 
-export const SecondaryNav = () => {
+interface Props {
+  onBack?: () => void;
+  isLoading?: boolean;
+}
+
+export const SecondaryNav = ({ onBack, isLoading = false }: Props) => {
   const router = useRouter();
+  const handleBack = onBack ?? (() => router.back());
 
   return (
     <header className="sticky top-0 z-30 border-b border-border-default bg-bg-card">
     <div className="relative flex w-full items-center justify-between px-[18px] py-3">
       <button
-        onClick={() => router.back()}
-        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-text-primary transition-colors"
+        onClick={handleBack}
+        disabled={isLoading}
+        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-text-primary transition-colors disabled:opacity-50"
       >
-        <svg width="9" height="18" viewBox="0 0 9 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g transform="scale(-1,1) translate(-9,0)">
-            <path d="M9.006 8.848a1.64 1.64 0 00-.38-.904L2.861 1.11A1.607 1.607 0 001.764.509 1.577 1.577 0 00.573.893a1.623 1.623 0 00-.57 1.139 1.651 1.651 0 00.416 1.197l4.873 5.772L.42 14.776a1.632 1.632 0 00-.416 1.197A1.647 1.647 0 00.56 17.11a1.594 1.594 0 001.191.384 1.584 1.584 0 001.098-.602l5.763-6.833a1.634 1.634 0 00.394-1.21z" fill="currentColor"/>
-          </g>
-        </svg>
+        {isLoading ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <svg width="9" height="18" viewBox="0 0 9 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g transform="scale(-1,1) translate(-9,0)">
+              <path d="M9.006 8.848a1.64 1.64 0 00-.38-.904L2.861 1.11A1.607 1.607 0 001.764.509 1.577 1.577 0 00.573.893a1.623 1.623 0 00-.57 1.139 1.651 1.651 0 00.416 1.197l4.873 5.772L.42 14.776a1.632 1.632 0 00-.416 1.197A1.647 1.647 0 00.56 17.11a1.594 1.594 0 001.191.384 1.584 1.584 0 001.098-.602l5.763-6.833a1.634 1.634 0 00.394-1.21z" fill="currentColor"/>
+            </g>
+          </svg>
+        )}
       </button>
 
       <Link href={ROUTES.HOME} className="absolute left-1/2 -translate-x-1/2 flex items-center text-primary">

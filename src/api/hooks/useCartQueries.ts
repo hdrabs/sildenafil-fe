@@ -106,3 +106,31 @@ export const useDeleteCartV2 = () => {
     },
   });
 };
+
+/**
+ * Fetches the authenticated user's most recent in-progress cart.
+ * Used to restore cart state on page load or across browsers.
+ */
+export const useGetActiveCart = (enabled = true) =>
+  useQuery({
+    queryKey: cartKeys.active(),
+    queryFn: () => cartService.getActiveCart(),
+    enabled,
+    staleTime: 30_000,
+  });
+
+/**
+ * Advances a cart from product_detail → intro_questions.
+ * PATCH /api/v2/carts/:id with { advance: true } — no slug/qty change.
+ */
+export const useAdvanceCartStep = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, cartToken }: { id: number; cartToken?: string }) =>
+      cartService.advanceCartStep(id, cartToken),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: cartKeys.all });
+    },
+  });
+};
