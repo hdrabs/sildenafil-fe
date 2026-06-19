@@ -38,4 +38,8 @@ export const ROUTES = {
   CHECKOUT_NO_CHECKUP:        "/checkout/no-checkup",
   CHECKOUT_NO_BLOOD_PRESSURE: "/checkout/no-blood-pressure",
   SHIPPING:                   "/checkout/shipping",
+  ID_UPLOAD:                  "/checkout/id-upload",
+  SELFIE_UPLOAD:              "/checkout/selfie-upload",
+  SHIPPING_CONFIRMATION:      "/checkout/shipping-confirmation",
+  ORDER_VERIFICATION:         "/checkout/order-verification",
 } as const;

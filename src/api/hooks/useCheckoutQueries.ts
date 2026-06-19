@@ -22,3 +22,21 @@ export const useContinueDelivery = () =>
     mutationFn: (params: { cart_id: number; cart_token?: string; delivery_type: string }) =>
       checkoutService.continueDelivery(params),
   });
+
+export const useSkipIdUpload = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.skipIdUpload(params),
+  });
+
+export const useSkipSelfieUpload = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.skipSelfieUpload(params),
+  });
+
+export const useContinueShippingConfirmation = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.continueShippingConfirmation(params),
+  });

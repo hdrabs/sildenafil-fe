@@ -1,6 +1,7 @@
 "use client";
 
 import { Controller } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { usePatientInfo } from "../hooks/usePatientInfo";
 import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
@@ -85,8 +86,10 @@ const inputClass = (hasError: boolean) =>
     hasError ? "border-red-400" : "border-gray-300"
   }`;
 
-export const PatientInfoPage = () => {
+export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
+  const router = useRouter();
   const { back, steps } = useStepNavigation("patient_info");
+  const onBack = returnTo ? () => router.push(returnTo) : back;
   const {
     form,
     submit,
@@ -100,7 +103,7 @@ export const PatientInfoPage = () => {
     onOtpVerified,
     onOtpSkip,
     onOtpClose,
-  } = usePatientInfo();
+  } = usePatientInfo({ returnTo });
 
   const { mutateAsync: generateOtp } = useGenerateOtp();
   const { mutateAsync: verifyOtp } = useVerifyOtp();
@@ -124,7 +127,7 @@ export const PatientInfoPage = () => {
 
   return (
     <>
-      <SecondaryNav onBack={back} />
+      <SecondaryNav onBack={onBack} />
       <CheckoutProgressBar steps={steps} />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
         <div className="w-full max-w-xl">

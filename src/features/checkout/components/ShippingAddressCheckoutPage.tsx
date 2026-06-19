@@ -8,7 +8,12 @@ import { NewAddressForm } from "@/features/checkout/components/shipping/NewAddre
 import { DeliveryView } from "@/features/checkout/components/shipping/DeliveryView";
 import { useShippingCheckout } from "@/features/checkout/hooks/useShippingCheckout";
 
-export const ShippingAddressCheckoutPage = () => {
+interface Props {
+  returnTo?: string;
+  initialView?: "address" | "delivery";
+}
+
+export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {}) => {
   const {
     me,
     onBack,
@@ -37,7 +42,7 @@ export const ShippingAddressCheckoutPage = () => {
     submitDelivery,
     isSubmittingDelivery,
     destinationZip,
-  } = useShippingCheckout();
+  } = useShippingCheckout({ returnTo, initialView });
 
   const submitLabel = editing ? "Update address" : hasAddresses ? "Add address" : "Continue";
   const continueDisabled = !selectedAddress || !selectedAddress.is_valid || isAttaching;

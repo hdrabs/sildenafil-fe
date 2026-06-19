@@ -21,7 +21,7 @@ const parseDob = (dob: string | undefined) => {
   };
 };
 
-export const usePatientInfo = () => {
+export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
   const router = useRouter();
   const activeCart = useActiveCart();
 
@@ -82,6 +82,12 @@ export const usePatientInfo = () => {
     /^\(\d{3}\) \d{3}-\d{4}$/.test(watchedPhone ?? "");
 
   const advanceCheckout = async () => {
+    // Edit-from-confirmation: the change is already persisted (updateMe); skip the
+    // step advance and return straight to the confirmation page.
+    if (returnTo) {
+      router.push(returnTo);
+      return;
+    }
     const { redirect_path } = await advancePatientInfo({
       cart_id: cartId,
       cart_token: cartToken,

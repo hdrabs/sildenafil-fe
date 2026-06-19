@@ -12,7 +12,14 @@ import { ShippingAddress } from "@/types/shippingAddress";
 
 type View = "address" | "delivery";
 
-export const useShippingCheckout = () => {
+interface Options {
+  // When set (edit-from-confirmation), Continue/back return here instead of
+  // advancing the funnel. The change is still persisted; the cart just doesn't move.
+  returnTo?: string;
+  initialView?: View;
+}
+
+export const useShippingCheckout = ({ returnTo, initialView }: Options = {}) => {
   const router = useRouter();
   const activeCart = useActiveCart();
   const setActiveCart = useSetActiveCart();
@@ -31,7 +38,7 @@ export const useShippingCheckout = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ShippingAddress | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [view, setView] = useState<View>("address");
+  const [view, setView] = useState<View>(initialView ?? "address");
 
   const hasAddresses = addresses.length > 0;
 
@@ -60,6 +67,11 @@ export const useShippingCheckout = () => {
     // Refresh the stored cart so the delivery view pre-selects the now-set
     // delivery_type (the attach sets it to grounded).
     if (activeCart) setActiveCart({ ...activeCart, cart });
+    // Editing the address from confirmation: go straight back once attached.
+    if (returnTo) {
+      router.push(returnTo);
+      return;
+    }
     setView("delivery");
   };
 
@@ -81,18 +93,25 @@ export const useShippingCheckout = () => {
   };
 
   const submitDelivery = async (deliveryType: string) => {
-    const { redirect_path } = await continueDelivery.mutateAsync({
+    const { redirect_path, cart } = await continueDelivery.mutateAsync({
       cart_id: cartId,
       cart_token: cartToken,
       delivery_type: deliveryType,
     });
-    router.push(redirect_path);
+    // Keep the stored cart in sync so a return to confirmation shows the new choice.
+    if (activeCart) setActiveCart({ ...activeCart, cart });
+    // Editing delivery from confirmation: persist, then return there.
+    router.push(returnTo ?? redirect_path);
   };
 
-  // Two-layer back: from the delivery sub-view, step back to the address view
-  // (client-side, no API). From the address view, defer to the read-only
-  // NavigationController back (previous funnel step).
-  const onBack = view === "delivery" ? () => setView("address") : back;
+  // Edit-from-confirmation back returns to the confirmation page. Otherwise a
+  // two-layer back: from the delivery sub-view, step back to the address view
+  // (client-side); from the address view, defer to the NavigationController back.
+  const onBack = returnTo
+    ? () => router.push(returnTo)
+    : view === "delivery"
+      ? () => setView("address")
+      : back;
 
   return {
     me,

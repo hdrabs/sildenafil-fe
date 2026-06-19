@@ -29,4 +29,16 @@ export const checkoutService = {
   continueDelivery: (
     params: CartScoped & { delivery_type: string },
   ): Promise<CartV2Response> => api.put<CartV2Response>("/v2/checkout/delivery", params),
+
+  // PUT /v2/checkout/id_upload — record the ID-photo skip and advance to the selfie step.
+  skipIdUpload: (params: CartScoped): Promise<CartV2Response> =>
+    api.put<CartV2Response>("/v2/checkout/id_upload", { ...params, skip_id: true }),
+
+  // PUT /v2/checkout/selfie_upload — record the selfie skip and advance to confirmation.
+  skipSelfieUpload: (params: CartScoped): Promise<CartV2Response> =>
+    api.put<CartV2Response>("/v2/checkout/selfie_upload", { ...params, skip_selfie: true }),
+
+  // PUT /v2/checkout/shipping_confirmation — confirmation "Continue"; advances to order verification.
+  continueShippingConfirmation: (params: CartScoped): Promise<CartV2Response> =>
+    api.put<CartV2Response>("/v2/checkout/shipping_confirmation", params),
 };
