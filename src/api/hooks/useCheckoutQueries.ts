@@ -23,6 +23,30 @@ export const useContinueDelivery = () =>
       checkoutService.continueDelivery(params),
   });
 
+export const useVerifyIdentitySsn = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string; ssn_code: string }) =>
+      checkoutService.verifyIdentitySsn(params),
+  });
+
+export const useUploadIdInstead = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.uploadIdInstead(params),
+  });
+
+export const useUploadIdPhoto = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string; photo: File }) =>
+      checkoutService.uploadIdPhoto(params),
+  });
+
+export const useUploadSelfiePhoto = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string; photo: File }) =>
+      checkoutService.uploadSelfiePhoto(params),
+  });
+
 export const useSkipIdUpload = () =>
   useMutation({
     mutationFn: (params: { cart_id: number; cart_token?: string }) =>
