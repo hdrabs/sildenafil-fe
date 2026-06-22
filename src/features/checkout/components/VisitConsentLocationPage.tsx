@@ -40,11 +40,11 @@ export const VisitConsentLocationPage = () => {
       <SecondaryNav onBack={back} />
       <CheckoutProgressBar step="visit_consent" />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-lg">
           <h1 className="mb-4 text-2xl font-semibold text-gray-900">
             Select your current location
           </h1>
-          <p className="mb-4 text-base font-normal text-gray-600">
+          <p className="mb-4 text-base font-normal text-black">
             Let&apos;s confirm that you are eligible. We need to make sure your
             state allows Telehealth.
           </p>
@@ -67,7 +67,7 @@ export const VisitConsentLocationPage = () => {
                       {...field}
                       id="state-select"
                       disabled={isLoadingStates}
-                      className={`min-h-[46px] w-full cursor-pointer appearance-none rounded-[5px] border bg-white py-2.5 pl-5 pr-10 text-sm text-gray-900 transition-colors focus:border-coral focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                      className={`min-h-[46px] w-full cursor-pointer appearance-none rounded-[5px] border bg-white py-2.5 pl-5 pr-10 text-base text-gray-900 transition-colors focus:border-coral focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                         errors.state ? "border-red-400" : "border-border-dropdown"
                       }`}
                     >
@@ -208,7 +208,7 @@ export const VisitConsentLocationPage = () => {
             <button
               type="submit"
               disabled={isPending || isLoadingStates || !canSubmit}
-              className="mt-6 w-full cursor-pointer rounded-full border border-coral bg-coral px-[22px] py-3 text-base font-normal uppercase text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400"
+              className="mt-6 w-full cursor-pointer rounded-full border border-coral bg-coral px-2.5 py-3 text-base font-normal uppercase text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-[#6c757d] disabled:bg-[#6c757d]"
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">

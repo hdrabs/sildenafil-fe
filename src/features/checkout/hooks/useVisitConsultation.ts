@@ -13,7 +13,12 @@ import { useActiveCart, useConsultationSteps, useMarkConsultationStep } from "@/
 import { questionnaireReducer } from "./questionnaireReducer";
 import { ROUTES } from "@/constants/routes";
 import { questionnaireKeys } from "@/constants/queryKeys";
-import { Question } from "@/types/questionnaire";
+import { AnswerResponseEntry, Question, ResponseShape } from "@/types/questionnaire";
+import { isQuestionVisible } from "@/features/checkout/lib/questionVisibility";
+import {
+  answerOptionRequiresText,
+  questionHasTextRequiredOption,
+} from "@/features/checkout/lib/answerOptionText";
 
 // The PocketMed questionnaire branches on answers, so it has no knowable length. The
 // progress bar paces off the user's actual position in it (tracked in questionnaireStore):
@@ -74,10 +79,15 @@ export const useVisitConsultation = (slug: string) => {
     markConsultationStep(cartId, currentStep.label);
   }, [currentStep, cartId, markConsultationStep]);
 
-  // Server is authoritative on slug — correct URL if it drifts
+  // Server is authoritative on slug — correct URL if it drifts (e.g. arriving on
+  // the no-slug resolver route). Guard with a ref so React strict-mode's double
+  // effect invoke in dev doesn't fire the replace twice (the duplicate q_3_01
+  // navigation seen on entry). Resets naturally on the next mount/slug.
+  const hasRedirected = useRef(false);
   useEffect(() => {
-    if (!currentStep) return;
+    if (!currentStep || hasRedirected.current) return;
     if (currentStep.label !== slug) {
+      hasRedirected.current = true;
       router.replace(ROUTES.VISIT_CONSULTATION_STEP(currentStep.label));
     }
   }, [currentStep, slug, router]);
@@ -85,8 +95,20 @@ export const useVisitConsultation = (slug: string) => {
   const enableButton = useMemo(() => {
     if (!currentStep) return false;
 
-    return currentStep.questions.every((q: Question) => {
-      if (q.question_type === "statement") return true;
+    return currentStep.questions.every((q: Question, index: number) => {
+      // statement = display-only; textfield_disabled = read-only echo of the
+      // treatment name (already captured by the parent multi-select). Neither is
+      // user-answerable, so they must not gate Continue or it stays disabled forever.
+      if (["statement", "textfield_disabled"].includes(q.question_type)) return true;
+
+      // Conditional follow-ups hidden by the renderer (e.g. the side-effects
+      // multi when its Yes/No gate is "No") must not be required either.
+      if (!isQuestionVisible(currentStep.questions, index, responses.questions)) return true;
+
+      // medication_search (q_16_01) is always satisfiable: zero meds means
+      // "I don't take any medications" — a valid answer submitted with the same
+      // Continue button — so it never gates on a response being present.
+      if (q.question_type === "medication_search") return true;
 
       const hasResponse = Object.keys(responses.questions).includes(q.id.toString());
       if (!hasResponse) return false;
@@ -102,8 +124,24 @@ export const useVisitConsultation = (slug: string) => {
         if (selectedOption?.label?.toLowerCase() === "yes") {
           const searchKey =
             q.question_type === "allergy_search" ? "allergy_search" : "medication_search";
-          const entry = qResponse[selectedId] as import("@/types/questionnaire").AnswerResponseEntry;
+          const entry = qResponse[selectedId] as AnswerResponseEntry;
           return (entry?.metadata?.[searchKey]?.length ?? 0) > 0;
+        }
+      }
+
+      // A text-requiring radio option only counts as answered once its
+      // explanation is filled in — keeps Continue disabled on an empty box.
+      if (q.question_type === "radio") {
+        const qResponse = responses.questions[q.id.toString()];
+        const selectedId = Object.keys(qResponse).find(
+          (k) => k !== "question_id" && k !== "position",
+        );
+        const selectedOption = selectedId
+          ? q.answer_options.find((ao) => ao.id.toString() === selectedId)
+          : undefined;
+        if (selectedOption && answerOptionRequiresText(selectedOption)) {
+          const entry = qResponse[selectedId!] as AnswerResponseEntry;
+          return (entry?.metadata?.text?.trim().length ?? 0) > 0;
         }
       }
 
@@ -116,7 +154,34 @@ export const useVisitConsultation = (slug: string) => {
     isContinuing.current = true;
 
     try {
-      const nextStep = await saveStep({ ...cartAuth, responses: responses.questions });
+      // "I don't take any medications": when the patient submits a
+      // medication_search with nothing added, send an explicit empty-meds answer
+      // (the implicit option selected with an empty list) so the backend records
+      // the negative response and advances instead of seeing no answer at all.
+      let responsesToSave = responses.questions;
+      const medQ = currentStep.questions.find(
+        (q) => q.question_type === "medication_search",
+      );
+      if (medQ && !responsesToSave[medQ.id.toString()]) {
+        const opt = medQ.answer_options[0];
+        if (opt) {
+          const emptyEntry: AnswerResponseEntry = {
+            answer_option_id: opt.id,
+            position: opt.position,
+            solo: opt.solo,
+            disqualify: opt.disqualify,
+            metadata: { medication_search: [] },
+          };
+          const emptyMedAnswer = {
+            question_id: medQ.id,
+            position: medQ.position,
+            [opt.id]: emptyEntry,
+          } as ResponseShape;
+          responsesToSave = { ...responsesToSave, [medQ.id.toString()]: emptyMedAnswer };
+        }
+      }
+
+      const nextStep = await saveStep({ ...cartAuth, responses: responsesToSave });
 
       if (nextStep.rejection_type) {
         router.push(
@@ -133,11 +198,18 @@ export const useVisitConsultation = (slug: string) => {
         return;
       }
 
+      // The destination step may be server-recomputed on fetch (e.g. q_16_01
+      // re-derives its prefilled meds from the latest answers). Invalidate its
+      // cache so navigating forward refetches instead of showing a stale copy
+      // from an earlier visit — mirrors the invalidation onBack already does.
+      queryClient.invalidateQueries({
+        queryKey: questionnaireKeys.step(nextStep.label, cartId),
+      });
       router.push(ROUTES.VISIT_CONSULTATION_STEP(nextStep.label));
     } catch {
       isContinuing.current = false;
     }
-  }, [currentStep, responses.questions, saveStep, advanceVisitConsultation, cartAuth, router]);
+  }, [currentStep, responses.questions, saveStep, advanceVisitConsultation, cartAuth, router, queryClient, cartId]);
 
   const onBack = useCallback(async () => {
     try {
@@ -159,11 +231,24 @@ export const useVisitConsultation = (slug: string) => {
     }
   }, [goBackMutation, cartAuth, slug, cartId, queryClient, router]);
 
+  // A lone radio with a text-requiring option (e.g. q_7_01's "Yes, but there
+  // were issues") is NOT a tap-to-advance step: the patient must fill the box
+  // and press Continue, so it keeps its button instead of auto-advancing.
   const isSingleRadioStep =
     currentStep?.questions.length === 1 &&
-    currentStep.questions[0].question_type === "radio";
+    currentStep.questions[0].question_type === "radio" &&
+    !questionHasTextRequiredOption(currentStep.questions[0]);
 
-  // Auto-advance only for single-radio steps (not allergy/medication search or multi-question steps)
+  // On back-navigation the server returns the step with its saved answer. A
+  // single-radio step that's already answered keeps its Continue button (AUM
+  // behaviour) instead of auto-advancing again the moment it's shown.
+  const isAnswered =
+    !!currentStep?.responses && Object.keys(currentStep.responses).length > 0;
+
+  // Auto-advance a single-radio step on the user's TAP (hasInteracted). Mount /
+  // back-navigation leaves hasInteracted false, so a revisited answer is shown
+  // (with its Continue button) instead of jumping forward — yet tapping a radio
+  // still advances, so both paths work.
   useEffect(() => {
     if (!isSingleRadioStep || !responses.hasInteracted || !enableButton) return;
     onContinue();
@@ -184,6 +269,7 @@ export const useVisitConsultation = (slug: string) => {
     isSubmitting: isSaving || isAdvancing,
     isGoingBack,
     isSingleRadioStep,
+    isAnswered,
     progressFraction,
   };
 };

@@ -130,7 +130,16 @@ export const useIntroQuestions = (slug: string) => {
     }
   }, [slug, router]);
 
-  // Auto-advance for single radio steps
+  // Revisiting an already-answered step (back-navigation): the answer is in the
+  // store buffer or the backend. Such a step keeps its Continue button instead of
+  // auto-advancing again the moment it's shown (AUM behaviour).
+  const isAnswered =
+    !!introResponses.find((r) => r.step_id === currentStep?.id)?.responses ||
+    (!!currentStep?.responses && Object.keys(currentStep.responses).length > 0);
+
+  // Auto-advance on the user's TAP (hasInteracted). Mount / back-navigation
+  // leaves it false, so a revisited answer shows its Continue button; tapping a
+  // radio still advances, so both paths work.
   useEffect(() => {
     if (!responses.hasInteracted || !enableButton) return;
     onContinue();
@@ -150,5 +159,6 @@ export const useIntroQuestions = (slug: string) => {
     isLoading,
     isSubmitting: isAdvancing,
     isSingleRadioStep,
+    isAnswered,
   };
 };

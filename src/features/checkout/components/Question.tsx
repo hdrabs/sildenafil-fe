@@ -15,6 +15,7 @@ import {
   MedItem,
 } from "@/types/questionnaire";
 import { AnswerOption } from "./AnswerOption";
+import { answerOptionRequiresText } from "@/features/checkout/lib/answerOptionText";
 
 interface Props {
   question: QuestionType;
@@ -23,6 +24,7 @@ interface Props {
   userGender?: string;
   showBpSampleCard?: boolean;
   showLearnMore?: boolean;
+  compactHeading?: boolean;
 }
 
 // ─── Edit Medication Modal ────────────────────────────────────────────────────
@@ -136,28 +138,33 @@ const EditMedicationModal = ({ item, onSave, onRemove, onClose }: EditMedModalPr
 
 // ─── Blood Pressure Sample Card ───────────────────────────────────────────────
 
+const BloodPressureSampleRow = ({
+  label,
+  value,
+  type,
+}: {
+  label: string;
+  value: string;
+  type: string;
+}) => (
+  <div className="flex items-center justify-center p-[30px]">
+    <p className="flex-1 text-center font-bold md:text-left">{label}</p>
+    <div className="flex-1 text-center">
+      <p className="text-[40px] font-bold leading-none">{value}</p>
+      <p className="mt-1">mmHg</p>
+    </div>
+    <p className="flex-1 text-center md:text-right">{type}</p>
+  </div>
+);
+
 const BloodPressureSampleCard = () => (
-  <div className="mb-5 overflow-hidden rounded-xl border border-gray-200 bg-white">
-    <p className="border-b border-gray-100 px-4 py-2 text-center text-xs font-medium text-gray-500">
-      Sample reading
-    </p>
-    <div className="divide-y divide-gray-100">
-      <div className="flex items-center px-4 py-3">
-        <span className="w-20 text-sm font-semibold text-gray-700">Top #</span>
-        <div className="flex flex-1 flex-col items-center">
-          <span className="text-2xl font-bold text-gray-900">120</span>
-          <span className="text-xs text-gray-400">mmHg</span>
-        </div>
-        <span className="w-20 text-right text-sm text-gray-500">Systolic</span>
+  <div className="mb-5">
+    <p className="mb-4 text-center text-xs font-semibold">Sample reading</p>
+    <div className="rounded-[5px] border-2 border-[#bfd9e4]">
+      <div className="border-b-2 border-[#bfd9e4]">
+        <BloodPressureSampleRow label="Top #" value="120" type="Systolic" />
       </div>
-      <div className="flex items-center px-4 py-3">
-        <span className="w-20 text-sm font-semibold text-gray-700">Bottom #</span>
-        <div className="flex flex-1 flex-col items-center">
-          <span className="text-2xl font-bold text-gray-900">80</span>
-          <span className="text-xs text-gray-400">mmHg</span>
-        </div>
-        <span className="w-20 text-right text-sm text-gray-500">Diastolic</span>
-      </div>
+      <BloodPressureSampleRow label="Bottom #" value="80" type="Diastolic" />
     </div>
   </div>
 );
@@ -265,7 +272,7 @@ const InlineSearchSection = ({
       )}
 
       {!isMedication && (
-        <p className="mb-3 text-sm font-semibold leading-snug text-gray-800">
+        <p className="mb-3 text-base font-semibold leading-[34px] text-gray-800">
           Please list what you are allergic to and the reaction that each allergy causes. This field
           is required.
         </p>
@@ -293,7 +300,7 @@ const InlineSearchSection = ({
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addManual()}
             placeholder={isAllergy ? "Add allergy" : "Add medication"}
-            className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-9 pr-4 text-sm focus:border-[#e05c4b] focus:outline-none"
+            className="w-full rounded-md border border-gray-200 bg-white px-[45px] py-[18px] text-sm focus:border-[#e05c4b] focus:outline-none"
           />
           {debouncedQuery.length >= 3 && (isSearching || results.length > 0) && (
             <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-md">
@@ -324,7 +331,7 @@ const InlineSearchSection = ({
         <button
           type="button"
           onClick={addManual}
-          className="cursor-pointer rounded-lg bg-[#e05c4b] px-5 py-3 text-sm font-bold text-white hover:bg-[#c94f3e]"
+          className="cursor-pointer rounded-md bg-[#e05c4b] px-[45px] py-[18px] text-sm font-bold text-white hover:bg-[#c94f3e]"
         >
           ADD
         </button>
@@ -336,7 +343,9 @@ const InlineSearchSection = ({
           {currentItems.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3"
+              className={`flex items-center justify-between border border-gray-200 bg-white px-4 py-3 ${
+                isAllergy ? "rounded-md" : "rounded-xl"
+              }`}
             >
               <div>
                 <p className="text-sm font-bold text-gray-900">{item.name}</p>
@@ -388,13 +397,41 @@ export const Question = ({
   userGender,
   showBpSampleCard,
   showLearnMore = false,
+  compactHeading = false,
 }: Props) => {
   const [subtitleOpen, setSubtitleOpen] = useState(false);
-  const visibleAnswerOptions = userGender
+  const genderFilteredOptions = userGender
     ? question.answer_options.filter(
         (a: AnswerOptionType) => a.gender === "both" || a.gender === userGender,
       )
     : question.answer_options;
+  // Yes/No questions are stored "No" first in the data — render "Yes" first.
+  const visibleAnswerOptions =
+    genderFilteredOptions.length === 2 &&
+    genderFilteredOptions[0]?.label === "No" &&
+    genderFilteredOptions[1]?.label === "Yes"
+      ? [genderFilteredOptions[1], genderFilteredOptions[0]]
+      : genderFilteredOptions;
+
+  // A radio option that needs a free-text explanation (q_7_01's "Yes, but there
+  // were issues"): when it's the selected option we show a textbox below the
+  // list, and its text is saved onto the same response entry.
+  const radioSelectedId =
+    question.question_type === "radio"
+      ? Object.keys(response).find((k) => k !== "question_id" && k !== "position")
+      : undefined;
+  const radioSelectedOption = radioSelectedId
+    ? question.answer_options.find((ao) => ao.id.toString() === radioSelectedId)
+    : undefined;
+  const textRequiredOption =
+    radioSelectedOption && answerOptionRequiresText(radioSelectedOption)
+      ? radioSelectedOption
+      : undefined;
+  const textRequiredEntry = textRequiredOption
+    ? ((response as Record<string, unknown>)[textRequiredOption.id] as
+        | AnswerResponseEntry
+        | undefined)
+    : undefined;
 
   const isSearchQuestion = ["allergy_search", "medication_search"].includes(
     question.question_type,
@@ -432,15 +469,23 @@ export const Question = ({
       {showBpSampleCard && <BloodPressureSampleCard />}
 
       <div className="mb-4">
-        <h3 className="mb-4 text-[20px] font-semibold leading-[34px] xs:text-2xl">
+        <h3
+          className={
+            compactHeading
+              ? "mb-[15px] text-base font-semibold leading-[30px]"
+              : question.question_type === "statement"
+                ? "mb-2 text-[20px] font-semibold leading-[34px] md:text-2xl"
+                : "mb-5 text-[20px] font-semibold leading-[34px] md:text-2xl"
+          }
+        >
           {question.text}
         </h3>
         {showLearnMore && question.subtitle && (
-          <div className="mt-2">
+          <div className="mb-[10px] mt-2">
             <button
               type="button"
               onClick={() => setSubtitleOpen((o) => !o)}
-              className="text-sm font-medium text-[#e05c4b] hover:text-[#c94f3e]"
+              className="text-base font-normal text-[#e05c4b] hover:text-[#c94f3e]"
             >
               {subtitleOpen ? "−" : "+"} Learn how this information is used by your doctor
             </button>
@@ -455,17 +500,23 @@ export const Question = ({
             dangerouslySetInnerHTML={{ __html: question.subtitle }}
           />
         )}
+        {!showLearnMore && question.subtitle && question.question_type === "statement" && (
+          <div
+            className="mb-[30px] mt-2 px-0 text-base font-normal leading-relaxed text-black"
+            dangerouslySetInnerHTML={{ __html: question.subtitle }}
+          />
+        )}
       </div>
 
       <div className="mt-4">
         {isMedicationSearch ? null : question.question_type === "textfield_disabled" ? (
           <div className="mb-4">
-            <p className="mb-1 text-xs text-gray-400">Treatment</p>
+            <p className="mb-[10px] text-base leading-[28px] text-[#909090]">Treatment</p>
             <input
               type="text"
               disabled
               value={visibleAnswerOptions[0]?.label ?? ""}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700"
+              className="w-full rounded-l-[5px] border border-[#bfd9e4] bg-gray-50 px-[15px] py-3 text-sm text-gray-700 outline-none transition duration-200 ease-in-out"
             />
           </div>
         ) : question.question_type === "dropdown" ? (
@@ -517,6 +568,25 @@ export const Question = ({
           ))
         )}
       </div>
+
+      {textRequiredOption && (
+        <div className="mt-4">
+          <textarea
+            className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+            defaultValue={textRequiredEntry?.metadata?.text ?? ""}
+            onChange={(e) =>
+              dispatch({
+                type: "SELECT_ANSWER",
+                payload: {
+                  answerOption: textRequiredOption,
+                  question,
+                  metadata: { text: e.target.value },
+                },
+              })
+            }
+          />
+        </div>
+      )}
 
       {isSearchQuestion && showSearch && (implicitOption ?? selectedOption) && (
         <InlineSearchSection

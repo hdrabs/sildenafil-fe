@@ -39,10 +39,10 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
     )
   ) {
     const BP_TAG_COLORS: Record<string, string> = {
-      Low: "bg-red-100 text-red-600",
-      Normal: "bg-green-100 text-green-700",
-      Elevated: "bg-orange-100 text-orange-600",
-      High: "bg-red-100 text-red-600",
+      Low: "bg-[#e99191]",
+      Normal: "bg-[#37ca75]",
+      Elevated: "bg-[#ffce7c]",
+      High: "bg-[#e99191]",
     };
     const bpTagClass = answerOption.extra_label
       ? BP_TAG_COLORS[answerOption.extra_label]
@@ -59,7 +59,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
     const isOtherOption = isCheckbox && answerOption.label === "Other";
 
     return (
-      <div className="mb-3">
+      <div className="mb-[18px]">
         <div
           onClick={onToggle}
           className={`relative flex w-full cursor-pointer items-center justify-between rounded-[5px] border-[3px] bg-white py-6 pr-[18px] pl-[60px] text-sm transition-all duration-200 ${
@@ -89,7 +89,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
             <>
               <p className="flex-1 font-medium text-gray-900">{answerOption.label}</p>
               {bpTagClass && (
-                <span className={`rounded px-2 py-0.5 text-xs font-semibold ${bpTagClass}`}>
+                <span className={`rounded-[5px] px-2.5 py-1 text-xs font-semibold capitalize text-white ${bpTagClass}`}>
                   {answerOption.extra_label}
                 </span>
               )}
@@ -110,8 +110,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
               Please describe the side effect(s) that you experienced
             </p>
             <textarea
-              className="w-full resize-none rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:outline-none"
-              rows={5}
+              className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
               defaultValue={currentResponse?.metadata?.text ?? ""}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
@@ -130,7 +129,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
   if (["text", "textfield"].includes(question.question_type)) {
     return (
       <textarea
-        className="w-full min-h-[280px] resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-300 focus:outline-none"
+        className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
         defaultValue={currentResponse?.metadata?.text ?? ""}
         onChange={(e) => onTextChange(e.target.value)}
         placeholder={answerOption.label}
@@ -152,13 +151,10 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
     );
   }
 
-  // statement — display only
+  // statement — content is shown via the question heading + subtitle; the answer
+  // label here just duplicates the subtitle (e.g. the BP statement), so render nothing.
   if (question.question_type === "statement") {
-    return (
-      <p className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">
-        {answerOption.label}
-      </p>
-    );
+    return null;
   }
 
   return null;
