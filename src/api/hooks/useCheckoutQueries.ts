@@ -64,3 +64,38 @@ export const useContinueShippingConfirmation = () =>
     mutationFn: (params: { cart_id: number; cart_token?: string }) =>
       checkoutService.continueShippingConfirmation(params),
   });
+
+export const useOrderSummary = (cartId: number, cartToken?: string) =>
+  useQuery({
+    queryKey: checkoutKeys.orderSummary(cartId),
+    queryFn: () => checkoutService.getOrderSummary({ cart_id: cartId, cart_token: cartToken }),
+    enabled: cartId > 0,
+  });
+
+export const useExistingIdPhoto = (cartId: number, cartToken: string | undefined, enabled: boolean) =>
+  useQuery({
+    queryKey: checkoutKeys.idPhoto(cartId),
+    queryFn: () => checkoutService.getIdPhoto({ cart_id: cartId, cart_token: cartToken }),
+    enabled: enabled && cartId > 0,
+    staleTime: 0,
+  });
+
+export const useExistingSelfiePhoto = (cartId: number, cartToken: string | undefined, enabled: boolean) =>
+  useQuery({
+    queryKey: checkoutKeys.selfiePhoto(cartId),
+    queryFn: () => checkoutService.getSelfiePhoto({ cart_id: cartId, cart_token: cartToken }),
+    enabled: enabled && cartId > 0,
+    staleTime: 0,
+  });
+
+export const useContinueIdUpload = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.continueIdUpload(params),
+  });
+
+export const useContinueSelfieUpload = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.continueSelfieUpload(params),
+  });

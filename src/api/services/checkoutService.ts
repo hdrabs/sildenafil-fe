@@ -1,6 +1,18 @@
 import api from "@/api/baseAPI";
-import { CheckoutNavigation, CheckoutNavigationParams, SsnVerifyResponse } from "@/types/checkout";
+import {
+  CheckoutNavigation,
+  CheckoutNavigationParams,
+  SsnVerifyResponse,
+  ExistingPhotoResponse,
+} from "@/types/checkout";
 import { CartV2Response } from "@/types/cart";
+import { CartSummaryResponse } from "@/types/orderSummary";
+
+const cartQuery = ({ cart_id, cart_token }: CartScoped): string => {
+  const qs = new URLSearchParams({ cart_id: String(cart_id) });
+  if (cart_token) qs.set("cart_token", cart_token);
+  return `?${qs.toString()}`;
+};
 
 const buildQuery = ({ step, cart_id, cart_token }: CheckoutNavigationParams): string => {
   const qs = new URLSearchParams({ step, cart_id: String(cart_id) });
@@ -67,7 +79,29 @@ export const checkoutService = {
   skipSelfieUpload: (params: CartScoped): Promise<CartV2Response> =>
     api.put<CartV2Response>("/v2/checkout/selfie_upload", { ...params, skip_selfie: true }),
 
+  // GET /v2/checkout/id_upload — the already-uploaded ID photo URL (or null), so the
+  // review step can show it instead of forcing a re-upload.
+  getIdPhoto: (params: CartScoped): Promise<ExistingPhotoResponse> =>
+    api.get<ExistingPhotoResponse>(`/v2/checkout/id_upload${cartQuery(params)}`),
+
+  // GET /v2/checkout/selfie_upload — the already-uploaded selfie URL (or null).
+  getSelfiePhoto: (params: CartScoped): Promise<ExistingPhotoResponse> =>
+    api.get<ExistingPhotoResponse>(`/v2/checkout/selfie_upload${cartQuery(params)}`),
+
+  // PUT /v2/checkout/id_upload — advance with the already-uploaded photo, no re-upload
+  // (skip_id:false = "not skipped; a photo is already on file").
+  continueIdUpload: (params: CartScoped): Promise<CartV2Response> =>
+    api.put<CartV2Response>("/v2/checkout/id_upload", { ...params, skip_id: false }),
+
+  // PUT /v2/checkout/selfie_upload — advance with the already-uploaded selfie, no re-upload.
+  continueSelfieUpload: (params: CartScoped): Promise<CartV2Response> =>
+    api.put<CartV2Response>("/v2/checkout/selfie_upload", { ...params, skip_selfie: false }),
+
   // PUT /v2/checkout/shipping_confirmation — confirmation "Continue"; advances to order verification.
   continueShippingConfirmation: (params: CartScoped): Promise<CartV2Response> =>
     api.put<CartV2Response>("/v2/checkout/shipping_confirmation", params),
+
+  // GET /v2/checkout/order_verification — the "Almost Done!" cart summary (pricing + variant + discounts).
+  getOrderSummary: (params: CartScoped): Promise<CartSummaryResponse> =>
+    api.get<CartSummaryResponse>(`/v2/checkout/order_verification${cartQuery(params)}`),
 };

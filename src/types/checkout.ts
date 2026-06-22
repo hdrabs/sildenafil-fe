@@ -30,6 +30,9 @@ export interface CheckoutNavigationParams {
 
 // ── Identity verification (SSN → Plaid) ──────────────────────────────────────
 
+// Which verification method the user picked on the identity choice screen.
+export type IdentityOption = "last_4_ssn" | "id_review" | "";
+
 export interface IdentityVerificationStatus {
   plaid_status: boolean;
   limit_exceeded: boolean;
@@ -41,4 +44,9 @@ export interface SsnVerifyResponse {
   cart: CartV2;
   redirect_path: string;
   identity_verification: IdentityVerificationStatus;
+}
+
+// GET /v2/checkout/{id_upload,selfie_upload} — the already-uploaded photo URL, or null.
+export interface ExistingPhotoResponse {
+  photo_url: string | null;
 }

@@ -9,6 +9,10 @@ import {
   useUploadSelfiePhoto,
   useSkipIdUpload,
   useSkipSelfieUpload,
+  useExistingIdPhoto,
+  useExistingSelfiePhoto,
+  useContinueIdUpload,
+  useContinueSelfieUpload,
 } from "@/api/hooks/useCheckoutQueries";
 import { APIError } from "@/api/baseAPI";
 
@@ -16,25 +20,35 @@ type PhotoKind = "id" | "selfie";
 
 /**
  * Drives the ID / selfie upload steps: capture/upload a real photo (sent to
- * PocketMed) or skip. Either way the cart advances server-side and the page
- * follows the returned redirect_path.
+ * PocketMed) or skip. Also surfaces a previously-uploaded photo (fetched back from
+ * PocketMed) so returning to the step shows it with a "Continue" instead of forcing
+ * a re-upload. Every action advances the cart server-side and the page follows the
+ * returned redirect_path.
  */
 export const usePhotoUpload = (kind: PhotoKind) => {
   const router = useRouter();
   const activeCart = useActiveCart();
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token ?? undefined;
+  const isId = kind === "id";
 
-  const step = kind === "id" ? "visit_id_upload" : "visit_selfie_upload";
+  const step = isId ? "visit_id_upload" : "visit_selfie_upload";
   const { back, steps } = useStepNavigation(step);
 
+  // Hooks must run unconditionally; the per-kind variant is selected after.
   const uploadId = useUploadIdPhoto();
   const uploadSelfie = useUploadSelfiePhoto();
   const skipId = useSkipIdUpload();
   const skipSelfie = useSkipSelfieUpload();
+  const continueId = useContinueIdUpload();
+  const continueSelfie = useContinueSelfieUpload();
+  const idPhoto = useExistingIdPhoto(cartId, cartToken, isId);
+  const selfiePhoto = useExistingSelfiePhoto(cartId, cartToken, !isId);
 
-  const uploadMutation = kind === "id" ? uploadId : uploadSelfie;
-  const skipMutation = kind === "id" ? skipId : skipSelfie;
+  const uploadMutation = isId ? uploadId : uploadSelfie;
+  const skipMutation = isId ? skipId : skipSelfie;
+  const continueMutation = isId ? continueId : continueSelfie;
+  const photoQuery = isId ? idPhoto : selfiePhoto;
 
   const [error, setError] = useState<string | null>(null);
 
@@ -59,6 +73,13 @@ export const usePhotoUpload = (kind: PhotoKind) => {
     router.push(redirect_path);
   };
 
+  // Advance with the already-uploaded photo — no re-upload.
+  const confirmExisting = async () => {
+    if (cartId <= 0) return;
+    const { redirect_path } = await continueMutation.mutateAsync({ cart_id: cartId, cart_token: cartToken });
+    router.push(redirect_path);
+  };
+
   return {
     back,
     steps,
@@ -67,5 +88,9 @@ export const usePhotoUpload = (kind: PhotoKind) => {
     isUploading: uploadMutation.isPending,
     isSkipping: skipMutation.isPending,
     error,
+    existingPhotoUrl: photoQuery.data?.photo_url ?? null,
+    isLoadingExisting: photoQuery.isLoading,
+    confirmExisting,
+    isConfirming: continueMutation.isPending,
   };
 };

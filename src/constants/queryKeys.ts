@@ -62,6 +62,9 @@ export const checkoutKeys = {
   all: ["checkout"] as const,
   navigation: (step: string, cartId: number) =>
     [...checkoutKeys.all, "navigation", step, cartId] as const,
+  orderSummary: (cartId: number) => [...checkoutKeys.all, "orderSummary", cartId] as const,
+  idPhoto: (cartId: number) => [...checkoutKeys.all, "idPhoto", cartId] as const,
+  selfiePhoto: (cartId: number) => [...checkoutKeys.all, "selfiePhoto", cartId] as const,
 };
 
 // v2 checkout shipping list — kept separate from the v1 account list above so
