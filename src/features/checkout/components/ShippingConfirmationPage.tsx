@@ -90,13 +90,13 @@ const DeliverySummary = ({
 
 export const ShippingConfirmationPage = () => {
   const router = useRouter();
-  const { me, address, deliveryOption, cutoff, back, steps, onContinue, isSubmitting, isLoading } =
+  const { me, address, deliveryOption, cutoff, back, onContinue, isSubmitting, isLoading } =
     useShippingConfirmation();
 
   return (
     <>
       <SecondaryNav onBack={back} isLoading={isSubmitting} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="shipping_confirmation" />
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">

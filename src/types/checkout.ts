@@ -14,10 +14,18 @@ export interface CheckoutNavStep {
   status: CheckoutStepStatus;
 }
 
+// Progress-bar milestone for a step. `to` (questionnaire steps only) is the band end
+// the FE interpolates toward by (answered / total). Null = pre-funnel, no bar.
+export interface CheckoutProgress {
+  value: number;
+  to?: number;
+}
+
 export interface CheckoutNavigation {
   current_step: string;
   previous: CheckoutNavLink | null;
   next: CheckoutNavLink | null;
+  progress: CheckoutProgress | null;
   furthest_step: string;
   steps: CheckoutNavStep[];
 }

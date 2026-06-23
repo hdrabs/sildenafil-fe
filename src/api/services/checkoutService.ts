@@ -104,4 +104,10 @@ export const checkoutService = {
   // GET /v2/checkout/order_verification — the "Almost Done!" cart summary (pricing + variant + discounts).
   getOrderSummary: (params: CartScoped): Promise<CartSummaryResponse> =>
     api.get<CartSummaryResponse>(`/v2/checkout/order_verification${cartQuery(params)}`),
+
+  // PUT /v2/checkout/order_verification — "Complete My Order": completes the PocketMed
+  // visit + advances the cart out of order_verification. Does NOT charge (the
+  // Authorize.net charge is a separate downstream step).
+  completeOrderVerification: (params: CartScoped): Promise<{ redirect_path: string }> =>
+    api.put<{ redirect_path: string }>("/v2/checkout/order_verification", params),
 };

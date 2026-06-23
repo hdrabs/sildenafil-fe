@@ -23,6 +23,8 @@ interface UseProductConfiguratorOptions {
   landingContext?: string;
   autoSelectPopular?: boolean;
   autoSelectDosage?: boolean;
+  // Landing pages gate certain variants (e.g. 20mg); the edit modal needs all of them.
+  includeGated?: boolean;
 }
 
 export const useProductConfigurator = ({
@@ -32,6 +34,7 @@ export const useProductConfigurator = ({
   landingContext,
   autoSelectPopular = true,
   autoSelectDosage = true,
+  includeGated = false,
 }: UseProductConfiguratorOptions) => {
   const catalogSlug = normalizeSlug(slug ?? DEFAULT_SLUG);
 
@@ -47,9 +50,11 @@ export const useProductConfigurator = ({
     product: { ...v.product, drug: normalizeDrug(v.product.drug) },
   }));
 
-  const variants = normalizedVariants?.filter(
-    (v) => !GATED_SLUGS.includes(v.product.slug) || v.product.slug === catalogSlug,
-  );
+  const variants = includeGated
+    ? normalizedVariants
+    : normalizedVariants?.filter(
+        (v) => !GATED_SLUGS.includes(v.product.slug) || v.product.slug === catalogSlug,
+      );
 
   // Drug selected by user — null means derive from the initial slug
   const [selectedDrug, setSelectedDrug] = useState<string | null>(null);

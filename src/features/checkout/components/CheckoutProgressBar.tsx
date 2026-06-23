@@ -1,43 +1,46 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { CheckoutNavStep } from "@/types/checkout";
+import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
+
+interface Props {
+  /** The cart step this page represents (same value passed to useStepNavigation). */
+  step: string;
+  /** Questionnaire steps only: 0–1 answered ratio, to interpolate across the band. */
+  fraction?: number;
+}
 
 /**
- * Presentational progress bar fed by the backend-owned step list
- * (navigation.steps). Holds no flow topology of its own.
+ * Thin continuous progress line, driven by the backend milestone for `step`
+ * (GET /navigation → progress). Self-sufficient: it reads the navigation query
+ * itself (react-query dedupes with the page's own call), so pages just pass their
+ * step. Hidden before the funnel (no milestone, e.g. intro-questions). Questionnaire
+ * steps carry a [value..to] band that `fraction` interpolates across.
+ *
+ * Rendered right after <SecondaryNav> on every checkout page; `sticky top-[60px]`
+ * pins it to the bottom edge of that ~60px sticky header so it rides along on scroll
+ * instead of sliding away. (Nav is z-30; the bar sits just under it at z-20.)
  */
-export const CheckoutProgressBar = ({ steps }: { steps: CheckoutNavStep[] }) => {
-  if (!steps.length) return null;
+export const CheckoutProgressBar = ({ step, fraction }: Props) => {
+  const { navigation } = useStepNavigation(step);
+  const progress = navigation?.progress;
+  if (!progress) return null;
 
-  const current = steps.find((s) => s.status === "current");
-  const reached = steps.filter((s) => s.status !== "upcoming").length;
+  const { value, to } = progress;
+  const percent = fraction != null && to != null ? value + fraction * (to - value) : value;
+  const clamped = Math.min(100, Math.max(0, percent));
 
   return (
-    <div className="mx-auto w-full max-w-xl px-4 pt-3">
-      <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-text-muted">
-        <span>{current?.label ?? ""}</span>
-        <span>
-          {reached} of {steps.length}
-        </span>
-      </div>
+    <div
+      className="sticky top-[60px] z-20 h-1.5 w-full bg-bg-input"
+      role="progressbar"
+      aria-valuenow={Math.round(clamped)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+    >
       <div
-        className="flex gap-1"
-        role="progressbar"
-        aria-valuenow={reached}
-        aria-valuemin={0}
-        aria-valuemax={steps.length}
-      >
-        {steps.map((s) => (
-          <div
-            key={s.step}
-            className={cn(
-              "h-1.5 flex-1 rounded-full transition-colors",
-              s.status === "upcoming" ? "bg-border-default" : "bg-primary",
-            )}
-          />
-        ))}
-      </div>
+        className="h-full bg-primary transition-[width] duration-500 ease-out"
+        style={{ width: `${clamped}%` }}
+      />
     </div>
   );
 };

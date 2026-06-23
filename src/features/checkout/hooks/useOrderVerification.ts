@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useActiveCart } from "@/store";
 import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
-import { useOrderSummary } from "@/api/hooks/useCheckoutQueries";
+import { useOrderSummary, useCompleteOrderVerification } from "@/api/hooks/useCheckoutQueries";
 import { useApplyDiscount, useRemoveDiscount } from "@/api/hooks/useDiscountQueries";
 import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
 import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
+import { useCreditCardsV2, useSetDefaultCardV2 } from "@/api/hooks/useCreditCardQueries";
 import { checkoutKeys } from "@/constants/queryKeys";
 import { APIError } from "@/api/baseAPI";
 import { CartSummaryResponse } from "@/types/orderSummary";
@@ -18,6 +20,7 @@ import { CartSummaryResponse } from "@/types/orderSummary";
  * totals; this just renders and re-seeds the cached summary after a coupon change.
  */
 export const useOrderVerification = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const activeCart = useActiveCart();
   const cartId = activeCart?.cart.id ?? 0;
@@ -67,6 +70,21 @@ export const useOrderVerification = () => {
     queryClient.invalidateQueries({ queryKey: checkoutKeys.orderSummary(cartId) });
   };
 
+  // Payment method: list saved cards; selecting one sets it as the default (the
+  // card that will be charged). Adding a card makes the new one the default.
+  const { data: cardsData } = useCreditCardsV2();
+  const cards = cardsData?.credit_cards ?? [];
+  const defaultCardId = cardsData?.default_payment_profile_id ?? null;
+  const setDefault = useSetDefaultCardV2();
+  const selectCard = (paymentProfileId: string) => setDefault.mutate(paymentProfileId);
+
+  const complete = useCompleteOrderVerification();
+  const completeOrder = async () => {
+    if (!enabled || !defaultCardId) return;
+    const { redirect_path } = await complete.mutateAsync({ cart_id: cartId, cart_token: cartToken });
+    router.push(redirect_path);
+  };
+
   return {
     cart,
     isLoading,
@@ -86,5 +104,12 @@ export const useOrderVerification = () => {
     openEdit: () => setEditing(true),
     closeEdit: () => setEditing(false),
     onEditSaved,
+    cards,
+    defaultCardId,
+    selectCard,
+    isSelectingCard: setDefault.isPending,
+    hasSelectedCard: !!defaultCardId,
+    completeOrder,
+    isCompleting: complete.isPending,
   };
 };

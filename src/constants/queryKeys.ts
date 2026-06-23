@@ -34,6 +34,8 @@ export const shippingAddressKeys = {
 export const creditCardKeys = {
   all:  ["creditCards"] as const,
   list: () => [...creditCardKeys.all, "list"] as const,
+  // v2 checkout cards — separate cache entry from the v1 account list.
+  listV2: () => [...creditCardKeys.all, "listV2"] as const,
 };
 
 export const catalogKeys = {

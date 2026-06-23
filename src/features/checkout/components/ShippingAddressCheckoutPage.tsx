@@ -17,7 +17,6 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
   const {
     me,
     onBack,
-    steps,
     view,
     cartId,
     cartToken,
@@ -50,7 +49,7 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
   return (
     <>
       <SecondaryNav onBack={onBack} isLoading={isAttaching} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="shipping_address_info" />
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">

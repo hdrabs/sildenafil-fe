@@ -88,7 +88,7 @@ const inputClass = (hasError: boolean) =>
 
 export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
   const router = useRouter();
-  const { back, steps } = useStepNavigation("patient_info");
+  const { back } = useStepNavigation("patient_info");
   const onBack = returnTo ? () => router.push(returnTo) : back;
   const {
     form,
@@ -128,7 +128,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
   return (
     <>
       <SecondaryNav onBack={onBack} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="patient_info" />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
         <div className="w-full max-w-xl">
           <h1 className="mb-2 text-2xl font-semibold leading-[34px] text-gray-900">

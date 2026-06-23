@@ -72,6 +72,12 @@ export const useOrderSummary = (cartId: number, cartToken?: string) =>
     enabled: cartId > 0,
   });
 
+export const useCompleteOrderVerification = () =>
+  useMutation({
+    mutationFn: (params: { cart_id: number; cart_token?: string }) =>
+      checkoutService.completeOrderVerification(params),
+  });
+
 export const useExistingIdPhoto = (cartId: number, cartToken: string | undefined, enabled: boolean) =>
   useQuery({
     queryKey: checkoutKeys.idPhoto(cartId),

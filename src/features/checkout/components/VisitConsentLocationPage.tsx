@@ -12,7 +12,7 @@ import { TelehealthDrawer } from "./drawers/TelehealthDrawer";
 import { PrivacyPracticesDrawer } from "./drawers/PrivacyPracticesDrawer";
 
 export const VisitConsentLocationPage = () => {
-  const { back, steps } = useStepNavigation("visit_consent");
+  const { back } = useStepNavigation("visit_consent");
   const {
     form,
     submit,
@@ -38,7 +38,7 @@ export const VisitConsentLocationPage = () => {
   return (
     <>
       <SecondaryNav onBack={back} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="visit_consent" />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
         <div className="w-full max-w-xl">
           <h1 className="mb-4 text-2xl font-semibold text-gray-900">

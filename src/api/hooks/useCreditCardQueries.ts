@@ -35,3 +35,27 @@ export const useDeleteCreditCard = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: creditCardKeys.list() }),
   });
 };
+
+// ── v2 (checkout payment step) ─────────────────────────────────────────────
+
+export const useCreditCardsV2 = () =>
+  useQuery<CreditCardsResponse>({
+    queryKey: creditCardKeys.listV2(),
+    queryFn:  () => creditCardService.listV2(),
+  });
+
+export const useAddCreditCardV2 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateCreditCardPayload) => creditCardService.createV2(payload),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: creditCardKeys.listV2() }),
+  });
+};
+
+export const useSetDefaultCardV2 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentProfileId: string) => creditCardService.setDefaultV2(paymentProfileId),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: creditCardKeys.listV2() }),
+  });
+};

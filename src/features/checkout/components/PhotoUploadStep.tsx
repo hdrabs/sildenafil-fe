@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState, ChangeEvent } from "react";
+import Image from "next/image";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "@/features/checkout/components/CheckoutProgressBar";
 import { CameraCaptureModal } from "@/features/checkout/components/CameraCaptureModal";
 import { WhyNeedPhotoModal } from "@/features/checkout/components/WhyNeedPhotoModal";
 import { PhotoTroubleModal } from "@/features/checkout/components/PhotoTroubleModal";
+import { SkipPhotoDrawer } from "@/features/checkout/components/SkipPhotoDrawer";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { usePhotoUpload } from "@/features/checkout/hooks/usePhotoUpload";
@@ -26,6 +28,7 @@ const COPY = {
       "Your ID is government issued and not expired",
     ],
     facingMode: "environment" as const,
+    illustration: "/images/id-upload.png",
   },
   selfie: {
     landingTitle: "Upload a photo of your face",
@@ -40,6 +43,7 @@ const COPY = {
       "The photo has not been edited/filtered",
     ],
     facingMode: "user" as const,
+    illustration: "/images/selfie-upload.png",
   },
 };
 
@@ -82,7 +86,6 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
   const c = COPY[kind];
   const {
     back,
-    steps,
     upload,
     skip,
     isUploading,
@@ -101,6 +104,7 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [whyOpen, setWhyOpen] = useState(false);
   const [troubleOpen, setTroubleOpen] = useState(false);
+  const [skipOpen, setSkipOpen] = useState(false);
 
   // A freshly captured/selected photo wins; otherwise show the already-uploaded one
   // (until the user chooses to re-take).
@@ -136,7 +140,7 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
   return (
     <>
       <SecondaryNav onBack={back} isLoading={isUploading || isSkipping || isConfirming} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step={kind === "id" ? "visit_id_upload" : "visit_selfie_upload"} />
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">
@@ -156,9 +160,8 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
             <>
               <button
                 type="button"
-                onClick={skip}
-                disabled={isSkipping}
-                className="cursor-pointer text-sm font-medium text-link-blue underline transition-opacity hover:opacity-80 disabled:opacity-60"
+                onClick={() => setSkipOpen(true)}
+                className="cursor-pointer text-sm font-medium text-text-link underline transition-opacity hover:opacity-80"
               >
                 Skip this step for now
               </button>
@@ -166,12 +169,35 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
               <h1 className="mt-4 text-2xl font-bold text-text-primary">{c.landingTitle}</h1>
               <p className="mt-3 text-text-primary">{c.intro}</p>
               {c.onlyNeed && <p className="mt-3 font-medium text-coral">{c.onlyNeed}</p>}
+
+              <div className="my-5 flex justify-center">
+                <div className="relative w-full max-w-[276px]">
+                  <Image
+                    src={c.illustration}
+                    alt=""
+                    width={276}
+                    height={180}
+                    unoptimized
+                    className="block h-auto w-full"
+                  />
+                  {/* Legacy red pointer drawn into the ID's name area (ID step only). */}
+                  {kind === "id" && (
+                    <>
+                      <span className="absolute right-[-5%] top-[5%] h-[41%] w-[19px] border-r border-t border-[#e05c4b]" />
+                      <span className="absolute right-[-5%] top-[46%] w-[37%] border-r border-t border-[#e05c4b]">
+                        <span className="absolute left-[-3px] top-[-4px] inline-block rotate-[135deg] border-b border-r border-[#e05c4b] p-[3px]" />
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
               {c.note && <p className="mt-3 text-sm text-text-muted">{c.note}</p>}
 
               <button
                 type="button"
                 onClick={() => setWhyOpen(true)}
-                className="mt-4 block cursor-pointer text-sm font-medium text-link-blue underline transition-opacity hover:opacity-80"
+                className="mt-4 block cursor-pointer text-sm font-medium text-text-link underline transition-opacity hover:opacity-80"
               >
                 Why do you need this?
               </button>
@@ -196,7 +222,7 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
               <button
                 type="button"
                 onClick={() => setWhyOpen(true)}
-                className="mt-4 block cursor-pointer text-sm font-medium text-link-blue underline transition-opacity hover:opacity-80"
+                className="mt-4 block cursor-pointer text-sm font-medium text-text-link underline transition-opacity hover:opacity-80"
               >
                 Why do you need this?
               </button>
@@ -267,6 +293,12 @@ export const PhotoUploadStep = ({ kind }: { kind: PhotoKind }) => {
       )}
       {whyOpen && <WhyNeedPhotoModal kind={kind} onClose={() => setWhyOpen(false)} />}
       {troubleOpen && <PhotoTroubleModal onClose={() => setTroubleOpen(false)} />}
+      <SkipPhotoDrawer
+        show={skipOpen}
+        onClose={() => setSkipOpen(false)}
+        onConfirm={skip}
+        isSkipping={isSkipping}
+      />
     </>
   );
 };

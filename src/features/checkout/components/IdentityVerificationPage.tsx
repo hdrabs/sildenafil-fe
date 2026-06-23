@@ -65,13 +65,12 @@ export const IdentityVerificationPage = () => {
     continueWithVisit,
     isContinuing,
     back,
-    steps,
   } = useIdentityVerification();
 
   return (
     <>
       <SecondaryNav onBack={back} isLoading={isContinuing} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="identity_verification" />
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">

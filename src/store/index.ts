@@ -31,3 +31,5 @@ export const useVisitConsentState = () => useQuestionnaireStore((s) => s.visitCo
 export const useSetVisitConsentState = () => useQuestionnaireStore((s) => s.setVisitConsentState);
 export const useLastIntroStep = () => useQuestionnaireStore((s) => s.lastIntroStep);
 export const useSetLastIntroStep = () => useQuestionnaireStore((s) => s.setLastIntroStep);
+export const useConsultationSteps = () => useQuestionnaireStore((s) => s.consultationSteps);
+export const useMarkConsultationStep = () => useQuestionnaireStore((s) => s.markConsultationStep);

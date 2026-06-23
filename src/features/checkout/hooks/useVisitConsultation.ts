@@ -9,16 +9,35 @@ import {
   useGoBackQuestionaire,
   useAdvanceVisitConsultation,
 } from "@/api/hooks/useQuestionnaireQueries";
-import { useActiveCart } from "@/store";
+import { useActiveCart, useConsultationSteps, useMarkConsultationStep } from "@/store";
 import { questionnaireReducer } from "./questionnaireReducer";
 import { ROUTES } from "@/constants/routes";
 import { questionnaireKeys } from "@/constants/queryKeys";
 import { Question } from "@/types/questionnaire";
 
+// The PocketMed questionnaire branches on answers, so it has no knowable length. The
+// progress bar paces off the user's actual position in it (tracked in questionnaireStore):
+// it moves EVENLY across most of the band for a typical-length flow, then — only for
+// longer-than-typical flows — eases the final stretch so it keeps inching toward the band
+// end instead of freezing, and never overshoots. Going back moves it back in lockstep.
+//
+// EVEN_STEPS steps of even, linear movement cover EVEN_FILL of the band; beyond that a
+// gentle asymptotic creep covers the rest. Tune EVEN_STEPS toward the median flow length.
+const EVEN_STEPS = 13;
+const EVEN_FILL = 0.88;
+
+const consultationBandFraction = (steps: number): number => {
+  if (steps <= 0) return 0;
+  if (steps <= EVEN_STEPS) return (steps / EVEN_STEPS) * EVEN_FILL;
+  return EVEN_FILL + (1 - EVEN_FILL) * (1 - Math.pow(0.7, steps - EVEN_STEPS));
+};
+
 export const useVisitConsultation = (slug: string) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const activeCart = useActiveCart();
+  const consultationSteps = useConsultationSteps();
+  const markConsultationStep = useMarkConsultationStep();
 
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token;
@@ -47,6 +66,13 @@ export const useVisitConsultation = (slug: string) => {
     if (!currentStep) return;
     dispatch({ type: "SET_INITIAL", payload: currentStep.responses });
   }, [currentStep]);
+
+  // Count each distinct consultation step reached so the progress bar can advance
+  // across its band. currentStep.label is the server-authoritative slug.
+  useEffect(() => {
+    if (!currentStep || cartId <= 0) return;
+    markConsultationStep(cartId, currentStep.label);
+  }, [currentStep, cartId, markConsultationStep]);
 
   // Server is authoritative on slug — correct URL if it drifts
   useEffect(() => {
@@ -143,6 +169,10 @@ export const useVisitConsultation = (slug: string) => {
     onContinue();
   }, [isSingleRadioStep, enableButton, responses.hasInteracted, onContinue]);
 
+  // pos is 0-based; steps reached = pos + 1 (−1 → 0 when this cart has no path yet).
+  const pos = consultationSteps?.cartId === cartId ? consultationSteps.pos : -1;
+  const progressFraction = consultationBandFraction(pos + 1);
+
   return {
     currentStep,
     responses,
@@ -154,5 +184,6 @@ export const useVisitConsultation = (slug: string) => {
     isSubmitting: isSaving || isAdvancing,
     isGoingBack,
     isSingleRadioStep,
+    progressFraction,
   };
 };

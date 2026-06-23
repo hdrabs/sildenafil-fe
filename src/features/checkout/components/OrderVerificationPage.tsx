@@ -5,11 +5,17 @@ import Image from "next/image";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "@/features/checkout/components/CheckoutProgressBar";
 import { EditCartModal } from "@/features/checkout/components/EditCartModal";
+import { PaymentMethodSection } from "@/features/checkout/components/PaymentMethodSection";
 import { useOrderVerification } from "@/features/checkout/hooks/useOrderVerification";
 import { CartSummary } from "@/types/orderSummary";
 import { DeliveryOption } from "@/types/delivery";
 
 const money = (n: number): string => `$${Number(n).toFixed(2)}`;
+
+const bottleSrc = (drug: string): string =>
+  drug === "tadalafil"
+    ? "/images/products/tadalafil-bottle.png"
+    : "/images/products/sildenafil-bottle.png";
 
 // product_name_with_brand is "Sildenafil (Generic Viagra)" — slot the dosage in
 // before the brand to read "Sildenafil 20mg (Generic Viagra)".
@@ -151,7 +157,6 @@ export const OrderVerificationPage = () => {
     cart,
     isLoading,
     back,
-    steps,
     cartId,
     cartToken,
     deliveryOption,
@@ -166,6 +171,13 @@ export const OrderVerificationPage = () => {
     openEdit,
     closeEdit,
     onEditSaved,
+    cards,
+    defaultCardId,
+    selectCard,
+    isSelectingCard,
+    hasSelectedCard,
+    completeOrder,
+    isCompleting,
   } = useOrderVerification();
 
   const displayTotal = cart ? cart.total_price + cart.provider_fee : 0;
@@ -176,7 +188,7 @@ export const OrderVerificationPage = () => {
   return (
     <>
       <SecondaryNav onBack={back} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="order_verification" />
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">
@@ -190,10 +202,24 @@ export const OrderVerificationPage = () => {
             <div className="mt-6 rounded-2xl bg-bg-card p-6 shadow-sm">
               {/* Product */}
               <div className="flex items-start gap-4">
-                <div className="h-20 w-20 shrink-0 rounded-lg border border-border-default bg-bg-input" />
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border-default bg-white p-1.5">
+                  <Image
+                    src={bottleSrc(cart.product_variant.product.drug)}
+                    alt=""
+                    width={72}
+                    height={72}
+                    unoptimized
+                    className="h-full w-full object-contain"
+                  />
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-text-primary">{productTitle(cart)}</p>
-                  <p className="text-text-muted">{cart.quantity} Tablets</p>
+                  <p className="text-text-muted">
+                    {cart.quantity} Tablets
+                    {cart.final_quantity > cart.quantity && (
+                      <span> + {cart.final_quantity - cart.quantity} FREE</span>
+                    )}
+                  </p>
                   <button
                     type="button"
                     onClick={openEdit}
@@ -256,13 +282,15 @@ export const OrderVerificationPage = () => {
 
               <Divider />
 
-              {/* Payment is wired in the next phase. */}
-              <div>
-                <h2 className="text-lg font-bold text-text-primary">Payment Method</h2>
-                <p className="mt-2 text-sm text-text-muted">
-                  Payment is added in the next step.
-                </p>
-              </div>
+              <PaymentMethodSection
+                cards={cards}
+                defaultCardId={defaultCardId}
+                onSelect={selectCard}
+                isSelecting={isSelectingCard}
+                completeOrder={completeOrder}
+                isCompleting={isCompleting}
+                hasSelectedCard={hasSelectedCard}
+              />
             </div>
           )}
         </div>

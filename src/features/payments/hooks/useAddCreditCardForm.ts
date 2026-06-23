@@ -5,7 +5,7 @@ import {
   creditCardSchema,
   CreditCardFormValues,
 } from "@/features/payments/schemas/creditCardSchema";
-import { useAddCreditCard } from "@/api/hooks/useCreditCardQueries";
+import { useAddCreditCard, useAddCreditCardV2 } from "@/api/hooks/useCreditCardQueries";
 import { AuthorizeNetOpaqueData } from "@/types/creditCard";
 
 declare global {
@@ -67,10 +67,14 @@ const tokenizeCard = (cardData: {
 
 interface UseAddCreditCardFormOptions {
   onSuccess: () => void;
+  // The account page adds cards via v1; the checkout payment step uses v2.
+  apiVersion?: "v1" | "v2";
 }
 
-export const useAddCreditCardForm = ({ onSuccess }: UseAddCreditCardFormOptions) => {
-  const addCard = useAddCreditCard();
+export const useAddCreditCardForm = ({ onSuccess, apiVersion = "v1" }: UseAddCreditCardFormOptions) => {
+  const addV1 = useAddCreditCard();
+  const addV2 = useAddCreditCardV2();
+  const addCard = apiVersion === "v2" ? addV2 : addV1;
   const [tokenError, setTokenError] = useState<string | null>(null);
 
   const form = useForm<CreditCardFormValues>({

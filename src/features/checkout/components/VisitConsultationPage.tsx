@@ -1,7 +1,6 @@
 "use client";
 
 import { useVisitConsultation } from "@/features/checkout/hooks/useVisitConsultation";
-import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
 import { Question } from "./Question";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
@@ -27,10 +26,8 @@ export const VisitConsultationPage = ({ slug }: Props) => {
     isSubmitting,
     isGoingBack,
     isSingleRadioStep,
+    progressFraction,
   } = useVisitConsultation(slug);
-
-  // Progress bar only — back here is the questionnaire's own goBack (onBack above).
-  const { steps } = useStepNavigation("visit_consultation");
 
   if (isLoading || !currentStep) {
     return (
@@ -43,7 +40,7 @@ export const VisitConsultationPage = ({ slug }: Props) => {
   return (
     <>
       <SecondaryNav onBack={onBack} isLoading={isGoingBack} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="visit_consultation" fraction={progressFraction} />
       <main className="min-h-screen bg-bg-main">
       <div className="mx-auto w-full max-w-2xl px-6 py-10 md:py-16">
       {currentStep.questions.map((question, index) => {

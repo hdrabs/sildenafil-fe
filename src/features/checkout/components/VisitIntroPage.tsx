@@ -56,13 +56,13 @@ const DoctorIllustration = () => (
 );
 
 export const VisitIntroPage = () => {
-  const { back, steps } = useStepNavigation("visit_intro");
+  const { back } = useStepNavigation("visit_intro");
   const { onContinue, isPending } = useVisitIntro();
 
   return (
     <>
       <SecondaryNav onBack={back} />
-      <CheckoutProgressBar steps={steps} />
+      <CheckoutProgressBar step="visit_intro" />
       <main className="flex min-h-screen flex-col items-center justify-start bg-bg-main px-4 pt-16">
       <div className="w-full max-w-xl">
         <h1 className="mb-6 text-2xl font-bold text-gray-900">
