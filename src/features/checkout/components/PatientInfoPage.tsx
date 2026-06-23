@@ -8,6 +8,12 @@ import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
 import { OtpModal } from "@/components/modals/OtpModal";
 import { useGenerateOtp, useVerifyOtp } from "@/api/hooks/useAuthQueries";
+import { MaleIcon } from "@/components/icons/MaleIcon";
+import { FemaleIcon } from "@/components/icons/FemaleIcon";
+import { UserSolidIcon } from "@/components/icons/UserSolidIcon";
+import { ChevronDownSolidIcon } from "@/components/icons/ChevronDownSolidIcon";
+import { CheckCircleIcon } from "@/components/icons/CheckCircleIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
 
 const blockDigits = (e: React.KeyboardEvent<HTMLInputElement>) => {
   if (/\d/.test(e.key)) e.preventDefault();
@@ -46,35 +52,9 @@ const YEARS = Array.from({ length: 80 }, (_, i) => {
   return { value: String(y), label: String(y) };
 });
 
-const MaleIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
-    <circle cx="10" cy="14" r="5" />
-    <path d="M19 5l-5.5 5.5M19 5h-5M19 5v5" />
-  </svg>
-);
-
-const FemaleIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
-    <circle cx="12" cy="9" r="5" />
-    <path d="M12 14v6M9 17h6" />
-  </svg>
-);
-
-const PersonIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5 text-gray-400" fill="currentColor">
-    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-  </svg>
-);
-
 const ChevronDown = () => (
   <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-gray-400">
-      <path
-        fillRule="evenodd"
-        d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-        clipRule="evenodd"
-      />
-    </svg>
+    <ChevronDownSolidIcon className="h-4 w-4 text-gray-400" />
   </span>
 );
 
@@ -156,7 +136,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                       }`}
                     >
                       <span className={selected ? "text-[#ec534b]" : "text-gray-400"}>
-                        {g === "male" ? <MaleIcon /> : <FemaleIcon />}
+                        {g === "male" ? <MaleIcon className="h-5 w-5" /> : <FemaleIcon className="h-5 w-5" />}
                       </span>
                       <span className="text-sm font-medium capitalize text-gray-800">{g}</span>
                       <input
@@ -168,9 +148,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                       {/* Indicator top-right */}
                       <span className="absolute right-3 top-3">
                         {selected ? (
-                          <svg viewBox="0 0 20 20" className="h-5 w-5 text-[#ec534b]" fill="currentColor">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-                          </svg>
+                          <CheckCircleIcon className="h-5 w-5 text-[#ec534b]" />
                         ) : (
                           <span className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-gray-300" />
                         )}
@@ -189,7 +167,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
               </label>
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-                  <PersonIcon />
+                  <UserSolidIcon className="h-5 w-5 text-gray-400" />
                 </span>
                 <input
                   {...register("first_name")}
@@ -211,7 +189,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
               </label>
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-                  <PersonIcon />
+                  <UserSolidIcon className="h-5 w-5 text-gray-400" />
                 </span>
                 <input
                   {...register("last_name")}
@@ -348,15 +326,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   className="peer sr-only"
                 />
                 <div className="h-5 w-5 rounded border-2 border-gray-300 bg-white transition-colors peer-checked:border-[#ec534b] peer-checked:bg-[#ec534b]" />
-                <svg
-                  className="pointer-events-none absolute inset-0 m-auto hidden h-3 w-3 text-white peer-checked:block"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M3 8l3.5 3.5L13 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CheckIcon className="pointer-events-none absolute inset-0 m-auto hidden h-3 w-3 text-white peer-checked:block" />
               </div>
               <span className="text-xs leading-relaxed text-[#777]">
                 I agree to receive SMS (text messages) from sildenafil.com and it&apos;s partner
@@ -374,15 +344,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   className="peer sr-only"
                 />
                 <div className="h-5 w-5 rounded border-2 border-gray-300 bg-white transition-colors peer-checked:border-[#ec534b] peer-checked:bg-[#ec534b]" />
-                <svg
-                  className="pointer-events-none absolute inset-0 m-auto hidden h-3 w-3 text-white peer-checked:block"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M3 8l3.5 3.5L13 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CheckIcon className="pointer-events-none absolute inset-0 m-auto hidden h-3 w-3 text-white peer-checked:block" />
               </div>
               <span className="text-xs leading-relaxed text-[#777]">
                 Include medication names in email and SMS from sildenafil.com and it&apos;s partner

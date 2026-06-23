@@ -10,6 +10,8 @@ import { TermsOfUseDrawer } from "@/components/legal/TermsOfUseDrawer";
 import { PrivacyPolicyDrawer } from "@/components/legal/PrivacyPolicyDrawer";
 import { TelehealthDrawer } from "./drawers/TelehealthDrawer";
 import { PrivacyPracticesDrawer } from "./drawers/PrivacyPracticesDrawer";
+import { CaretDownIcon } from "@/components/icons/CaretDownIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
 
 export const VisitConsentLocationPage = () => {
   const { back, steps } = useStepNavigation("visit_consent");
@@ -82,18 +84,7 @@ export const VisitConsentLocationPage = () => {
                     </select>
                     {/* aum caret-down icon (copied from ../aum_mine/.../controls/caret-down.svg) */}
                     <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                      <svg
-                        width="15"
-                        height="9"
-                        viewBox="0 0 13 7"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M6.618 6.995c.256-.025.497-.128.692-.296l5.225-4.482a1.259 1.259 0 00.407-1.35 1.246 1.246 0 00-.631-.737 1.243 1.243 0 00-1.394.196l-4.416 3.79L2.085.327A1.244 1.244 0 00.69.13C.54.204.407.307.298.434a1.263 1.263 0 00-.293.926 1.246 1.246 0 00.463.857l5.225 4.482a1.244 1.244 0 00.925.296z"
-                          fill="#BFD9E4"
-                        />
-                      </svg>
+                      <CaretDownIcon />
                     </div>
                   </div>
                   {errors.state && (
@@ -116,15 +107,7 @@ export const VisitConsentLocationPage = () => {
                   className="peer sr-only"
                 />
                 <div className="h-6 w-6 rounded-md border-2 border-gray-300 bg-white peer-checked:border-coral peer-checked:bg-coral transition-colors" />
-                <svg
-                  className="pointer-events-none absolute inset-0 m-auto hidden h-4 w-4 text-white peer-checked:block"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M3 8l3.5 3.5L13 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CheckIcon className="pointer-events-none absolute inset-0 m-auto hidden h-4 w-4 text-white peer-checked:block" />
               </div>
               <span className="text-sm leading-relaxed text-[#00000080]">
                 I agree to the{" "}
@@ -163,15 +146,7 @@ export const VisitConsentLocationPage = () => {
                   className="peer sr-only"
                 />
                 <div className="h-6 w-6 rounded-md border-2 border-gray-300 bg-white peer-checked:border-coral peer-checked:bg-coral transition-colors" />
-                <svg
-                  className="pointer-events-none absolute inset-0 m-auto hidden h-4 w-4 text-white peer-checked:block"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <path d="M3 8l3.5 3.5L13 4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <CheckIcon className="pointer-events-none absolute inset-0 m-auto hidden h-4 w-4 text-white peer-checked:block" />
               </div>
               <span className="text-sm leading-relaxed text-[#00000080]">
                 I acknowledge that I&apos;m located in the State of{" "}

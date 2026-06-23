@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CloseIcon } from "@/components/icons/CloseIcon";
+import { ChevronRightSmallIcon } from "@/components/icons/ChevronRightSmallIcon";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { useUser, useClearUser } from "@/store";
@@ -162,7 +163,7 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
                 className="flex w-full items-center py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-primary no-underline hover:text-primary transition-colors"
               >
                 Sign In
-                <Chevron />
+                <ChevronRightSmallIcon className="ml-auto shrink-0" />
               </Link>
               <div className="h-px bg-[#E6E8EE]" />
             </div>
@@ -191,12 +192,6 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
 
 /* ── Internal primitives ── */
 
-const Chevron = () => (
-  <svg className="ml-auto shrink-0" width="9" height="9" viewBox="0 0 9 9" fill="none">
-    <path d="M1 1L5 4.5L1 8" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
-
 const Section = ({ label, style }: { label: string; style?: React.CSSProperties }) => (
   <p
     className="px-6 min-[1040px]:px-10 pb-1.5 text-[11px] min-[1040px]:text-[14px] font-semibold uppercase tracking-[0.56px] text-[#152E56] opacity-40 pointer-events-none"
@@ -214,7 +209,7 @@ const NavLink = ({ href, label, onClose }: { href: string; label: string; onClos
       className="flex w-full items-center py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-primary no-underline hover:text-primary transition-colors"
     >
       {label}
-      <Chevron />
+      <ChevronRightSmallIcon className="ml-auto shrink-0" />
     </Link>
     <div className="h-px bg-[#E6E8EE]" />
   </div>
@@ -227,7 +222,7 @@ const NavButton = ({ label, onClick }: { label: string; onClick: () => void }) =
       className="flex w-full items-center py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-primary hover:text-primary transition-colors"
     >
       {label}
-      <Chevron />
+      <ChevronRightSmallIcon className="ml-auto shrink-0" />
     </button>
     <div className="h-px bg-[#E6E8EE]" />
   </div>

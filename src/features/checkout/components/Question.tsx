@@ -15,6 +15,15 @@ import {
   MedItem,
 } from "@/types/questionnaire";
 import { AnswerOption } from "./AnswerOption";
+<<<<<<< Updated upstream
+=======
+import { answerOptionRequiresText } from "@/features/checkout/lib/answerOptionText";
+import { XMarkIcon } from "@/components/icons/XMarkIcon";
+import { PillIcon } from "@/components/icons/PillIcon";
+import { SearchIcon } from "@/components/icons/SearchIcon";
+import { SpinnerIcon } from "@/components/icons/SpinnerIcon";
+import { ChevronDownIcon } from "@/components/icons/ChevronDownIcon";
+>>>>>>> Stashed changes
 
 interface Props {
   question: QuestionType;
@@ -59,9 +68,7 @@ const EditMedicationModal = ({ item, onSave, onRemove, onClose }: EditMedModalPr
               onClick={onClose}
               className="cursor-pointer text-gray-400 hover:text-gray-600"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-              </svg>
+              <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
 
@@ -248,14 +255,10 @@ const InlineSearchSection = ({
           <div className="relative shrink-0">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               {/* Pill icon */}
-              <svg viewBox="0 0 24 24" className="h-6 w-6 text-gray-500" fill="currentColor">
-                <path d="M4.22 11.29l6.07-6.07a5 5 0 017.07 7.07l-6.07 6.07a5 5 0 01-7.07-7.07zm1.41 5.66a3 3 0 004.24 0l2.83-2.83-4.24-4.24-2.83 2.83a3 3 0 000 4.24zm5.66-5.66l2.83-2.83a3 3 0 10-4.24-4.24L7.05 7.05l4.24 4.24z" />
-              </svg>
+              <PillIcon className="h-6 w-6 text-gray-500" />
             </div>
             <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#e05c4b]">
-              <svg viewBox="0 0 20 20" fill="white" className="h-3 w-3">
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-              </svg>
+              <XMarkIcon className="h-3 w-3 text-white" />
             </span>
           </div>
           <p className="text-sm leading-snug text-gray-600">
@@ -274,19 +277,7 @@ const InlineSearchSection = ({
       {/* Search row */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <svg
-            className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             value={query}
@@ -299,10 +290,7 @@ const InlineSearchSection = ({
             <ul className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-auto rounded-lg border border-gray-200 bg-white shadow-md">
               {isSearching ? (
                 <li className="flex items-center justify-center px-4 py-3">
-                  <svg className="h-5 w-5 animate-spin text-[#e05c4b]" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <SpinnerIcon className="h-5 w-5 animate-spin text-[#e05c4b]" />
                 </li>
               ) : (
                 results.map((item) => (
@@ -495,9 +483,7 @@ export const Question = ({
                     <option key={opt.id} value={opt.label}>{opt.label}</option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
             );
           })()

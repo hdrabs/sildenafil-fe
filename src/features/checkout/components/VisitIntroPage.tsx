@@ -4,6 +4,7 @@ import { useVisitIntro } from "../hooks/useVisitIntro";
 import { useStepNavigation } from "../hooks/useStepNavigation";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "./CheckoutProgressBar";
+<<<<<<< Updated upstream
 
 const DoctorIllustration = () => (
   <svg
@@ -54,6 +55,9 @@ const DoctorIllustration = () => (
     />
   </svg>
 );
+=======
+import { DoctorIllustration } from "@/components/illustrations/DoctorIllustration";
+>>>>>>> Stashed changes
 
 export const VisitIntroPage = () => {
   const { back, steps } = useStepNavigation("visit_intro");
@@ -70,8 +74,13 @@ export const VisitIntroPage = () => {
         </h1>
 
         {/* Card */}
+<<<<<<< Updated upstream
         <div className="flex flex-col items-center gap-5 rounded-2xl bg-white px-8 py-10 shadow-sm">
           <DoctorIllustration />
+=======
+        <div className="mb-[31px] flex flex-col items-center gap-5 rounded-2xl border-0 bg-white p-[42px] text-sm text-[#5b5b5b] shadow-[0_0_45px_#1529471a]">
+          <DoctorIllustration className="h-[130px] w-[130px]" />
+>>>>>>> Stashed changes
 
           <p className="text-center text-sm leading-relaxed text-gray-600">
             Your doctor needs to know about your symptoms and overall health to

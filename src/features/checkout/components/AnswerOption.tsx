@@ -6,6 +6,7 @@ import {
   Question,
   QuestionaireReducerAction,
 } from "@/types/questionnaire";
+import { CheckSmallIcon } from "@/components/icons/CheckSmallIcon";
 
 interface Props {
   question: Question;
@@ -72,17 +73,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
               isChecked ? "border-coral bg-coral" : "border-border-dropdown bg-white"
             }`}
           >
-            {isChecked && (
-              <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 6l3 3 5-5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
+            {isChecked && <CheckSmallIcon className="h-3 w-3 text-white" />}
           </span>
 
           {isBpOption ? (

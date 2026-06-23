@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import { useUser } from "@/store";
+import { ChevronRightThinIcon } from "@/components/icons/ChevronRightThinIcon";
 
 const SidebarIcon = ({ src, color }: { src: string; color: string }) => (
   <span
@@ -117,9 +118,7 @@ export const PatientSidebar = () => {
               </span>
 
               {/* Chevron */}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                <path d="M6 12L10 8L6 4" stroke="#6d757f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <ChevronRightThinIcon className="shrink-0" />
             </Link>
           );
         })}

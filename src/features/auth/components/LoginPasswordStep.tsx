@@ -7,6 +7,9 @@ import Link from "next/link";
 import { PasswordIcon } from "@/components/icons/PasswordIcon";
 import { EyeIcon } from "@/components/icons/EyeIcon";
 import { EyeOffIcon } from "@/components/icons/EyeOffIcon";
+import { TextCodeIcon } from "@/components/icons/TextCodeIcon";
+import { EmailCodeIcon } from "@/components/icons/EmailCodeIcon";
+import { ChevronRightIcon } from "@/components/icons/ChevronRightIcon";
 import { passwordStepSchema, PasswordStepValues } from "../schemas/loginSchema";
 import { Button } from "@/components/ui/Button";
 import { ROUTES } from "@/constants/routes";
@@ -25,31 +28,6 @@ interface LoginPasswordStepProps {
   onSendPhoneOtp: (phone: string) => void | Promise<void>;
   onSendEmailOtp: (email: string) => void | Promise<void>;
 }
-
-// "Text a code" — phone-vibrate glyph (multi-color, rendered as-is).
-const TextCodeIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 24" fill="none" aria-hidden="true" className={className}>
-    <path d="M9.89 2.93a3.5 3.5 0 00-3.5 3.5v11a3.5 3.5 0 003.5 3.5h5a3.5 3.5 0 003.5-3.5v-11a3.5 3.5 0 00-3.5-3.5h-5zm0 2h5a1.5 1.5 0 011.5 1.5v11a1.5 1.5 0 01-1.5 1.5h-5a1.5 1.5 0 01-1.5-1.5v-11a1.5 1.5 0 011.5-1.5zM4.236 7.992a1.015 1.015 0 00-1.282.625 9.972 9.972 0 00-.562 3.313c0 1.15.186 2.28.562 3.344a.998.998 0 001.282.593c.52-.184.809-.73.625-1.25a8.087 8.087 0 01-.47-2.687c0-.916.142-1.812.439-2.657.183-.52-.073-1.098-.594-1.28zm16.344.063a.98.98 0 00-.626 1.25 8.022 8.022 0 01-.031 5.312c-.185.52.105 1.096.625 1.281.52.186 1.096-.104 1.282-.624a9.916 9.916 0 00.562-3.344c0-1.126-.202-2.238-.562-3.282a.964.964 0 00-1.25-.593zm-8.19 7.875a1 1 0 100 2 1 1 0 000-2z" fill="#777" />
-    <path fillRule="evenodd" clipRule="evenodd" d="M2.953 8.618a1.015 1.015 0 011.282-.625c.52.183.777.76.594 1.281a7.988 7.988 0 00-.438 2.656c0 .923.168 1.838.469 2.688.184.52-.105 1.066-.625 1.25a.998.998 0 01-1.282-.594 10.02 10.02 0 01-.562-3.344c0-1.141.19-2.256.562-3.312zm17 .687c-.18-.522.104-1.069.626-1.25a.964.964 0 011.25.594c.36 1.044.562 2.156.562 3.281a9.916 9.916 0 01-.562 3.344c-.186.52-.761.81-1.282.625-.52-.185-.81-.76-.625-1.281a8.007 8.007 0 00.03-5.313z" fill="#EC534B" />
-  </svg>
-);
-
-// "Email a code" — envelope glyph with its own circular backdrop.
-const EmailCodeIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 39 38" fill="none" aria-hidden="true" className={className}>
-    <circle cx="19.688" cy="19" r="19" fill="#EFF8FC" />
-    <path d="M12.688 11a4 4 0 00-4 4v8a4 4 0 004 4h12a4 4 0 004-4v-8a4 4 0 00-4-4h-12zm0 2h12c1.008 0 1.84.74 1.979 1.71-.959.893-2.383 1.989-3.324 2.665C21.178 18.93 19.273 20 18.688 20c-.586 0-2.491-1.069-4.656-2.625a41.492 41.492 0 01-2.563-2 12.543 12.543 0 01-.688-.625c.138-.97.899-1.75 1.906-1.75zm-1.99 4.354c2.537 2.053 6.256 4.634 7.99 4.646 1.129.008 3.06-1.07 5.03-2.431 1.018-.705 2.152-1.542 2.97-2.229V23a2 2 0 01-2 2h-12a2 2 0 01-2-2l.01-5.646z" fill="#777" />
-    <circle cx="27.172" cy="12.5" r="3.5" fill="#EC534B" />
-  </svg>
-);
-
-// Right chevron for the option rows (uses currentColor so it stays visible —
-// the source SVG's #fff fill would be invisible on the white tab).
-const ChevronRightIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 18" fill="none" aria-hidden="true" className={className}>
-    <path d="M9.006 8.848a1.64 1.64 0 00-.38-.904L2.861 1.11A1.607 1.607 0 001.764.509 1.577 1.577 0 00.573.893a1.623 1.623 0 00-.57 1.139 1.651 1.651 0 00.416 1.197l4.873 5.772L.42 14.776a1.632 1.632 0 00-.416 1.197A1.647 1.647 0 00.56 17.11a1.594 1.594 0 001.191.384 1.584 1.584 0 001.098-.602l5.763-6.833a1.634 1.634 0 00.394-1.21z" fill="currentColor" />
-  </svg>
-);
 
 export const LoginPasswordStep = ({
   email,
