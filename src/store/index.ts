@@ -33,3 +33,4 @@ export const useLastIntroStep = () => useQuestionnaireStore((s) => s.lastIntroSt
 export const useSetLastIntroStep = () => useQuestionnaireStore((s) => s.setLastIntroStep);
 export const useConsultationSteps = () => useQuestionnaireStore((s) => s.consultationSteps);
 export const useMarkConsultationStep = () => useQuestionnaireStore((s) => s.markConsultationStep);
+export const useResetQuestionnaire = () => useQuestionnaireStore((s) => s.reset);

@@ -82,7 +82,7 @@ const FieldError = ({ message }: { message?: string }) =>
   message ? <p className="mt-1 text-xs font-medium text-[#ec534b]">{message}</p> : null;
 
 const inputClass = (hasError: boolean) =>
-  `h-12 w-full rounded-lg border-2 bg-white px-[10px] text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent cursor-pointer ${
+  `h-12 w-full rounded-md border-2 bg-white px-[10px] text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent cursor-pointer ${
     hasError ? "border-red-400" : "border-border-dropdown"
   }`;
 
@@ -130,11 +130,11 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
       <SecondaryNav onBack={onBack} />
       <CheckoutProgressBar step="patient_info" />
       <main className="flex min-h-screen items-start justify-center bg-bg-main px-4 py-16">
-        <div className="w-full max-w-xl">
+        <div className="w-full max-w-lg">
           <h1 className="mb-2 text-2xl font-semibold leading-[34px] text-gray-900">
             Patient info
           </h1>
-          <p className="mb-[30px] text-base leading-relaxed text-gray-600">
+          <p className="mb-[30px] text-base leading-relaxed text-black">
             Could you please provide us with your information as it appears on your
             government-issued identification? This will assist us in verifying who you are.
           </p>
@@ -149,7 +149,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   return (
                     <label
                       key={g}
-                      className={`relative flex flex-1 cursor-pointer items-center gap-2.5 rounded-lg border-2 px-4 py-3 transition-colors ${
+                      className={`relative flex flex-1 cursor-pointer items-center gap-2.5 rounded-md border-2 px-4 py-3 transition-colors ${
                         selected
                           ? "border-[#ec534b] bg-white"
                           : "border-border-dropdown bg-white hover:border-[#a9cbd9]"
@@ -196,7 +196,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   id="first_name"
                   type="text"
                   onKeyDown={blockDigits}
-                  className={`h-12 w-full cursor-pointer rounded-lg border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
+                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
                     errors.first_name ? "border-red-400" : "border-border-dropdown"
                   }`}
                 />
@@ -218,7 +218,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   id="last_name"
                   type="text"
                   onKeyDown={blockDigits}
-                  className={`h-12 w-full cursor-pointer rounded-lg border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
+                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
                     errors.last_name ? "border-red-400" : "border-border-dropdown"
                   }`}
                 />
@@ -292,7 +292,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                 <div className="relative w-32">
                   <select
                     {...register("phone_type")}
-                    className="h-12 w-full cursor-pointer appearance-none rounded-lg border-2 border-border-dropdown bg-white px-[10px] text-sm font-medium text-gray-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#ec534b]"
+                    className="h-12 w-full cursor-pointer appearance-none rounded-md border-2 border-border-dropdown bg-white px-[10px] text-sm font-medium text-gray-900 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#ec534b]"
                   >
                     <option value="mobile">Mobile</option>
                     <option value="home">Home</option>
@@ -319,7 +319,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                         value={field.value ?? ""}
                         onBlur={field.onBlur}
                         onChange={(e) => field.onChange(formatUSPhone(e.target.value))}
-                        className={`h-12 w-full cursor-pointer rounded-lg border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
+                        className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
                           errors.phone ? "border-red-400" : "border-border-dropdown"
                         }`}
                       />
@@ -391,7 +391,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
             </label>
 
             {submitError && (
-              <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+              <p className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
                 {submitError}
               </p>
             )}
@@ -399,7 +399,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
             <button
               type="submit"
               disabled={isPending || !canSubmit}
-              className="w-full cursor-pointer rounded-full border border-coral bg-coral px-[22px] py-3 text-base font-normal uppercase text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-gray-400 disabled:bg-gray-400"
+              className="w-full cursor-pointer rounded-full border border-coral bg-coral px-2.5 py-3 text-base font-normal uppercase text-white outline-none transition-colors hover:border-coral-hover hover:bg-coral-hover disabled:cursor-not-allowed disabled:border-[#6c757d] disabled:bg-[#6c757d]"
             >
               {isPending ? (
                 <span className="flex items-center justify-center gap-2">

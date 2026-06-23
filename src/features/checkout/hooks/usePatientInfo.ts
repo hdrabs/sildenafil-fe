@@ -21,6 +21,12 @@ const parseDob = (dob: string | undefined) => {
   };
 };
 
+// AUM convention: the phone number ALWAYS lives in mobile_phone. "Mobile"/"Home"
+// is a UI-only toggle persisted per-user in localStorage that only controls OTP —
+// it is never derived from the DB and never clears a field (clearing mobile_phone
+// tripped its uniqueness validation -> "already taken").
+const phoneTypeKey = (userId: number) => `phone_type_${userId}`;
+
 export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
   const router = useRouter();
   const activeCart = useActiveCart();
@@ -29,7 +35,7 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
   const cartToken = activeCart?.cart.token;
 
   const { data: me, isLoading: isLoadingMe } = useGetMe(cartId > 0);
-  const { mutateAsync: updateMe, isPending: isUpdating, error: updateError } = useUpdateMe();
+  const { mutateAsync: updateMe, isPending: isUpdating, error: updateError, reset: resetUpdate } = useUpdateMe();
   const { mutateAsync: advancePatientInfo, isPending: isAdvancing } = useAdvancePatientInfo();
   const { mutateAsync: generateOtp } = useGenerateOtp();
 
@@ -42,7 +48,7 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
     defaultValues: {
       first_name: "",
       last_name: "",
-      gender: undefined,
+      gender: "male", // Sildenafil is a male ED product — default the selection.
       dob_month: "",
       dob_day: "",
       dob_year: "",
@@ -56,22 +62,61 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
   useEffect(() => {
     if (!me) return;
     const { month, day, year } = parseDob(me.date_of_birth);
+    const savedPhoneType =
+      typeof window !== "undefined"
+        ? (localStorage.getItem(phoneTypeKey(me.id)) as "mobile" | "home" | null)
+        : null;
     form.reset({
       first_name: me.first_name ?? "",
       last_name: me.last_name ?? "",
-      gender: (me.gender as "male" | "female") ?? undefined,
+      gender: (me.gender as "male" | "female") || "male",
       dob_month: month,
       dob_day: day,
       dob_year: year,
-      phone_type: me.mobile_phone ? "mobile" : "home",
-      phone: me.mobile_phone ?? me.home_phone ?? "",
+      // Mobile/Home comes from localStorage (not the DB), matching AUM.
+      phone_type: savedPhoneType ?? "mobile",
+      // The number always lives in mobile_phone.
+      phone: me.mobile_phone || me.home_phone || "",
       sms_agreement: me.phone_contact_allowed ?? true,
       partner_agreement: me.drugs_names_included ?? true,
     });
   }, [me, form]);
 
-  const [watchedGender, watchedFirst, watchedLast, watchedMonth, watchedDay, watchedYear, watchedPhone] =
-    form.watch(["gender", "first_name", "last_name", "dob_month", "dob_day", "dob_year", "phone"]);
+  const [
+    watchedGender,
+    watchedFirst,
+    watchedLast,
+    watchedMonth,
+    watchedDay,
+    watchedYear,
+    watchedPhone,
+    watchedPhoneType,
+  ] = form.watch([
+    "gender",
+    "first_name",
+    "last_name",
+    "dob_month",
+    "dob_day",
+    "dob_year",
+    "phone",
+    "phone_type",
+  ]);
+
+  // Persist the Mobile/Home choice per-user (AUM keeps this in localStorage).
+  useEffect(() => {
+    if (me?.id != null && typeof window !== "undefined") {
+      localStorage.setItem(phoneTypeKey(me.id), watchedPhoneType);
+    }
+  }, [watchedPhoneType, me?.id]);
+
+  // Clear a stale server error once the user edits the phone, so the banner
+  // doesn't persist while they correct it. (Depend only on the phone value —
+  // depending on updateError would wipe the error the instant it appears.)
+  useEffect(() => {
+    if (updateError) resetUpdate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedPhone]);
+
   const canSubmit =
     !!watchedGender &&
     !!watchedFirst?.trim() &&
@@ -106,27 +151,28 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
           last_name: values.last_name,
           gender: values.gender,
           date_of_birth: dateOfBirth,
+          // The number always saves to mobile_phone; "Home" only means skip OTP
+          // (so we unverify it). We never split it into home_phone or clear it.
           mobile_phone: values.phone,
-          ...(isHome && { home_phone: values.phone, otp_verified: false }),
+          ...(isHome && { otp_verified: false }),
           phone_contact_allowed: values.sms_agreement,
           drugs_names_included: values.partner_agreement,
         },
       });
 
+      // Home phone — no OTP needed, advance directly.
       if (isHome) {
-        // Home phone — no OTP needed, advance directly
         await advanceCheckout();
         return;
       }
 
-      // Mobile phone — skip OTP if already verified with this number
+      // Mobile phone — skip OTP if already verified with this number.
       if (me?.otp_verified) {
         await advanceCheckout();
         return;
       }
 
-      // Open the modal immediately and send the code in the background — the
-      // modal shouldn't be gated on the (slow) SMS request.
+      // Open the modal immediately and send the code in the background.
       setOtpLimitExceeded(false);
       setShowOtpModal(true);
       void generateOtp().catch((e) => {
@@ -135,7 +181,7 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
         }
       });
     } catch {
-      // updateMe error surfaced via mutation error state
+      // Surfaced via submitError below.
     }
   });
 

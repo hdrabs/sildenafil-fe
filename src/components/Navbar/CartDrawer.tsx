@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { toast } from "react-toastify";
-import { useActiveCart, useClearActiveCart } from "@/store";
+import { useActiveCart, useClearActiveCart, useResetQuestionnaire } from "@/store";
 import { useDeleteCartV2 } from "@/api/hooks/useCartQueries";
 import { ROUTES } from "@/constants/routes";
 
@@ -19,6 +19,7 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
   const router = useRouter();
   const activeCart = useActiveCart();
   const clearActiveCart = useClearActiveCart();
+  const resetQuestionnaire = useResetQuestionnaire();
   const { mutateAsync: deleteCart, isPending: isDeleting } = useDeleteCartV2();
   const drawerRef = useRef<HTMLDivElement>(null);
   const [headerShadow, setHeaderShadow] = useState(false);
@@ -73,6 +74,9 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
         cartToken: activeCart.cart.token,
       });
       clearActiveCart();
+      // The intro answers / consent state in localStorage belong to this cart's
+      // flow — wipe them too so a fresh cart doesn't inherit stale progress.
+      resetQuestionnaire();
     } catch {
       toast.error("Failed to delete cart. Please try again.");
     }
