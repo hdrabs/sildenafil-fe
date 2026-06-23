@@ -6,7 +6,8 @@ import Link from "next/link";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
-import { useUser, useClearUser } from "@/store";
+import { useUser, useClearUser, useClearActiveCart, useResetQuestionnaire } from "@/store";
+import { useLogout } from "@/api/hooks/useAuthQueries";
 
 const SILDENAFIL_SLUG = "sildenafil-citrate-20-mg";
 const TADALAFIL_SLUG  = "tadalafi-generic-10-mg";
@@ -19,6 +20,9 @@ interface NavDrawerProps {
 export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
   const user      = useUser();
   const clearUser = useClearUser();
+  const clearActiveCart     = useClearActiveCart();
+  const resetQuestionnaire  = useResetQuestionnaire();
+  const { mutateAsync: logout, isPending: isLoggingOut } = useLogout();
   const router    = useRouter();
 
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -59,8 +63,22 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
     return () => el.removeEventListener("scroll", onScroll);
   }, [open]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    // Invalidate the server session FIRST — it needs the bearer token, which the
+    // store clears below wipe. Await it so the hard reload doesn't abort the
+    // request, but log out locally regardless of the result (an offline or
+    // already-expired token must not trap the user in the app).
+    try {
+      await logout();
+    } catch {
+      // Server-side logout failed — proceed with local logout anyway.
+    }
+    // Clear every persisted, user-specific store so the next session doesn't
+    // inherit this user's cart / questionnaire progress from localStorage.
     clearUser();
+    clearActiveCart();
+    resetQuestionnaire();
     onClose();
     // Hard-navigate so AuthGuard on the current protected page
     // cannot race and append a ?redirectTo before we leave.
@@ -132,9 +150,10 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
             <div className="mx-6 min-[1040px]:mx-10">
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-2 py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-error hover:opacity-80 transition-opacity"
+                disabled={isLoggingOut}
+                className="flex w-full items-center gap-2 py-4 text-[14px] min-[1040px]:text-[16px] font-medium text-text-error transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Log Out
+                {isLoggingOut ? "Logging out…" : "Log Out"}
               </button>
               <div className="h-px bg-[#E6E8EE]" />
             </div>

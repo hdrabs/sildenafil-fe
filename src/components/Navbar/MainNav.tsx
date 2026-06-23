@@ -22,8 +22,11 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
-  // Restore cart from backend when authenticated but store is empty (e.g. new browser/tab)
-  const { data: backendCart } = useGetActiveCart(!!user && !activeCart);
+  // For logged-in users the server is the source of truth for the cart: refresh
+  // it from /active_cart on every load (not just when the store is empty), so the
+  // persisted copy can't go stale. The persisted store is only a fast-paint cache
+  // here — and the sole restore source for guest carts, which have no /active_cart.
+  const { data: backendCart } = useGetActiveCart(!!user);
 
   useEffect(() => {
     if (backendCart) setActiveCart(backendCart);

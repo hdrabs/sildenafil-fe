@@ -574,6 +574,7 @@ export const Question = ({
           <textarea
             className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
             defaultValue={textRequiredEntry?.metadata?.text ?? ""}
+            placeholder="Type here..."
             onChange={(e) =>
               dispatch({
                 type: "SELECT_ANSWER",

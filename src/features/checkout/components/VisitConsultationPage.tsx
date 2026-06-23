@@ -27,6 +27,7 @@ export const VisitConsultationPage = ({ slug }: Props) => {
     isSubmitting,
     isGoingBack,
     isSingleRadioStep,
+    isAutoAdvanceStep,
     isAnswered,
     progressFraction,
   } = useVisitConsultation(slug);
@@ -63,6 +64,14 @@ export const VisitConsultationPage = ({ slug }: Props) => {
     );
   }
 
+  // Keep the button in its "Processing" state through the whole transition.
+  // `isSubmitting` covers a manual press; the auto-advance case has no press to
+  // hook, so derive it: once a radio/solo selection is made on an auto-advance
+  // step it's about to navigate, so show "Processing" rather than flashing the
+  // enabled button for a frame.
+  const busy =
+    isSubmitting || (isAutoAdvanceStep && responses.hasInteracted && enableButton);
+
   return (
     <>
       <SecondaryNav onBack={onBack} isLoading={isGoingBack} />
@@ -96,14 +105,20 @@ export const VisitConsultationPage = ({ slug }: Props) => {
         );
       })}
 
-      {(!isSingleRadioStep || isAnswered) && (
+      {/* A single-radio step auto-advances on tap, so its Continue button only
+          shows on a back-nav revisit — an already-answered step the user hasn't
+          touched yet (isAnswered && !hasInteracted). Gating on !hasInteracted is
+          what kills the flash: the instant the user taps to advance forward,
+          hasInteracted flips true, so the button can't appear even if isAnswered
+          momentarily becomes true while the step saves/redirects. */}
+      {(!isSingleRadioStep || (isAnswered && !responses.hasInteracted)) && (
         <div className="mt-6">
           <button
             onClick={onContinue}
-            disabled={!enableButton || isSubmitting}
+            disabled={!enableButton || busy}
             className="w-full rounded-full bg-coral px-2.5 py-3 text-base font-normal uppercase tracking-widest text-white transition-colors hover:bg-coral-hover disabled:cursor-not-allowed disabled:bg-[#6c757d]"
           >
-            {isSubmitting ? "Processing" : continueLabel}
+            {busy ? "Processing" : continueLabel}
           </button>
         </div>
       )}

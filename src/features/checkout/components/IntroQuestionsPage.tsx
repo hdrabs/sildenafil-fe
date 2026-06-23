@@ -46,7 +46,13 @@ export const IntroQuestionsPage = ({ slug }: Props) => {
         />
       ))}
 
-      {(!isSingleRadioStep || isAnswered) && (
+      {/* A single-radio step auto-advances on tap, so its Continue button only
+          shows on a back-nav revisit — an already-answered step the user hasn't
+          touched yet (isAnswered && !hasInteracted). The !hasInteracted gate kills
+          the flash: tapping to advance flips hasInteracted true, and onContinue's
+          addIntroResponse() flips isAnswered true, but the button stays hidden
+          because the user already interacted. */}
+      {(!isSingleRadioStep || (isAnswered && !responses.hasInteracted)) && (
         <div className="mt-6">
           <button
             onClick={onContinue}

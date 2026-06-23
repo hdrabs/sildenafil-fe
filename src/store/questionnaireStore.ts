@@ -19,6 +19,9 @@ interface QuestionnaireStoreState {
   setVisitConsentState: (cartId: number, state: string) => void;
   setLastIntroStep: (slug: string) => void;
   markConsultationStep: (cartId: number, slug: string) => void;
+  // Wipe all persisted questionnaire progress — used on logout so a new session
+  // doesn't inherit the previous user's intro answers / consent state.
+  reset: () => void;
 }
 
 export const useQuestionnaireStore = create<QuestionnaireStoreState>()(
@@ -61,6 +64,14 @@ export const useQuestionnaireStore = create<QuestionnaireStoreState>()(
           // over from going back and answering differently.
           const path = [...prev.path.slice(0, prev.pos + 1), slug];
           return { consultationSteps: { cartId, path, pos: path.length - 1 } };
+        }),
+
+      reset: () =>
+        set({
+          introResponses: [],
+          visitConsentState: null,
+          lastIntroStep: null,
+          consultationSteps: null,
         }),
     }),
     {

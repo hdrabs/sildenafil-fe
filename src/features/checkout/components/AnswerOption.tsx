@@ -68,9 +68,9 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
         >
           {/* Selection indicator — aum .answer-option:before */}
           <span
-            className={`absolute left-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center rounded-full border-[3px] transition-all duration-200 ${
-              isChecked ? "border-coral bg-coral" : "border-border-dropdown bg-white"
-            }`}
+            className={`absolute left-5 top-1/2 flex h-[25px] w-[25px] -translate-y-1/2 items-center justify-center border-[3px] transition-all duration-200 ${
+              isCheckbox ? "rounded-[5px]" : "rounded-full"
+            } ${isChecked ? "border-coral bg-coral" : "border-border-dropdown bg-white"}`}
           >
             {isChecked && (
               <svg className="h-3 w-3 text-white" viewBox="0 0 12 12" fill="none">
@@ -112,6 +112,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
             <textarea
               className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
               defaultValue={currentResponse?.metadata?.text ?? ""}
+              placeholder="Type here..."
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
                 dispatch({
@@ -132,7 +133,7 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
         className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
         defaultValue={currentResponse?.metadata?.text ?? ""}
         onChange={(e) => onTextChange(e.target.value)}
-        placeholder={answerOption.label}
+        placeholder="Type here..."
       />
     );
   }

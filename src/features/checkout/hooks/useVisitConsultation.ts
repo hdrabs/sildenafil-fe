@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -66,6 +66,13 @@ export const useVisitConsultation = (slug: string) => {
     hasInteracted: false,
   });
   const isContinuing = useRef(false);
+  // Set when Continue is pressed and held until the next step loads (the page
+  // remounts per slug, which clears it), so the button stays "Processing" across
+  // the navigation instead of flashing back to its ready state the instant the
+  // save mutation resolves — before the loader / next step has rendered.
+  // Auto-advance steps derive the same state in the page, to keep this setState
+  // out of the auto-advance effect.
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (!currentStep) return;
@@ -149,8 +156,11 @@ export const useVisitConsultation = (slug: string) => {
     });
   }, [responses.questions, currentStep]);
 
-  const onContinue = useCallback(async () => {
-    if (!currentStep || isContinuing.current) return;
+  // The transition itself, kept free of any setState so the auto-advance effect
+  // can call it without tripping the no-setState-in-effect rule. Returns true
+  // when it navigated, false when it didn't (already in flight, or a save error).
+  const advance = useCallback(async () => {
+    if (!currentStep || isContinuing.current) return false;
     isContinuing.current = true;
 
     try {
@@ -189,13 +199,13 @@ export const useVisitConsultation = (slug: string) => {
             ? ROUTES.CHECKOUT_NO_CHECKUP
             : ROUTES.CHECKOUT_NO_BLOOD_PRESSURE,
         );
-        return;
+        return true;
       }
 
       if (nextStep.completed) {
         const result = await advanceVisitConsultation(cartAuth);
         router.push(result.redirect_path);
-        return;
+        return true;
       }
 
       // The destination step may be server-recomputed on fetch (e.g. q_16_01
@@ -206,10 +216,23 @@ export const useVisitConsultation = (slug: string) => {
         queryKey: questionnaireKeys.step(nextStep.label, cartId),
       });
       router.push(ROUTES.VISIT_CONSULTATION_STEP(nextStep.label));
+      return true;
     } catch {
       isContinuing.current = false;
+      return false;
     }
   }, [currentStep, responses.questions, saveStep, advanceVisitConsultation, cartAuth, router, queryClient, cartId]);
+
+  // The button's Continue handler: flag processing (so the button holds its
+  // "Processing" state through the navigation) then run the transition. Called
+  // only from the click event — never an effect — so this setState is safe.
+  const onContinue = useCallback(async () => {
+    setIsProcessing(true);
+    const navigated = await advance();
+    // A (rare) save error returns without navigating, so release the processing
+    // hold to re-enable the button; on success the per-slug remount clears it.
+    if (!navigated) setIsProcessing(false);
+  }, [advance]);
 
   const onBack = useCallback(async () => {
     try {
@@ -239,20 +262,32 @@ export const useVisitConsultation = (slug: string) => {
     currentStep.questions[0].question_type === "radio" &&
     !questionHasTextRequiredOption(currentStep.questions[0]);
 
+  // Auto-advance also covers a lone multi (checkbox) step — but only when a
+  // `solo` answer ("No"/"None of the above") is picked, mirroring AUM where solo
+  // checkbox options behave like radios. The reducer sets `hasInteracted` true
+  // ONLY for radio/solo selections, so the effect below advances a radio on any
+  // tap and a multi only on its solo option, while a normal multi-select tap
+  // leaves the Continue button in place. Kept separate from isSingleRadioStep so
+  // multi steps still render their Continue button (for non-solo selections).
+  const isAutoAdvanceStep =
+    currentStep?.questions.length === 1 &&
+    ["radio", "multi"].includes(currentStep.questions[0].question_type) &&
+    !questionHasTextRequiredOption(currentStep.questions[0]);
+
   // On back-navigation the server returns the step with its saved answer. A
   // single-radio step that's already answered keeps its Continue button (AUM
   // behaviour) instead of auto-advancing again the moment it's shown.
   const isAnswered =
     !!currentStep?.responses && Object.keys(currentStep.responses).length > 0;
 
-  // Auto-advance a single-radio step on the user's TAP (hasInteracted). Mount /
-  // back-navigation leaves hasInteracted false, so a revisited answer is shown
-  // (with its Continue button) instead of jumping forward — yet tapping a radio
-  // still advances, so both paths work.
+  // Auto-advance a single radio / solo-checkbox step on the user's TAP
+  // (hasInteracted). Mount / back-navigation leaves hasInteracted false, so a
+  // revisited answer is shown (with its Continue button) instead of jumping
+  // forward — yet tapping a radio (or a solo checkbox) still advances.
   useEffect(() => {
-    if (!isSingleRadioStep || !responses.hasInteracted || !enableButton) return;
-    onContinue();
-  }, [isSingleRadioStep, enableButton, responses.hasInteracted, onContinue]);
+    if (!isAutoAdvanceStep || !responses.hasInteracted || !enableButton) return;
+    advance();
+  }, [isAutoAdvanceStep, enableButton, responses.hasInteracted, advance]);
 
   // pos is 0-based; steps reached = pos + 1 (−1 → 0 when this cart has no path yet).
   const pos = consultationSteps?.cartId === cartId ? consultationSteps.pos : -1;
@@ -266,9 +301,10 @@ export const useVisitConsultation = (slug: string) => {
     onContinue,
     onBack,
     isLoading,
-    isSubmitting: isSaving || isAdvancing,
+    isSubmitting: isSaving || isAdvancing || isProcessing,
     isGoingBack,
     isSingleRadioStep,
+    isAutoAdvanceStep,
     isAnswered,
     progressFraction,
   };

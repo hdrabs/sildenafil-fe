@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useGetIntroStep, useAdvanceIntroQuestions } from "@/api/hooks/useQuestionnaireQueries";
 import { useActiveCart, useAddIntroResponse, useIntroResponses, useSetLastIntroStep } from "@/store";
@@ -53,8 +53,16 @@ export const useIntroQuestions = (slug: string) => {
   // only source. Once a visit exists, the backend is authoritative (returning to a
   // step cross-session, or answers saved on another device), so prefer it and fall
   // back to the buffer.
+  // Seed ONCE per step. This effect lists introResponses as a dep (it reads the
+  // buffer to restore back-nav answers), but onContinue's own addIntroResponse
+  // write also mutates it — and re-dispatching SET_INITIAL on that write resets
+  // hasInteracted mid-advance, flashing the Continue button. Guarding on the
+  // step id makes the own-write re-run a no-op while still seeding each new step.
+  const seededStepId = useRef<number | null>(null);
   useEffect(() => {
     if (!currentStep) return;
+    if (seededStepId.current === currentStep.id) return;
+    seededStepId.current = currentStep.id;
     const fromStore = introResponses.find((r) => r.step_id === currentStep.id)?.responses;
     const payload = hasVisit
       ? currentStep.responses ?? fromStore ?? null
