@@ -69,7 +69,7 @@ const formatProductName = (theme: LandingTheme, dosage: string): string => {
 };
 
 const RatingStars = () => (
-  <Image src="/icons/rating-stars.svg" alt="5 star rating" width={88} height={16} className="h-4 w-auto" />
+  <Image src="/icons/rating-stars.svg" alt="5 star rating" width={84} height={15} className="h-4 w-auto" />
 );
 
 const SourceLine = () => (

@@ -2,15 +2,10 @@
 
 import { useState, useMemo } from "react";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
-
-const DEFAULT_SLUG = "sildenafil-citrate-20-mg";
+import { DEFAULT_SLUG, normalizeSlug, buildCatalogParams } from "@/features/landing/catalogParams";
 
 // Variants only shown when the URL slug explicitly requests them
 const GATED_SLUGS = ["sildenafil-citrate-20-mg"];
-
-// The API slug uses "tadalafi" (missing trailing 'l') — accept either spelling in the URL
-// so /try/tadalafil-generic-10-mg and /try/tadalafi-generic-10-mg both resolve correctly.
-const normalizeSlug = (s: string) => s.replace("tadalafil-generic", "tadalafi-generic");
 
 // The API occasionally returns drug: "tadalafi" — normalise to the canonical "tadalafil"
 // so all downstream comparisons (theme, display names, image paths) work consistently.
@@ -38,12 +33,9 @@ export const useProductConfigurator = ({
 }: UseProductConfiguratorOptions) => {
   const catalogSlug = normalizeSlug(slug ?? DEFAULT_SLUG);
 
-  const { data: rawVariants, isLoading } = useCatalog({
-    slug: catalogSlug,
-    ...(discountCode && { discount: discountCode }),
-    ...(initialQty && { custom_quantity: [initialQty] }),
-    ...(landingContext && { landing_context: landingContext }),
-  });
+  const { data: rawVariants, isLoading } = useCatalog(
+    buildCatalogParams({ slug, discountCode, initialQty, landingContext }),
+  );
 
   const normalizedVariants = rawVariants?.map((v) => ({
     ...v,
