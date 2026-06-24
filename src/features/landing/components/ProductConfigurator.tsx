@@ -544,6 +544,10 @@ export const ProductConfigurator = ({
             </>
           )}
         </button>
+        <p className="mt-[13px] text-center text-[12px] font-light italic leading-[140%] text-[#666] min-[420px]:flex min-[420px]:flex-col">
+          <span>Free online doctor’s visit, no appointment or video call needed.</span>{" "}
+          <span>We’ll just text a quick code to confirm it’s you.</span>
+        </p>
       </div>
 
       <DrugInfoModal

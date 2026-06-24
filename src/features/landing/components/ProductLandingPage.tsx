@@ -1,6 +1,7 @@
 "use client";
 
 import { ProductSidebar, ProductConfigurator, LandingTheme } from "./ProductConfigurator";
+import { BottleSection } from "./BottleSection";
 import { ProcessSection } from "@/features/home/components/ProcessSection";
 import { RealResultsSection } from "@/features/home/components/RealResultsSection";
 import { WhatsIncludedSection } from "@/features/home/components/WhatsIncludedSection";
@@ -17,6 +18,10 @@ interface ProductLandingPageProps {
   discountCode?: string;
   landingContext?: string;
   theme: LandingTheme;
+  /** Left column: "sidebar" (default, shared) or "bottle" (dedicated /product-selection design). */
+  leftVariant?: "sidebar" | "bottle";
+  /** Marketing sections below the fold — off for the bare /product-selection page. */
+  showMarketingSections?: boolean;
 }
 
 export const ProductLandingPage = ({
@@ -25,6 +30,8 @@ export const ProductLandingPage = ({
   discountCode,
   landingContext,
   theme,
+  leftVariant = "sidebar",
+  showMarketingSections = true,
 }: ProductLandingPageProps) => {
   const {
     variants,
@@ -41,6 +48,11 @@ export const ProductLandingPage = ({
   // Derive theme from the resolved drug so routes that hardcode theme="sildenafil"
   // still render correctly when a tadalafil slug is passed.
   const effectiveTheme: LandingTheme = activeDrug === "tadalafil" ? "tadalafil" : theme;
+
+  // The bottle/heading must follow the ACTUAL product drug, never the page's
+  // hardcoded `theme` fallback (which would show tadalafil for a sildenafil slug).
+  const resolvedDrug = (activeVariant ?? contextVariant)?.product.drug;
+  const bottleTheme: LandingTheme = resolvedDrug === "tadalafil" ? "tadalafil" : "sildenafil";
 
   const cartToken = useCartToken();
 
@@ -66,13 +78,24 @@ export const ProductLandingPage = ({
 
   return (
     <>
-      <div className="grid min-h-screen grid-cols-1 md:grid-cols-2">
-        <ProductSidebar
-          theme={effectiveTheme}
-          productName={(activeVariant ?? contextVariant)?.product.display_name ?? "Sildenafil"}
-          dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
-        />
-        <div className="bg-white pt-[90px]">
+      <div
+        className={`grid min-h-screen grid-cols-1 ${
+          leftVariant === "bottle" ? "min-[990px]:grid-cols-2" : "md:grid-cols-2"
+        }`}
+      >
+        {leftVariant === "bottle" ? (
+          <BottleSection
+            theme={bottleTheme}
+            dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
+          />
+        ) : (
+          <ProductSidebar
+            theme={effectiveTheme}
+            productName={(activeVariant ?? contextVariant)?.product.display_name ?? "Sildenafil"}
+            dosage={(activeVariant ?? contextVariant)?.product.dosage ?? ""}
+          />
+        )}
+        <div className={leftVariant === "bottle" ? "bg-white pt-[20px]" : "bg-white pt-[90px]"}>
         <ProductConfigurator
           contextVariant={contextVariant}
           activeVariant={activeVariant}
@@ -84,16 +107,21 @@ export const ProductLandingPage = ({
           onDrugChange={handleDrugChange}
           onAddToCart={handleAddToCart}
           isSubmitting={isPending}
-          className="w-[75%]"
+          allowDrugSwitch={leftVariant === "bottle"}
+          className="w-full xl:w-[75%]"
         />
         </div>
       </div>
 
-      <RealResultsSection />
-      <ProcessSection />
-      <WhatsIncludedSection />
-      <FaqSection />
-      <CtaSection />
+      {showMarketingSections && (
+        <>
+          <RealResultsSection />
+          <ProcessSection />
+          <WhatsIncludedSection />
+          <FaqSection />
+          <CtaSection />
+        </>
+      )}
 
       {blockingModalContent && (
         <Modal

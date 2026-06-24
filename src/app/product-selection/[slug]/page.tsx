@@ -16,6 +16,8 @@ const ProductSelectionPage = async ({ params, searchParams }: Props) => {
       discountCode={discount}
       landingContext={landing_context ?? "product-selection"}
       theme="tadalafil"
+      leftVariant="bottle"
+      showMarketingSections={false}
     />
   );
 };
