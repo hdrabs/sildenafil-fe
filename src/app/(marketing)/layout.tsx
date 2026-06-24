@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MainNav } from "@/components/Navbar/MainNav";
 
 const MarketingLayout = ({ children }: { children: React.ReactNode }) => (
@@ -10,9 +11,9 @@ const MarketingLayout = ({ children }: { children: React.ReactNode }) => (
           <div>
             <p className="mb-3 text-sm font-semibold">Sildenafil.com</p>
             <ul className="flex flex-col gap-2 text-xs text-white/70">
-              <li><a href="/" className="hover:text-white transition-colors">Home</a></li>
-              <li><a href="/#process" className="hover:text-white transition-colors">How it Works</a></li>
-              <li><a href="/#help" className="hover:text-white transition-colors">FAQ</a></li>
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link href="/#process" className="hover:text-white transition-colors">How it Works</Link></li>
+              <li><Link href="/#help" className="hover:text-white transition-colors">FAQ</Link></li>
             </ul>
           </div>
           <div>

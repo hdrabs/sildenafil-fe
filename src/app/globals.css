@@ -22,6 +22,10 @@
   --color-bg-input: #f1f5f9;
   --color-bg-patient-welcome: #e8f1fb;
   --color-bg-announcement: #cce5ff;
+  --color-bg-bottle: #c2dae7;
+  --color-bg-testimonial: #e1edf3;
+  --color-testimonial-arrow: #a1bfdc;
+  --color-testimonial-text: #5b5b5b;
 
   /* Borders */
   --color-border-default: #cadae8;
