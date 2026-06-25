@@ -11,6 +11,9 @@ import { Modal } from "@/components/ui/Modal";
 
 // Below-the-fold marketing sections — code-split so they stay out of the initial
 // client bundle; the configurator above the fold is what must be interactive first.
+const ReviewVideosSection = dynamic(() =>
+  import("@/features/home/components/ReviewVideosSection").then((m) => m.ReviewVideosSection),
+);
 const ProcessSection = dynamic(() =>
   import("@/features/home/components/ProcessSection").then((m) => m.ProcessSection),
 );
@@ -130,10 +133,10 @@ export const ProductLandingPage = ({
         <div
           className={
             leftVariant === "bottle"
-              ? "bg-white pt-[20px]"
+              ? "h-full bg-white pt-[20px]"
               : leftVariant === "hero"
-                ? "bg-white pt-[40px] min-[992px]:pt-[90px]"
-                : "bg-white pt-[90px]"
+                ? "h-full bg-white pt-[40px] min-[992px]:pt-[45px]"
+                : "h-full bg-white pt-[90px]"
           }
         >
         <ProductConfigurator
@@ -159,6 +162,7 @@ export const ProductLandingPage = ({
 
       {showMarketingSections && (
         <>
+          <ReviewVideosSection theme={bottleTheme} />
           <ProcessSection theme={bottleTheme} />
           <WhyLoveSection
             theme={bottleTheme}

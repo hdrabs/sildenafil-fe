@@ -33,6 +33,7 @@ export interface CatalogDiscount {
   amount: number | null;
   shipping_cost: string | null;
   type: string;
+  banner_text: string | null;
   valid: boolean;
 }
 

@@ -318,7 +318,7 @@ export const ProductHeroSection = ({ theme, dosage, drugInfo }: ProductHeroSecti
   return (
     <div className={cn("relative z-[1] h-full text-white", t.containerBg)}>
       {/* ── Desktop (≥992px) ── */}
-      <div className="hidden px-[60px] pt-[100px] pb-[60px] max-[900px]:px-[50px] min-[992px]:block">
+      <div className="hidden px-[60px] pt-[60px] pb-[60px] min-[992px]:block">
         <Header theme={theme} heading={heading} withSubtitle />
 
         <div className="flex justify-between">

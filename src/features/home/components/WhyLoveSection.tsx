@@ -93,7 +93,7 @@ export const WhyLoveSection = ({ theme = "sildenafil", cta, className }: WhyLove
 
   return (
     <section className={cn("bg-white", className)}>
-      <div className="mx-auto flex w-full max-w-[1320px] flex-col items-center gap-5 px-6 py-10 lg:flex-row lg:items-center lg:gap-12 lg:py-16">
+      <div className="mx-auto flex w-full max-w-[1320px] flex-col items-center gap-5 px-6 py-10 lg:flex-row lg:items-start lg:gap-12 lg:pt-[100px] lg:pb-16">
         {/* Image */}
         <div className="shrink-0 overflow-hidden rounded-2xl">
           <Image
@@ -107,8 +107,8 @@ export const WhyLoveSection = ({ theme = "sildenafil", cta, className }: WhyLove
         </div>
 
         {/* Content */}
-        <div className="flex w-full flex-col lg:ml-20 lg:max-w-[560px]">
-          <h2 className="max-w-[400px] self-start text-[32px] font-medium leading-[120%] text-[#0e2836] max-lg:w-full lg:text-[45px] lg:leading-[142%]">
+        <div className="flex w-full flex-col lg:ml-20 lg:max-w-[680px]">
+          <h2 className="max-w-[400px] self-start text-[32px] font-medium leading-[120%] text-[#0e2836] max-lg:w-full lg:max-w-none lg:text-[45px] lg:leading-[142%]">
             Why you&apos;ll Love {copy.name}
           </h2>
 

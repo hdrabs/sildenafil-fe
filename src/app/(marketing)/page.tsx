@@ -1,6 +1,7 @@
 import { HeroSection } from "@/features/home/components/HeroSection";
 import { PricingSection } from "@/features/home/components/PricingSection";
 import { WhatsIncludedSection } from "@/features/home/components/WhatsIncludedSection";
+import { ReviewVideosSection } from "@/features/home/components/ReviewVideosSection";
 import { ProcessSection } from "@/features/home/components/ProcessSection";
 import { WhyLoveSection } from "@/features/home/components/WhyLoveSection";
 import { HowItWorksSection } from "@/features/home/components/HowItWorksSection";
@@ -16,6 +17,7 @@ const HomePage = () => (
     <HeroSection />
     <PricingSection />
     <WhatsIncludedSection />
+    <ReviewVideosSection />
     <ProcessSection />
     <WhyLoveSection
       cta={{ label: "Try Sildenafil", freeLabel: "FREE", href: ROUTES.PRODUCT_DETAIL }}

@@ -244,13 +244,27 @@ export const ProductConfigurator = ({
   }, []);
 
   useEffect(() => {
-    const navbar = document.querySelector("header");
-    if (!navbar) return;
-    const ro = new ResizeObserver(() => {
-      setNavbarHeight(navbar.getBoundingClientRect().height);
-    });
-    ro.observe(navbar);
-    return () => ro.disconnect();
+    let ro: ResizeObserver | null = null;
+    let raf = 0;
+    // The navbar may mount after this effect (e.g. it's behind a Suspense boundary),
+    // so retry until the <header> exists rather than bailing permanently — otherwise
+    // navbarHeight stays 0 and the sticky price header tucks under the navbar.
+    const attach = () => {
+      const navbar = document.querySelector("header");
+      if (!navbar) {
+        raf = requestAnimationFrame(attach);
+        return;
+      }
+      ro = new ResizeObserver(() => {
+        setNavbarHeight(navbar.getBoundingClientRect().height);
+      });
+      ro.observe(navbar);
+    };
+    attach();
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+    };
   }, []);
 
   // Warm the browser cache with every tablet image in the catalog so switching

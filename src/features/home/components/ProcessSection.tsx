@@ -14,7 +14,7 @@ const getSteps = (theme: ProcessTheme) => [
     desc: "Privately inform a U.S. licensed healthcare provider about your medical history and symptoms.",
     img: "/images/process/sildenafil-process-phone.png",
     imgW: 173,
-    imgH: 193,
+    imgH: 164,
   },
   {
     number: 2,
@@ -45,10 +45,10 @@ const ProcessCard = ({
   badgeColor: string;
 }) => (
   <div className="relative flex min-h-[360px] w-[360px] max-w-full flex-col rounded-2xl bg-white px-6 pt-8 pb-6 shadow-[0_4px_24px_rgba(44,62,80,0.08)]">
-    <div className="mb-4 flex w-full items-center">
+    <div className="mb-4 flex w-full items-start">
       <span
         style={{ backgroundColor: badgeColor }}
-        className="mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[14px] text-white"
+        className="mr-2 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[14px] text-white"
       >
         {step.number}
       </span>
@@ -76,11 +76,11 @@ export const ProcessSection = ({ theme = "sildenafil" }: ProcessSectionProps) =>
   return (
     <section id="process" className="bg-[#F4F6FB]">
       {/* Desktop layout (≥901px) */}
-      <div className="mx-auto hidden w-full max-w-7xl px-6 py-16 min-[901px]:block">
+      <div className="mx-auto hidden w-full max-w-7xl py-16 min-[901px]:block">
         <h2 className="mb-14 text-[45px] font-medium leading-[120%] text-[#262A32]">
           How Our Process works
         </h2>
-        <div className="flex flex-wrap justify-center gap-x-16 gap-y-12">
+        <div className="flex flex-wrap justify-center gap-x-20 gap-y-12">
           {steps.map((step) => (
             <ProcessCard key={step.number} step={step} badgeColor={badgeColor} />
           ))}
