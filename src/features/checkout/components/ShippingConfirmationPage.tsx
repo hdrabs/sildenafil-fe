@@ -81,7 +81,7 @@ const DeliverySummary = ({
       </p>
     )}
     {cutoff && (
-      <span className="mt-2 inline-flex items-start gap-1.5 rounded bg-[#ECEEFF] px-3 py-1 text-xs font-medium text-[#204AD7]">
+      <span className="mt-1.5 inline-flex items-start gap-1.5 rounded bg-[#ECEEFF] px-3 py-1 text-xs font-medium text-[#204AD7]">
         If You Order within <span className="font-bold">{cutoff}</span>
       </span>
     )}

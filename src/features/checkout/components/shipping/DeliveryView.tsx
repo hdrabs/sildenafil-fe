@@ -62,20 +62,20 @@ const OptionCard = ({
       }
     }}
     className={cn(
-      "flex cursor-pointer items-start gap-3 rounded-xl px-4 py-4 text-left transition-colors",
+      "flex cursor-pointer items-start gap-3 rounded-xl p-4 text-left transition-colors max-md:p-3 max-xs:p-2.5",
       selected ? "border-2 border-[#204AD7] bg-[#F8FBFF]" : "border-[1.5px] border-[#C5D4DC] bg-white",
     )}
   >
     <span
       className={cn(
-        "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
-        selected ? "border-[#204AD7]" : "border-[#C5D4DC]",
+        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
+        selected ? "border-[#051a24]/30" : "border-[#C5D4DC]",
       )}
     >
       {selected && <span className="h-2.5 w-2.5 rounded-full bg-[#204AD7]" />}
     </span>
 
-    <span className="min-w-0 flex-1">
+    <span className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
       {/* Icon stacks above the label on mobile (matches legacy ≤768px), inline on
           larger screens — otherwise a wrapping label strands the icon mid-text. */}
       <span className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-2">
@@ -85,10 +85,10 @@ const OptionCard = ({
           width={option.delivery_type === "personal" ? 42 : 29}
           height={17}
           unoptimized
-          className="shrink-0"
+          className="shrink-0 max-md:h-3.5 max-md:w-auto"
         />
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="text-sm font-semibold leading-snug text-text-primary">
+          <span className="text-sm font-semibold leading-snug text-text-primary max-md:text-xs">
             {option.label_info}
           </span>
           {option.delivery_type === "personal" && (
@@ -98,7 +98,7 @@ const OptionCard = ({
                 e.stopPropagation();
                 onMoreInfo();
               }}
-              className="shrink-0 cursor-pointer text-xs font-medium text-[#204AD7] hover:underline"
+              className="shrink-0 cursor-pointer text-xs font-medium text-[#204AD7] hover:underline max-md:text-[11px]"
             >
               More Info
             </button>
@@ -106,9 +106,9 @@ const OptionCard = ({
         </span>
       </span>
 
-      <span className="mt-1 block text-sm text-text-muted">{option.delivery_days_label}</span>
+      <span className="block text-sm font-medium text-text-muted max-md:text-xs max-xs:text-[11px]">{option.delivery_days_label}</span>
 
-      <span className="block text-sm text-[#1D9629]">
+      <span className="block text-sm font-medium text-[#1D9629] max-md:text-xs max-xs:text-[11px]">
         {option.estimated_delivery_date ? (
           <>
             {option.estimated_delivery_date.day_name},{" "}
@@ -121,7 +121,7 @@ const OptionCard = ({
       </span>
 
       {cutoff && (
-        <span className="mt-2 inline-flex items-start gap-1.5 rounded bg-[#ECEEFF] px-3 py-1 text-xs font-medium text-[#204AD7]">
+        <span className="mt-1.5 inline-flex items-start gap-1.5 rounded bg-[#ECEEFF] px-3 py-1 text-xs font-medium text-[#204AD7] max-md:px-2 max-md:text-[11px] max-xs:px-1.5 max-xs:py-0.5 max-xs:text-[10px]">
           <span className="mt-px shrink-0">
             <ClockIcon />
           </span>
@@ -134,7 +134,7 @@ const OptionCard = ({
       )}
     </span>
 
-    <span className="shrink-0 whitespace-nowrap text-lg font-bold text-text-primary sm:text-xl">
+    <span className="shrink-0 self-start whitespace-nowrap text-[13px] font-bold leading-snug text-text-primary md:text-xl">
       {formatPrice(option.price_value)}
     </span>
   </div>
@@ -181,8 +181,8 @@ export const DeliveryView = ({
 
   return (
     <>
-    <div className="rounded-2xl bg-bg-card p-5 shadow-sm">
-      <div className="flex flex-col gap-4">
+    <div className="rounded-2xl bg-bg-card p-5 shadow-sm max-md:p-4">
+      <div className="flex flex-col gap-5">
         {options.map((option) => (
           <OptionCard
             key={option.id}
