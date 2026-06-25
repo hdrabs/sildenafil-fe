@@ -76,7 +76,7 @@ const SHIPPING_METHODS = ["USPS Priority Mail", "USPS Priority Mail Express"];
 
 export const ShippingPolicyDrawer = ({ show, onClose }: Props) => {
   return (
-    <LegalDrawer show={show} onClose={onClose} title="Shipping Policy">
+    <LegalDrawer show={show} onClose={onClose} title="Shipping Policy" size="wide">
       <p>
         At Sildenafil.com, we strive to provide fast and reliable shipping to ensure you receive your
         products promptly. Please review our shipping policy below for details on where we ship, our

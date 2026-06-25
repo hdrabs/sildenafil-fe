@@ -35,7 +35,7 @@ export const useOrderVerification = () => {
   const address = addresses.find((a) => a.id === cart?.shipping_address_id) ?? null;
 
   const { data: delivery } = useDeliveryOptions(
-    { cartId, cartToken, destinationZip: address?.zip ?? "" },
+    { cartId, addressId: address?.id ?? 0, cartToken, destinationZip: address?.zip ?? "" },
     enabled && !!address,
   );
   const deliveryOption =

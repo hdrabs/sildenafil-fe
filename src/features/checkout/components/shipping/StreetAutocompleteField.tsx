@@ -75,9 +75,9 @@ export const StreetAutocompleteField = ({ label, registration, value, error, onS
           setTimeout(() => setFocused(false), 120);
         }}
         className={cn(
-          "h-12 w-full rounded-lg border bg-white px-4 text-sm text-text-primary outline-none transition-colors",
+          "h-12 w-full rounded-lg border-[1.5px] bg-white px-4 text-sm text-text-primary outline-none transition-colors",
           "focus:border-[#e05c4b] focus:ring-1 focus:ring-[#e05c4b]",
-          error ? "border-[#e05c4b]" : "border-border-input",
+          error ? "border-[#e05c4b]" : "border-[#c5d4dc]",
         )}
       />
       {error && <p className="mt-1 text-xs text-[#e05c4b]">{error}</p>}

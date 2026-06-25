@@ -13,6 +13,8 @@ interface Props {
   editing?: ShippingAddress | null;
   /** Bordered sub-card with a Cancel link + outlined button (adding to an existing list). */
   boxed: boolean;
+  /** Rendered inside an address card's edit accordion: no border, no header, outlined button. */
+  embedded?: boolean;
   submitLabel: string;
   onCancel?: () => void;
   onSaved: (address: ShippingAddress) => void;
@@ -27,7 +29,15 @@ const REST_FIELDS = [
   { name: "zip", label: "Zip" },
 ] as const;
 
-export const NewAddressForm = ({ me, editing, boxed, submitLabel, onCancel, onSaved }: Props) => {
+export const NewAddressForm = ({
+  me,
+  editing,
+  boxed,
+  embedded = false,
+  submitLabel,
+  onCancel,
+  onSaved,
+}: Props) => {
   const {
     form,
     submit,
@@ -50,20 +60,22 @@ export const NewAddressForm = ({ me, editing, boxed, submitLabel, onCancel, onSa
       <form
         onSubmit={submit}
         noValidate
-        className={cn(boxed && "rounded-xl border border-border-default p-5")}
+        className={cn(boxed && !embedded && "rounded-xl border border-border-default p-5")}
       >
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-text-primary">Enter Shipping Address</h2>
-          {boxed && onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="cursor-pointer text-sm font-medium text-primary-blue hover:opacity-80"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
+        {!embedded && (
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-text-primary">Enter Shipping Address</h2>
+            {boxed && onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="cursor-pointer text-sm font-medium text-primary-blue hover:opacity-80"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col gap-4">
           <StreetAutocompleteField
@@ -98,9 +110,9 @@ export const NewAddressForm = ({ me, editing, boxed, submitLabel, onCancel, onSa
                   id={name}
                   {...register(name)}
                   className={cn(
-                    "h-12 w-full rounded-lg border bg-white px-4 text-sm text-text-primary outline-none transition-colors",
+                    "h-12 w-full rounded-lg border-[1.5px] bg-white px-4 text-sm text-text-primary outline-none transition-colors",
                     "focus:border-[#e05c4b] focus:ring-1 focus:ring-[#e05c4b]",
-                    errors[name] ? "border-[#e05c4b]" : "border-border-input",
+                    errors[name] ? "border-[#e05c4b]" : "border-[#c5d4dc]",
                   )}
                 />
                 {errors[name] && (
@@ -113,18 +125,42 @@ export const NewAddressForm = ({ me, editing, boxed, submitLabel, onCancel, onSa
 
         {error && <p className="mt-4 text-sm text-[#e05c4b]">{error.message}</p>}
 
-        <div className={cn("mt-6", boxed && "flex justify-end")}>
+        <div
+          className={cn(
+            "mt-6",
+            embedded
+              ? "flex items-center justify-between md:justify-end"
+              : boxed && "flex justify-end",
+          )}
+        >
+          {/* Inline Cancel only on mobile (desktop cancels from the card header). */}
+          {embedded && onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="cursor-pointer text-[13px] text-[#0e2836] md:hidden"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}
             className={cn(
-              "cursor-pointer rounded-full text-sm font-medium uppercase tracking-wide transition-colors disabled:opacity-60",
-              boxed
-                ? "border border-[#e05c4b] px-10 py-3 text-[#e05c4b] hover:bg-[#e05c4b] hover:text-white"
-                : "w-full bg-[#e05c4b] py-3.5 text-white hover:opacity-90",
+              "cursor-pointer transition-colors disabled:opacity-60",
+              boxed || embedded
+                ? "rounded-full border border-[#d65a4a] px-6 py-2.5 text-xs font-semibold text-[#d65a4a] hover:bg-[#d65a4a] hover:text-white"
+                : "w-full rounded-full bg-coral px-2.5 py-3 text-base font-normal uppercase tracking-widest text-white hover:bg-coral-hover",
             )}
           >
-            {submitLabel}
+            {isSubmitting ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Processing
+              </span>
+            ) : (
+              submitLabel
+            )}
           </button>
         </div>
       </form>

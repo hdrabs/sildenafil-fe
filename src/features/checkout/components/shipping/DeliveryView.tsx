@@ -11,6 +11,7 @@ import { ShippingPolicyDrawer } from "@/features/checkout/components/drawers/Shi
 interface Props {
   cartId: number;
   cartToken?: string;
+  addressId: number;
   destinationZip: string;
   preselectedType?: string | null;
   onSubmit: (deliveryType: string) => void;
@@ -142,12 +143,13 @@ const OptionCard = ({
 export const DeliveryView = ({
   cartId,
   cartToken,
+  addressId,
   destinationZip,
   preselectedType,
   onSubmit,
   isSubmitting,
 }: Props) => {
-  const { data, isLoading } = useDeliveryOptions({ cartId, cartToken, destinationZip });
+  const { data, isLoading } = useDeliveryOptions({ cartId, addressId, cartToken, destinationZip });
   const [override, setOverride] = useState<string | null>(null);
   const [showPickupInfo, setShowPickupInfo] = useState(false);
   const [showShippingPolicy, setShowShippingPolicy] = useState(false);
@@ -171,10 +173,8 @@ export const DeliveryView = ({
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-bg-card p-6 shadow-sm">
-        <div className="flex justify-center py-16">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-[#e05c4b]" />
-        </div>
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-[#e05c4b]" />
       </div>
     );
   }
@@ -207,10 +207,7 @@ export const DeliveryView = ({
         type="button"
         disabled={!selected || isSubmitting}
         onClick={() => selected && onSubmit(selected)}
-        className={cn(
-          "mt-5 w-full cursor-pointer rounded-full py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors disabled:cursor-not-allowed",
-          !selected || isSubmitting ? "bg-[#6d757f]" : "bg-[#e05c4b] hover:opacity-90",
-        )}
+        className="mt-5 w-full rounded-full bg-coral px-2.5 py-3 text-base font-normal uppercase tracking-widest text-white transition-colors hover:bg-coral-hover disabled:cursor-not-allowed disabled:bg-[#6c757d]"
       >
         Continue
       </button>
