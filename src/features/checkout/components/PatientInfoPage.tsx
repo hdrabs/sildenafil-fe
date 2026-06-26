@@ -82,7 +82,7 @@ const FieldError = ({ message }: { message?: string }) =>
   message ? <p className="mt-1 text-xs font-medium text-[#ec534b]">{message}</p> : null;
 
 const inputClass = (hasError: boolean) =>
-  `h-12 w-full rounded-md border-2 bg-white px-[10px] text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent cursor-pointer ${
+  `h-12 w-full rounded-md border-2 bg-white px-[10px] text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-100 ${
     hasError ? "border-red-400" : "border-border-dropdown"
   }`;
 
@@ -103,6 +103,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
     onOtpVerified,
     onOtpSkip,
     onOtpClose,
+    disableFields,
   } = usePatientInfo({ returnTo });
 
   const { mutateAsync: generateOtp } = useGenerateOtp();
@@ -149,10 +150,12 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   return (
                     <label
                       key={g}
-                      className={`relative flex flex-1 cursor-pointer items-center gap-2.5 rounded-md border-2 px-4 py-3 transition-colors ${
+                      className={`relative flex flex-1 items-center gap-2.5 rounded-md border-2 px-4 py-3 transition-colors ${
+                        disableFields ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                      } ${
                         selected
                           ? "border-[#ec534b] bg-white"
-                          : "border-border-dropdown bg-white hover:border-[#a9cbd9]"
+                          : `border-border-dropdown bg-white ${disableFields ? "" : "hover:border-[#a9cbd9]"}`
                       }`}
                     >
                       <span className={selected ? "text-[#ec534b]" : "text-gray-400"}>
@@ -162,6 +165,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                       <input
                         type="radio"
                         value={g}
+                        disabled={disableFields}
                         {...register("gender")}
                         className="sr-only"
                       />
@@ -195,8 +199,9 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   {...register("first_name")}
                   id="first_name"
                   type="text"
+                  disabled={disableFields}
                   onKeyDown={blockDigits}
-                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
+                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent disabled:cursor-not-allowed disabled:bg-gray-100 ${
                     errors.first_name ? "border-red-400" : "border-border-dropdown"
                   }`}
                 />
@@ -217,8 +222,9 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
                   {...register("last_name")}
                   id="last_name"
                   type="text"
+                  disabled={disableFields}
                   onKeyDown={blockDigits}
-                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent ${
+                  className={`h-12 w-full cursor-pointer rounded-md border-2 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#ec534b] focus:border-transparent disabled:cursor-not-allowed disabled:bg-gray-100 ${
                     errors.last_name ? "border-red-400" : "border-border-dropdown"
                   }`}
                 />
@@ -232,7 +238,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
               <div className="flex gap-3">
                 {/* Month */}
                 <div className="relative flex-1">
-                  <select {...register("dob_month")} className={inputClass(!!errors.dob_month)}>
+                  <select {...register("dob_month")} disabled={disableFields} className={inputClass(!!errors.dob_month)}>
                     <option value="">Month</option>
                     {MONTHS.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -245,7 +251,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
 
                 {/* Day */}
                 <div className="relative w-28">
-                  <select {...register("dob_day")} className={inputClass(!!errors.dob_day)}>
+                  <select {...register("dob_day")} disabled={disableFields} className={inputClass(!!errors.dob_day)}>
                     <option value="">Day</option>
                     {DAYS.map((d) => (
                       <option key={d.value} value={d.value}>
@@ -258,7 +264,7 @@ export const PatientInfoPage = ({ returnTo }: { returnTo?: string } = {}) => {
 
                 {/* Year */}
                 <div className="relative w-28">
-                  <select {...register("dob_year")} className={inputClass(!!errors.dob_year)}>
+                  <select {...register("dob_year")} disabled={disableFields} className={inputClass(!!errors.dob_year)}>
                     <option value="">Year</option>
                     {YEARS.map((y) => (
                       <option key={y.value} value={y.value}>

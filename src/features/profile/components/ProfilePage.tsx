@@ -17,8 +17,10 @@ import { PasswordIcon } from "@/components/icons/PasswordIcon";
 import { EyeIcon } from "@/components/icons/EyeIcon";
 import { EyeOffIcon } from "@/components/icons/EyeOffIcon";
 import { useUser, useUpdateUser } from "@/store";
-import { useCurrentUser, useUpdateProfile } from "@/api/hooks/useUserQueries";
+import { useCurrentUser, useUpdateProfile, useChangePassword } from "@/api/hooks/useUserQueries";
+import { useGenerateOtp, useVerifyOtp } from "@/api/hooks/useAuthQueries";
 import { authService } from "@/api/services/authService";
+import { OtpModal } from "@/components/modals/OtpModal";
 import {
   profileSchema,
   passwordChangeSchema,
@@ -97,7 +99,16 @@ export const ProfilePage = () => {
   const user = useUser();
   const updateUser = useUpdateUser();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile();
+  const { mutate: changePassword, isPending: isChangingPassword } = useChangePassword();
+  const { mutateAsync: generateOtp } = useGenerateOtp();
+  const { mutateAsync: verifyOtp } = useVerifyOtp();
   const { data: profile } = useCurrentUser();
+
+  const [showOtpModal, setShowOtpModal] = useState(false);
+
+  // Patient identity fields are locked once the checkout patient-info step is done
+  // (server-authoritative `info_provided`); only contact details stay editable.
+  const identityLocked = profile?.info_provided ?? false;
 
   // Mirror verification flags locally so they update optimistically when
   // the user edits the phone or email before saving.
@@ -148,6 +159,7 @@ export const ProfilePage = () => {
   const {
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
+    reset: resetPassword,
     formState: { errors: passwordErrors },
   } = useForm<PasswordChangeValues>({
     resolver: zodResolver(passwordChangeSchema),
@@ -218,21 +230,63 @@ export const ProfilePage = () => {
     );
   };
 
+  const handleVerifyNow = async () => {
+    setShowOtpModal(true);
+    try {
+      await generateOtp();
+    } catch {
+      toast.error("Could not send a verification code. Please try again.");
+    }
+  };
+
+  // OtpModal surfaces an inline error when onSubmit rejects, so let verifyOtp throw.
+  const handleOtpSubmit = async (code: string) => {
+    await verifyOtp(code);
+    setOtpVerified(true);
+    setShowOtpModal(false);
+    toast.success("Phone number verified");
+  };
+
   const onPasswordUpdate = (values: PasswordChangeValues) => {
     setPasswordSaveError(null);
-    console.info("Password update:", values);
+    changePassword(
+      {
+        user: {
+          current_password: values.oldPassword,
+          password: values.newPassword,
+          password_confirmation: values.confirmPassword,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Password updated successfully");
+          resetPassword();
+        },
+        onError: (err) => {
+          setPasswordSaveError(
+            (err as { message?: string })?.message ?? "Failed to update password",
+          );
+        },
+      },
+    );
   };
 
   return (
     <div className="rounded-xl border border-border-default bg-bg-card p-6">
       {/* Personal Info */}
       <form onSubmit={handleProfileSubmit(onProfileSave)}>
+        {identityLocked && (
+          <p className="mb-5 rounded-lg border border-border-default bg-bg-input px-4 py-3 text-sm text-text-muted">
+            Your name, date of birth, and gender are locked. Contact support to update them.
+          </p>
+        )}
         <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
           <div>
             <FormLabel>First Name</FormLabel>
             <FieldInput
               icon={PersonIcon}
               error={profileErrors.firstName?.message}
+              disabled={identityLocked}
               onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
               {...registerProfile("firstName")}
             />
@@ -242,6 +296,7 @@ export const ProfilePage = () => {
             <FieldInput
               icon={PersonIcon}
               error={profileErrors.lastName?.message}
+              disabled={identityLocked}
               onKeyDown={(e) => { if (/[0-9]/.test(e.key)) e.preventDefault(); }}
               {...registerProfile("lastName")}
             />
@@ -252,6 +307,7 @@ export const ProfilePage = () => {
               icon={RiCalendarLine}
               type="date"
               error={profileErrors.dateOfBirth?.message}
+              disabled={identityLocked}
               {...registerProfile("dateOfBirth")}
             />
           </div>
@@ -260,13 +316,15 @@ export const ProfilePage = () => {
             <div className="relative">
               <RiUserSettingsLine className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <select
-                className="h-11 w-full appearance-none rounded-lg border border-border-input bg-bg-card pl-9 pr-8 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={identityLocked}
+                className="h-11 w-full appearance-none rounded-lg border border-border-input bg-bg-card pl-9 pr-8 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:bg-bg-input disabled:cursor-not-allowed"
                 {...registerProfile("gender")}
               >
                 <option value="">Select gender</option>
                 <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                {/* Telemedicine is available for male patients only. */}
+                <option value="female" disabled>Female</option>
+                <option value="other" disabled>Other</option>
               </select>
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">
                 ▾
@@ -291,9 +349,13 @@ export const ProfilePage = () => {
             ) : profile?.mobile_phone && otpVerified === false ? (
               <p className="mt-1.5 text-xs text-text-error">
                 OTP is not verified.{" "}
-                <a href="/login" className="font-semibold underline">
+                <button
+                  type="button"
+                  onClick={handleVerifyNow}
+                  className="font-semibold underline hover:opacity-80"
+                >
                   Verify Now
-                </a>
+                </button>
               </p>
             ) : null}
           </div>
@@ -418,12 +480,23 @@ export const ProfilePage = () => {
           </button>
           <button
             type="submit"
-            className="h-10 rounded-full bg-selected px-6 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+            disabled={isChangingPassword}
+            className="h-10 rounded-full bg-selected px-6 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
           >
-            Update Password
+            {isChangingPassword ? "Updating…" : "Update Password"}
           </button>
         </div>
       </form>
+
+      <OtpModal
+        show={showOtpModal}
+        phone={mobilePhoneValue || profile?.mobile_phone || ""}
+        channel="phone"
+        onSubmit={handleOtpSubmit}
+        onResend={generateOtp}
+        onClose={() => setShowOtpModal(false)}
+        onAlternative={() => setShowOtpModal(false)}
+      />
     </div>
   );
 };

@@ -117,13 +117,18 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedPhone]);
 
+  // Identity is locked once the patient-info step is completed (server-authoritative
+  // `info_provided`), matching the legacy client. Phone stays editable.
+  const disableFields = me?.info_provided ?? false;
+
   const canSubmit =
-    !!watchedGender &&
-    !!watchedFirst?.trim() &&
-    !!watchedLast?.trim() &&
-    !!watchedMonth &&
-    !!watchedDay &&
-    !!watchedYear &&
+    (disableFields ||
+      (!!watchedGender &&
+        !!watchedFirst?.trim() &&
+        !!watchedLast?.trim() &&
+        !!watchedMonth &&
+        !!watchedDay &&
+        !!watchedYear)) &&
     /^\(\d{3}\) \d{3}-\d{4}$/.test(watchedPhone ?? "");
 
   const advanceCheckout = async () => {
@@ -142,14 +147,18 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
 
   const submit = form.handleSubmit(async (values) => {
     try {
-      const dateOfBirth = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
+      // When identity is locked, source it from `me` so a disabled field can never
+      // submit a blank value or build an "undefined-undefined-undefined" DOB.
+      const dateOfBirth = disableFields
+        ? me?.date_of_birth ?? ""
+        : `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
       const isHome = values.phone_type === "home";
 
       await updateMe({
         user: {
-          first_name: values.first_name,
-          last_name: values.last_name,
-          gender: values.gender,
+          first_name: disableFields ? me?.first_name ?? "" : values.first_name,
+          last_name: disableFields ? me?.last_name ?? "" : values.last_name,
+          gender: disableFields ? me?.gender ?? values.gender : values.gender,
           date_of_birth: dateOfBirth,
           // The number always saves to mobile_phone; "Home" only means skip OTP
           // (so we unverify it). We never split it into home_phone or clear it.
@@ -209,6 +218,7 @@ export const usePatientInfo = ({ returnTo }: { returnTo?: string } = {}) => {
     isPending: isUpdating || isAdvancing,
     submitError,
     canSubmit,
+    disableFields,
     showOtpModal,
     otpLimitExceeded,
     otpPhone: watchedPhone ?? "",

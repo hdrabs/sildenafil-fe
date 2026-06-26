@@ -30,8 +30,17 @@ export interface UserMeResponse {
   date_of_birth?: string;
   email_verified?: boolean;
   otp_verified?: boolean;
+  info_provided?: boolean;
   phone_contact_allowed?: boolean;
   drugs_names_included?: boolean;
+}
+
+export interface ChangePasswordRequest {
+  user: {
+    current_password: string;
+    password: string;
+    password_confirmation: string;
+  };
 }
 
 export interface UpdateProfileRequest {
