@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 
 interface DrawerProps {
@@ -8,6 +9,8 @@ interface DrawerProps {
   onClose: () => void;
   /** Header title; omit for a header with just the close button. */
   title?: ReactNode;
+  /** Override the default header-title classes (size/weight). */
+  titleClassName?: string;
   children: ReactNode;
   /** "default" = nav/cart width; "wide" = roomier, for content-heavy drawers. */
   size?: "default" | "wide";
@@ -34,6 +37,7 @@ export const Drawer = ({
   open,
   onClose,
   title,
+  titleClassName,
   children,
   size = "default",
   bodyClassName,
@@ -93,7 +97,14 @@ export const Drawer = ({
           }`}
         >
           {title ? (
-            <h2 className="text-lg font-bold text-text-primary min-[1040px]:text-xl">{title}</h2>
+            <h2
+              className={cn(
+                "text-lg font-bold text-text-primary min-[1040px]:text-xl",
+                titleClassName,
+              )}
+            >
+              {title}
+            </h2>
           ) : (
             <span />
           )}
