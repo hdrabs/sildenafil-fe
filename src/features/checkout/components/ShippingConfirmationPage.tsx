@@ -1,13 +1,12 @@
 "use client";
 
 import { ReactNode } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
 import { CheckoutProgressBar } from "@/features/checkout/components/CheckoutProgressBar";
 import { useShippingConfirmation } from "@/features/checkout/hooks/useShippingConfirmation";
-import { DeliveryOption } from "@/types/delivery";
+import { DeliveryOptionDetails } from "@/features/checkout/components/shipping/DeliveryOptionDetails";
 
 const formatDob = (dob?: string): string => {
   if (!dob) return "";
@@ -29,6 +28,20 @@ const formatPhone = (value?: string): string => {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 };
 
+const InfoRow = ({ children }: { children: ReactNode }) => (
+  <span className="text-sm font-normal leading-relaxed text-[#777] max-md:text-xs">{children}</span>
+);
+
+const ChangeButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="shrink-0 cursor-pointer text-sm font-normal text-primary-blue hover:opacity-80 max-md:text-xs"
+  >
+    Change
+  </button>
+);
+
 const Card = ({
   title,
   onChange,
@@ -38,54 +51,13 @@ const Card = ({
   onChange: () => void;
   children: ReactNode;
 }) => (
-  <div className="rounded-2xl border border-border-default bg-bg-card p-5">
-    <div className="mb-3 flex items-start justify-between gap-3">
-      <h2 className="font-semibold text-text-primary">{title}</h2>
-      <button
-        type="button"
-        onClick={onChange}
-        className="shrink-0 cursor-pointer text-sm font-medium text-primary-blue hover:opacity-80"
-      >
-        Change
-      </button>
+  <div className="rounded-xl border-[1.5px] border-[#c5d4dc] bg-white p-4 md:p-5">
+    <div className="mb-2 flex items-center justify-between gap-3">
+      <h2 className="text-sm font-semibold leading-[1.725] text-black">{title}</h2>
+      <ChangeButton onClick={onChange} />
     </div>
-    {children}
+    <div className="flex flex-col">{children}</div>
   </div>
-);
-
-const DeliverySummary = ({
-  option,
-  cutoff,
-}: {
-  option: DeliveryOption;
-  cutoff: string | null;
-}) => (
-  <>
-    <div className="flex items-center gap-2">
-      <Image
-        src={option.delivery_type === "personal" ? "/icons/aum-pharmacy.svg" : "/icons/usps.svg"}
-        alt=""
-        width={option.delivery_type === "personal" ? 42 : 29}
-        height={17}
-        unoptimized
-        className="shrink-0"
-      />
-      <span className="text-sm font-semibold text-text-primary">{option.label_info}</span>
-    </div>
-    <p className="mt-1 text-sm text-text-muted">{option.delivery_days_label}</p>
-    {option.estimated_delivery_date && (
-      <p className="text-sm text-[#1D9629]">
-        {option.estimated_delivery_date.day_name},{" "}
-        <span className="font-bold">{option.estimated_delivery_date.month_day}</span>{" "}
-        {option.delivery_type === "personal" ? "Estimated Pickup" : "Estimated Delivery"}
-      </p>
-    )}
-    {cutoff && (
-      <span className="mt-2 inline-flex items-start gap-1.5 rounded bg-[#ECEEFF] px-3 py-1 text-xs font-medium text-[#204AD7]">
-        If You Order within <span className="font-bold">{cutoff}</span>
-      </span>
-    )}
-  </>
 );
 
 export const ShippingConfirmationPage = () => {
@@ -98,68 +70,81 @@ export const ShippingConfirmationPage = () => {
       <SecondaryNav onBack={back} isLoading={isSubmitting} />
       <CheckoutProgressBar step="shipping_confirmation" />
 
-      <main className="min-h-screen bg-bg-main px-4 py-10">
+      <main className="min-h-screen bg-bg-main px-4 pt-[52px] pb-10 md:pt-[120px]">
         <div className="mx-auto w-full max-w-xl">
-          <h1 className="text-2xl font-bold text-text-primary">Let&apos;s confirm your Delivery Info</h1>
-          <p className="mt-1 text-text-muted">Choose your preferred shipping option</p>
-
           {isLoading ? (
-            <div className="mt-6 flex justify-center py-16">
+            // The whole page (title + subheading included) waits behind the loader
+            // until patient, address and delivery data are all ready.
+            <div className="flex min-h-[60vh] items-center justify-center">
               <span className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-[#e05c4b]" />
             </div>
           ) : (
-            <div className="mt-6 rounded-2xl bg-bg-card p-5 shadow-sm">
-              <div className="flex flex-col gap-4">
-                <Card
-                  title="Patient Information"
-                  onChange={() => router.push(`${ROUTES.PATIENT_INFO}?return=confirmation`)}
-                >
-                  <p className="text-text-muted">
-                    {me?.first_name} {me?.last_name}
-                  </p>
-                  <p className="text-text-muted">{formatDob(me?.date_of_birth)}</p>
-                  <p className="text-text-muted">{capitalize(me?.gender)}</p>
-                  <p className="text-text-muted">{formatPhone(me?.mobile_phone ?? me?.home_phone)}</p>
-                </Card>
+            <>
+              <h1 className="text-[24px] font-semibold leading-[1.425] text-[#262a32]">
+                Let&apos;s confirm your Delivery Info
+              </h1>
+              <p className="mt-2 mb-8 text-[16px] font-medium leading-[1.4] text-[#777]">
+                Choose your preferred shipping option
+              </p>
 
-                <Card
-                  title="Shipping Information"
-                  onChange={() => router.push(`${ROUTES.SHIPPING}?return=confirmation`)}
-                >
-                  {address && (
-                    <>
-                      <p className="text-text-muted">
-                        {address.street_1}
-                        {address.street_2 ? `, ${address.street_2}` : ""}
-                      </p>
-                      <p className="text-text-muted">
-                        {address.city}, {address.state} {address.zip}
-                      </p>
-                    </>
-                  )}
-                </Card>
-
-                {deliveryOption && (
+              <div className="rounded-2xl bg-bg-card px-[30px] py-[35px] shadow-sm max-[436px]:px-[15px] max-[436px]:py-[15px]">
+                <div className="flex flex-col gap-[20px]">
                   <Card
-                    title="Delivery Option"
-                    onChange={() =>
-                      router.push(`${ROUTES.SHIPPING}?return=confirmation&view=delivery`)
-                    }
+                    title="Patient Information"
+                    onChange={() => router.push(`${ROUTES.PATIENT_INFO}?return=confirmation`)}
                   >
-                    <DeliverySummary option={deliveryOption} cutoff={cutoff} />
+                    <InfoRow>
+                      {me?.first_name} {me?.last_name}
+                    </InfoRow>
+                    <InfoRow>{formatDob(me?.date_of_birth)}</InfoRow>
+                    <InfoRow>{capitalize(me?.gender)}</InfoRow>
+                    <InfoRow>{formatPhone(me?.mobile_phone ?? me?.home_phone)}</InfoRow>
                   </Card>
-                )}
-              </div>
 
-              <button
-                type="button"
-                onClick={onContinue}
-                disabled={isSubmitting}
-                className="mt-5 w-full cursor-pointer rounded-full bg-[#e05c4b] py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                Continue
-              </button>
-            </div>
+                  <Card
+                    title="Shipping Information"
+                    onChange={() => router.push(`${ROUTES.SHIPPING}?return=confirmation`)}
+                  >
+                    {address && (
+                      <>
+                        <InfoRow>
+                          {address.street_1}
+                          {address.street_2 ? `, ${address.street_2}` : ""}
+                        </InfoRow>
+                        <InfoRow>
+                          {address.city}, {address.state} {address.zip}
+                        </InfoRow>
+                      </>
+                    )}
+                  </Card>
+
+                  {deliveryOption && (
+                    // Read-only twin of the /checkout/shipping delivery card: same
+                    // body (icon, label, ETA, cutoff badge), no radio/price, with a
+                    // "Change" link that routes back to the delivery view.
+                    <div className="rounded-xl border-[1.5px] border-[#c5d4dc] bg-white p-4 md:p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <DeliveryOptionDetails option={deliveryOption} cutoff={cutoff} />
+                        <ChangeButton
+                          onClick={() =>
+                            router.push(`${ROUTES.SHIPPING}?return=confirmation&view=delivery`)
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onContinue}
+                  disabled={isSubmitting}
+                  className="mt-5 w-full cursor-pointer rounded-full bg-[#e05c4b] py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Continue
+                </button>
+              </div>
+            </>
           )}
         </div>
       </main>

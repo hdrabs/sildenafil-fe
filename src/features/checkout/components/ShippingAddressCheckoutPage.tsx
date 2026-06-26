@@ -21,7 +21,7 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
     cartId,
     cartToken,
     preselectedDeliveryType,
-    isLoading,
+    isPageLoading,
     hasAddresses,
     visible,
     showAll,
@@ -43,8 +43,11 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
     destinationZip,
   } = useShippingCheckout({ returnTo, initialView });
 
-  const submitLabel = editing ? "Update address" : hasAddresses ? "Add address" : "Continue";
   const continueDisabled = !selectedAddress || !selectedAddress.is_valid || isAttaching;
+  // The boxed "add a new address" form sits above the list; editing happens
+  // inline within each card, so it must not also open the top form.
+  const editingId = editing?.id ?? null;
+  const addingNew = showForm && !editing && hasAddresses;
 
   return (
     <>
@@ -53,68 +56,105 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
 
       <main className="min-h-screen bg-bg-main px-4 py-10">
         <div className="mx-auto w-full max-w-xl">
-          <h1 className="text-2xl font-bold text-text-primary">
+          {isPageLoading ? (
+            <div className="flex min-h-[60vh] items-center justify-center">
+              <span className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-[#e05c4b]" />
+            </div>
+          ) : (
+            <>
+          <h1 className="text-[24px] font-semibold leading-[35px] text-[#262a32] max-md:text-[20px]">
             {view === "delivery" ? "Shipping Options" : "Shipping Address"}
           </h1>
-          <p className="mt-1 text-text-muted">
-            {view === "delivery"
-              ? "Choose your preferred shipping option"
-              : "Enter your delivery address to continue with your shipment"}
+          <p className="mt-2 mb-8 text-base font-medium leading-[140%] text-[#777] max-md:mb-6 max-md:leading-[150%]">
+            {view === "delivery" ? (
+              "Choose your preferred shipping option"
+            ) : hasAddresses ? (
+              // AUM: with saved addresses, mobile shows the delivery-option prompt;
+              // desktop keeps the full "enter your address" copy.
+              <>
+                <span className="md:hidden">Choose delivery option</span>
+                <span className="hidden md:inline">
+                  Enter your delivery address to continue with your shipment
+                </span>
+              </>
+            ) : (
+              "Enter your delivery address to continue with your shipment"
+            )}
           </p>
 
-          <div className="mt-6">
+          <div>
             {view === "delivery" ? (
               <DeliveryView
                 cartId={cartId}
                 cartToken={cartToken}
+                addressId={selectedAddress?.id ?? 0}
                 destinationZip={destinationZip}
                 preselectedType={preselectedDeliveryType}
                 onSubmit={submitDelivery}
                 isSubmitting={isSubmittingDelivery}
               />
-            ) : isLoading ? (
-              <div className="flex justify-center py-16">
-                <span className="h-8 w-8 animate-spin rounded-full border-2 border-border-default border-t-[#e05c4b]" />
-              </div>
             ) : (
-              <div className="rounded-2xl bg-bg-card p-6 shadow-sm">
-                {showForm && (
+              <div className="rounded-2xl bg-bg-card p-5 shadow-sm">
+                {!hasAddresses ? (
+                  // First-ever address: the form is the whole step.
                   <NewAddressForm
                     me={me}
-                    editing={editing}
-                    boxed={hasAddresses}
-                    submitLabel={submitLabel}
-                    onCancel={hasAddresses ? closeForm : undefined}
+                    editing={null}
+                    boxed={false}
+                    submitLabel="Continue"
                     onSaved={onAddressSaved}
                   />
-                )}
-
-                {!showForm && hasAddresses && (
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-text-primary">
-                      Confirm shipping address
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={openForm}
-                      className="cursor-pointer text-sm font-medium text-primary-blue hover:opacity-80"
-                    >
-                      + Add new shipping address
-                    </button>
-                  </div>
-                )}
-
-                {hasAddresses && (
+                ) : (
                   <>
-                    <div className={cn("flex flex-col gap-3", showForm && "mt-6")}>
+                    {addingNew ? (
+                      <NewAddressForm
+                        me={me}
+                        editing={null}
+                        boxed
+                        submitLabel="Add address"
+                        onCancel={closeForm}
+                        onSaved={onAddressSaved}
+                      />
+                    ) : (
+                      <div className="mb-4 flex flex-col items-start gap-2 md:flex-row md:items-center md:justify-between">
+                        <h2 className="m-0 text-lg font-semibold text-[#262a32]">
+                          Confirm shipping address
+                        </h2>
+                        {!editingId && (
+                          <button
+                            type="button"
+                            onClick={openForm}
+                            className="cursor-pointer text-sm font-normal leading-[140%] text-primary-blue hover:opacity-80"
+                          >
+                            + Add new shipping address
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <div className={cn("flex flex-col gap-3", addingNew && "mt-6")}>
                       {visible.map((address) => (
                         <AddressCard
                           key={address.id}
                           address={address}
                           selected={selectedId === address.id}
+                          editing={editingId === address.id}
                           onSelect={() => setSelectedId(address.id)}
                           onEdit={() => startEdit(address)}
-                        />
+                          onCancelEdit={closeForm}
+                        >
+                          {editingId === address.id && (
+                            <NewAddressForm
+                              me={me}
+                              editing={address}
+                              boxed={false}
+                              embedded
+                              submitLabel="Update Address"
+                              onCancel={closeForm}
+                              onSaved={onAddressSaved}
+                            />
+                          )}
+                        </AddressCard>
                       ))}
                     </div>
 
@@ -128,15 +168,12 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
                       </button>
                     )}
 
-                    {!showForm && (
+                    {!editingId && !addingNew && (
                       <button
                         type="button"
                         disabled={continueDisabled}
                         onClick={continueFromList}
-                        className={cn(
-                          "mt-6 w-full cursor-pointer rounded-full py-3.5 text-sm font-medium uppercase tracking-wide text-white transition-colors disabled:cursor-not-allowed",
-                          continueDisabled ? "bg-[#6d757f] opacity-90" : "bg-[#e05c4b] hover:opacity-90",
-                        )}
+                        className="mt-6 w-full rounded-full bg-coral px-2.5 py-3 text-base font-normal uppercase tracking-widest text-white transition-colors hover:bg-coral-hover disabled:cursor-not-allowed disabled:bg-[#6c757d]"
                       >
                         Continue
                       </button>
@@ -146,6 +183,8 @@ export const ShippingAddressCheckoutPage = ({ returnTo, initialView }: Props = {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
       </main>
     </>

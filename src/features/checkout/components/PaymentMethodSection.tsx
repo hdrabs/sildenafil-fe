@@ -117,18 +117,18 @@ export const PaymentMethodSection = ({
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-text-primary">Payment Method</h2>
+      <h2 className="mb-6 text-[20px] font-bold text-text-primary">Payment Method</h2>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1.5">
         {BRANDS.map((b) => (
           <Image
             key={b}
             src={`/icons/cards/badges/${b}.svg`}
             alt={b}
-            width={40}
-            height={28}
+            width={30}
+            height={20}
             unoptimized
-            className="h-7 w-auto"
+            className="h-5 w-auto max-[360px]:h-[18px]"
           />
         ))}
       </div>
@@ -198,13 +198,13 @@ export const PaymentMethodSection = ({
         form={showForm ? CARD_FORM_ID : undefined}
         onClick={showForm ? undefined : completeOrder}
         disabled={processing || (!showForm && !hasSelectedCard)}
-        className="mt-6 w-full cursor-pointer rounded-full bg-[#e05c4b] py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-6 w-full cursor-pointer rounded-full bg-coral py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-coral-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {processing ? "Processing…" : "Complete my order"}
       </button>
 
-      <p className="mt-3 flex items-center justify-center gap-1.5 text-xs uppercase tracking-wide text-text-muted">
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
+      <p className="mt-[15px] flex items-center justify-center gap-[5px] text-xs font-normal uppercase tracking-wide text-black">
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="#c1c6c9" aria-hidden="true">
           <path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm3 8H9V6a3 3 0 016 0v3z" />
         </svg>
         128-Bit TLS Security

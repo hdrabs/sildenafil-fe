@@ -85,6 +85,9 @@ export const addressKeys = {
 
 export const deliveryKeys = {
   all: ["deliveryOptions"] as const,
-  list: (cartId: number, destinationZip: string) =>
-    [...deliveryKeys.all, "list", cartId, destinationZip] as const,
+  // Keyed by address (not just zip): pickup availability/pricing is per-address,
+  // so two addresses must never share a cache entry — otherwise switching them
+  // flashes the previous address's options (e.g. the pickup card) before refetch.
+  list: (cartId: number, addressId: number, destinationZip: string) =>
+    [...deliveryKeys.all, "list", cartId, addressId, destinationZip] as const,
 };

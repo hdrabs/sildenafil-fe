@@ -40,7 +40,7 @@ const ClockIcon = () => (
 
 export const PickupInfoDrawer = ({ show, onClose }: Props) => {
   return (
-    <LegalDrawer show={show} onClose={onClose} title="AUM Pharmacy Information">
+    <LegalDrawer show={show} onClose={onClose} title="AUM Pharmacy Information" size="wide">
       <div className="rounded-lg border-2 border-[#BFD9E4] p-5">
         <div className="flex flex-col">
           <div className="mb-0 flex items-center gap-2">

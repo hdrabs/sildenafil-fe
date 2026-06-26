@@ -70,6 +70,20 @@ body {
   background-color: #f1f8fb;
 }
 
+/* Inline address-edit accordion — ports the legacy shipping card's collapse effect. */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
 /* Interactive elements show the pointer cursor on hover (disabled controls keep their own). */
 button:not(:disabled),
 [role="button"]:not([aria-disabled="true"]),
