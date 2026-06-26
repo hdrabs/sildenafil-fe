@@ -10,10 +10,10 @@ const ACCEPT_JS_URL =
     ? "https://js.authorize.net/v1/Accept.js"
     : "https://jstest.authorize.net/v1/Accept.js";
 
-// Matches the shipping-address form inputs for a consistent checkout look.
-const labelClass = "mb-1.5 block text-sm text-text-muted";
+// Matches the AUM checkout card form (12px text, 36px inputs).
+const labelClass = "mb-[0.25em] block text-xs leading-[21px] text-black/50";
 const inputClass =
-  "h-12 w-full rounded-lg border border-border-input bg-white px-4 text-sm text-text-primary placeholder:text-text-muted outline-none transition-colors focus:border-primary-blue";
+  "h-9 w-full rounded-md border border-[#ced5e1] bg-white px-[10px] py-[2px] text-xs leading-[18px] text-black placeholder:text-text-muted outline-none transition-colors focus:border-primary-blue";
 
 const Field = ({
   label,
@@ -60,7 +60,7 @@ export const AddCardForm = ({ formId, form, onSubmit, error }: Props) => {
   const fieldClass = (hasErr: boolean) => cn(inputClass, hasErr && "border-error");
 
   return (
-    <form id={formId} onSubmit={onSubmit} className="mt-4 flex flex-col gap-4">
+    <form id={formId} onSubmit={onSubmit} className="mt-4 flex flex-col gap-2">
       <div className="grid grid-cols-2 gap-4">
         <Field label="First name" error={errors.first_name?.message}>
           <input
@@ -86,7 +86,6 @@ export const AddCardForm = ({ formId, form, onSubmit, error }: Props) => {
             <input
               {...field}
               className={fieldClass(!!errors.card_number)}
-              placeholder="1234 5678 9012 3456"
               inputMode="numeric"
               autoComplete="cc-number"
               maxLength={19}
@@ -125,7 +124,6 @@ export const AddCardForm = ({ formId, form, onSubmit, error }: Props) => {
         <Field label="CVV" error={errors.card_code?.message}>
           <input
             className={fieldClass(!!errors.card_code)}
-            placeholder="123"
             inputMode="numeric"
             autoComplete="cc-csc"
             maxLength={4}
@@ -135,7 +133,6 @@ export const AddCardForm = ({ formId, form, onSubmit, error }: Props) => {
         <Field label="Zip Code" error={errors.zip?.message}>
           <input
             className={fieldClass(!!errors.zip)}
-            placeholder="90210"
             inputMode="numeric"
             maxLength={5}
             autoComplete="postal-code"

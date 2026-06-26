@@ -92,6 +92,7 @@ export const useOrderVerification = () => {
     steps,
     cartId,
     cartToken,
+    address,
     deliveryOption,
     cutoff,
     couponError,
