@@ -55,6 +55,10 @@ export const useShippingConfirmation = () => {
     steps,
     onContinue,
     isSubmitting: continueMutation.isPending,
-    isLoading: !me || !address,
+    // Hold the loader until all three cards have their data: patient (/me), the
+    // shipping address, and the delivery-options response (the card here mirrors
+    // the option selected on /checkout/shipping). `!delivery` covers the
+    // settled-but-empty case too, so it never spins forever.
+    isLoading: !me || !address || !delivery,
   };
 };
