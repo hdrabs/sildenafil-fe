@@ -82,6 +82,8 @@ export const useStartVisit = ({ landingContext, cartToken }: UseStartVisitOption
 
       setActiveCart({
         cart: result.cart,
+        carts: [],
+        orderId: null,
         variantLabel,
         redirectPath: result.redirect_path,
       });

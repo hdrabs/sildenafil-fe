@@ -11,6 +11,7 @@ import {
   UpdateCartV2Request,
   OrdersListResponse,
   ActiveCartEntry,
+  ActiveCartLine,
 } from "@/types/cart";
 import { VisitEligibilityResponse } from "@/types/visit";
 
@@ -86,14 +87,22 @@ export const cartService = {
    */
   getActiveCart: async (): Promise<ActiveCartEntry | null> => {
     const res = await api.get<
-      | { cart: CartV2; variant_label: string; redirect_path: string }
-      | { cart: null }
+      | {
+          cart: CartV2;
+          carts: ActiveCartLine[];
+          order_id: number | null;
+          variant_label: string;
+          redirect_path: string;
+        }
+      | { cart: null; carts: [] }
     >("/v2/active_cart");
 
     if (!res.cart) return null;
 
     return {
       cart: res.cart,
+      carts: res.carts ?? [],
+      orderId: res.order_id ?? null,
       variantLabel: res.variant_label,
       redirectPath: res.redirect_path,
     };

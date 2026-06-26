@@ -54,7 +54,7 @@ export const useSignupUser = () => {
             });
 
             if (cart && redirect_path) {
-              setActiveCart({ cart, variantLabel: "", redirectPath: redirect_path });
+              setActiveCart({ cart, carts: [], orderId: null, variantLabel: "", redirectPath: redirect_path });
               router.replace(redirect_path);
             } else {
               router.replace(ROUTES.DASHBOARD);

@@ -50,6 +50,11 @@ export const authService = {
   login: (data: LoginRequest): Promise<AuthTokenResponse> =>
     api.post<AuthTokenResponse>("/v2/session", data),
 
+  // Exchange an admin-issued SignInToken (the /users/become/:token deep link) for a
+  // patient JWT, logging the patient into this app.
+  become: (token: string): Promise<AuthTokenResponse> =>
+    api.post<AuthTokenResponse>("/v2/become", { token }),
+
   logout: (): Promise<Record<string, never>> =>
     api.delete<Record<string, never>>("/v2/session"),
 

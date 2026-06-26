@@ -42,6 +42,8 @@ export const useCartStore = create<CartStoreState>()(
                 delivery_type: state.activeCart.cart.delivery_type,
                 shipping_address_id: state.activeCart.cart.shipping_address_id,
               } as CartV2,
+              carts: state.activeCart.carts,
+              orderId: state.activeCart.orderId,
               variantLabel: state.activeCart.variantLabel,
               redirectPath: state.activeCart.redirectPath,
             }

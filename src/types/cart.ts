@@ -174,12 +174,28 @@ export interface CartV2Response {
 }
 
 /**
+ * One drawer line item from GET /api/v2/active_cart — either an order's line item
+ * or the single open cart. `label` is "Sildenafil 100 mg".
+ */
+export interface ActiveCartLine {
+  id: number;
+  token?: string;
+  label: string;
+  quantity: number;
+  final_price: number;
+}
+
+/**
  * The active cart restored from GET /api/v2/active_cart, mapped into the
- * client-side shape held by cartStore. `variantLabel` / `redirectPath` are
- * server-computed presentation hints that sit beside the cart entity.
+ * client-side shape held by cartStore. `carts` is the full drawer list (an order's
+ * line items, or the single open cart); `cart` stays the primary item the funnel
+ * reads. `orderId` is set when the carts belong to a pending order (read-only).
+ * `variantLabel` / `redirectPath` are server-computed presentation hints.
  */
 export interface ActiveCartEntry {
   cart: CartV2;
+  carts: ActiveCartLine[];
+  orderId: number | null;
   variantLabel: string;
   redirectPath: string;
 }

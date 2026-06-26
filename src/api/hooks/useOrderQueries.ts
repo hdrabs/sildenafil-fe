@@ -1,0 +1,70 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { orderService } from "@/api/services/orderService";
+import { cartKeys, orderKeys } from "@/constants/queryKeys";
+import { OrderDetail, PayOrderRequest, UpdateOrderRequest } from "@/types/order";
+
+export const useCurrentOrder = (enabled = true) =>
+  useQuery({
+    queryKey: orderKeys.current(),
+    queryFn: () => orderService.getCurrentOrder(),
+    enabled,
+  });
+
+export const useOrder = (id: number, enabled = true) =>
+  useQuery({
+    queryKey: orderKeys.detail(id),
+    queryFn: () => orderService.getOrder(id),
+    enabled: enabled && id > 0,
+  });
+
+export const useUpdateOrder = (id: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateOrderRequest) => orderService.updateOrder(id, data),
+    onSuccess: (order: OrderDetail) => {
+      queryClient.setQueryData(orderKeys.detail(id), order);
+      queryClient.invalidateQueries({ queryKey: orderKeys.current() });
+    },
+  });
+};
+
+export const useUpdateOrderCart = (orderId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ cartId, quantity }: { cartId: number; quantity: number }) =>
+      orderService.updateCartQuantity(orderId, cartId, quantity),
+    onSuccess: (order: OrderDetail) => {
+      queryClient.setQueryData(orderKeys.detail(orderId), order);
+    },
+  });
+};
+
+export const useApplyOrderDiscount = (orderId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (code: string) => orderService.applyDiscount(orderId, code),
+    onSuccess: (order: OrderDetail) => queryClient.setQueryData(orderKeys.detail(orderId), order),
+  });
+};
+
+export const useRemoveOrderDiscount = (orderId: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => orderService.removeDiscount(orderId),
+    onSuccess: (order: OrderDetail) => queryClient.setQueryData(orderKeys.detail(orderId), order),
+  });
+};
+
+export const usePayOrder = (id: number) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: PayOrderRequest = {}) => orderService.payOrder(id, data),
+    onSuccess: (order: OrderDetail) => {
+      queryClient.setQueryData(orderKeys.detail(id), order);
+      queryClient.invalidateQueries({ queryKey: orderKeys.current() });
+      // The order's carts are now in fulfillment — resync the active cart so the
+      // navbar/cart drawer reflect that the cart is no longer pending payment.
+      queryClient.invalidateQueries({ queryKey: cartKeys.active() });
+    },
+  });
+};

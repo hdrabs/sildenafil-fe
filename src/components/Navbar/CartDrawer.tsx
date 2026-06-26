@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CloseIcon } from "@/components/icons/CloseIcon";
 import { toast } from "react-toastify";
@@ -87,6 +87,24 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
     router.push(ROUTES.PRODUCT_SELECTION(DEFAULT_PRODUCT_SLUG));
   };
 
+  // Order line items come through `carts` and are read-only; a single open cart is
+  // deletable. Fall back to the primary cart if the persisted entry has no list yet.
+  const isOrder = !!activeCart?.orderId;
+  const lines =
+    activeCart?.carts?.length
+      ? activeCart.carts
+      : activeCart
+        ? [
+            {
+              id: activeCart.cart.id,
+              token: activeCart.cart.token,
+              label: activeCart.variantLabel,
+              quantity: activeCart.cart.quantity,
+              final_price: activeCart.cart.final_price,
+            },
+          ]
+        : [];
+
   return (
     <>
       {/* Overlay */}
@@ -128,29 +146,35 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
         <div className="flex flex-1 flex-col px-6 min-[1040px]:px-10">
           {activeCart ? (
             <>
-              {/* Cart item row */}
-              <div className="py-4">
-                <div className="flex items-start justify-between">
-                  <p className="font-semibold text-text-primary text-[15px] min-[1040px]:text-[16px]">
-                    {activeCart.variantLabel}
-                  </p>
-                  <p className="font-semibold text-primary text-[15px] min-[1040px]:text-[16px] shrink-0 ml-4">
-                    ${Number(activeCart.cart.final_price).toFixed(2)}
-                  </p>
-                </div>
-                <div className="mt-1 flex items-center justify-between">
-                  <p className="text-[13px] min-[1040px]:text-[14px] text-text-muted">
-                    Quantity: {activeCart.cart.quantity} Tablets
-                  </p>
-                  <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="text-[12px] min-[1040px]:text-[13px] font-semibold uppercase tracking-wide text-text-error hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </button>
-                </div>
-              </div>
+              {lines.map((line, index) => (
+                <Fragment key={line.id}>
+                  {index > 0 && <div className="h-px bg-border-default" />}
+                  <div className="py-4">
+                    <div className="flex items-start justify-between">
+                      <p className="font-semibold text-text-primary text-[15px] min-[1040px]:text-[16px]">
+                        {line.label}
+                      </p>
+                      <p className="font-semibold text-primary text-[15px] min-[1040px]:text-[16px] shrink-0 ml-4">
+                        ${Number(line.final_price).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between">
+                      <p className="text-[13px] min-[1040px]:text-[14px] text-text-muted">
+                        Quantity: {line.quantity} Tablets
+                      </p>
+                      {!isOrder && (
+                        <button
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                          className="text-[12px] min-[1040px]:text-[13px] font-semibold uppercase tracking-wide text-text-error hover:opacity-80 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </Fragment>
+              ))}
 
               <div className="h-px bg-border-default" />
 

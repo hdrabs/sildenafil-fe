@@ -43,4 +43,12 @@ export const ROUTES = {
   SELFIE_UPLOAD:              "/checkout/selfie-upload",
   SHIPPING_CONFIRMATION:      "/checkout/shipping-confirmation",
   ORDER_VERIFICATION:         "/checkout/order-verification",
+
+  // ── Patient post-approval payment flow (admin become-link → pay) ─────────────
+  // Paths match the legacy aum_mine/client routes so existing links don't 404.
+  BECOME:                      (token: string) => `/users/become/${token}`,
+  CURRENT_ORDER:               "/account/current-order",
+  EDIT_SHIPPING:               "/edit/shipping",
+  ORDER_SHIPPING_CONFIRMATION: "/order-shipping-confirmation",
+  ORDER_PAY:                   (id: number) => `/order/${id}`,
 } as const;

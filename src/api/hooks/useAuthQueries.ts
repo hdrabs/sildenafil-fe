@@ -19,6 +19,11 @@ export const useLogin = () =>
     mutationFn: (data: LoginRequest) => authService.login(data),
   });
 
+export const useBecome = () =>
+  useMutation({
+    mutationFn: (token: string) => authService.become(token),
+  });
+
 export const useLogout = () =>
   useMutation({
     mutationFn: () => authService.logout(),
