@@ -19,6 +19,8 @@ export interface ShippingAddress {
   has_no_active_carts: boolean;
   used_by_restricted_carts: boolean;
   editable_for_user: boolean;
+  // Backend-owned delete eligibility; the FE renders the Delete button off this alone.
+  deletable: boolean;
 }
 
 export interface ShippingAddressPayload {
@@ -62,15 +64,13 @@ export interface AddressFields {
 }
 
 /**
- * v2 create/update payload. first_name/last_name/phone are not shown in the
- * form — they're sourced from the authenticated user. `verified` reflects the
- * Smarty drawer choice (true = accepted the suggested/clean address).
+ * v2 create/update payload. The FE sends ONLY the address fields the user types;
+ * first_name/last_name/phone are owned by the backend (sourced from the
+ * authenticated user). `verified` reflects the Smarty drawer choice (true =
+ * accepted the suggested/clean address).
  */
 export interface ShippingAddressV2Payload {
   shipping_address: AddressFields & {
-    first_name: string;
-    last_name: string;
-    phone: string;
     verified: boolean;
   };
 }

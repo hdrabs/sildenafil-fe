@@ -9,12 +9,13 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { Spinner } from "@/components/ui/Spinner";
 import { Skeleton } from "@/components/Skeleton";
+import { toast } from "react-toastify";
 import {
-  useCreditCards,
-  useSetDefaultCard,
-  useDeleteCreditCard,
+  useCreditCardsV2,
+  useSetDefaultCardV2,
+  useDeleteCreditCardV2,
 } from "@/api/hooks/useCreditCardQueries";
-import { useShippingAddresses } from "@/api/hooks/useShippingAddressQueries";
+import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
 import { useAddCreditCardForm } from "@/features/payments/hooks/useAddCreditCardForm";
 import { NoShippingAddressModal } from "@/components/modals/NoShippingAddressModal";
 import { CreditCard } from "@/types/creditCard";
@@ -28,16 +29,27 @@ const CARD_ICON: Record<string, string> = {
 };
 
 export const PaymentHistoryPage = () => {
-  const { data, isLoading }             = useCreditCards();
-  const { data: addressData }           = useShippingAddresses();
-  const setDefault                      = useSetDefaultCard();
-  const deleteCard                      = useDeleteCreditCard();
+  const { data, isLoading }             = useCreditCardsV2();
+  const { data: addresses }             = useShippingAddressesV2();
+  const setDefault                      = useSetDefaultCardV2();
+  const deleteCard                      = useDeleteCreditCardV2();
   const [modalOpen, setModalOpen]       = useState(false);
   const [noAddressModal, setNoAddressModal] = useState(false);
+  const [cardToDelete, setCardToDelete] = useState<CreditCard | null>(null);
 
   const cards     = data?.credit_cards ?? [];
   const defaultId = data?.default_payment_profile_id;
-  const hasAddress = (addressData?.shipping_addresses?.filter((a) => a.status === "active") ?? []).length > 0;
+  // The v2 index already returns only active addresses.
+  const hasAddress = (addresses ?? []).length > 0;
+
+  const handleConfirmDelete = () => {
+    if (!cardToDelete) return;
+    deleteCard.mutate(cardToDelete.payment_profile_id, {
+      onSuccess: () => setCardToDelete(null),
+      onError: (err) =>
+        toast.error((err as { message?: string })?.message ?? "Couldn't remove this card."),
+    });
+  };
 
   const handleAddCard = () => {
     if (!hasAddress) {
@@ -86,10 +98,10 @@ export const PaymentHistoryPage = () => {
             key={card.payment_profile_id}
             card={card}
             isDefault={card.payment_profile_id === defaultId}
-            onSetDefault={() => setDefault.mutate({ select_card: { payment_profile_id: card.payment_profile_id } })}
-            onDelete={() => deleteCard.mutate(card.payment_profile_id)}
+            onSetDefault={() => setDefault.mutate(card.payment_profile_id)}
+            onDelete={() => setCardToDelete(card)}
             isSettingDefault={setDefault.isPending}
-            isDeleting={deleteCard.isPending}
+            isDeleting={deleteCard.isPending && cardToDelete?.payment_profile_id === card.payment_profile_id}
           />
         ))}
       </div>
@@ -106,6 +118,29 @@ export const PaymentHistoryPage = () => {
 
       <AddCardModal open={modalOpen} onClose={() => setModalOpen(false)} />
       <NoShippingAddressModal open={noAddressModal} onClose={() => setNoAddressModal(false)} />
+
+      <Modal isOpen={!!cardToDelete} onClose={() => setCardToDelete(null)} title="Remove card?" size="sm">
+        <p className="text-sm text-text-muted">
+          This payment method will be permanently removed from your account.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setCardToDelete(null)}
+            className="h-10 rounded-full border border-border-input px-5 text-sm font-medium text-text-primary hover:bg-bg-input transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmDelete}
+            disabled={deleteCard.isPending}
+            className="h-10 rounded-full bg-[#e05c4b] px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {deleteCard.isPending ? "Removing…" : "Remove"}
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
@@ -208,7 +243,7 @@ const AddCardModal = ({
   open: boolean;
   onClose: () => void;
 }) => {
-  const { form, submit, isLoading, error } = useAddCreditCardForm({ onSuccess: onClose });
+  const { form, submit, isLoading, error } = useAddCreditCardForm({ onSuccess: onClose, apiVersion: "v2" });
   const { register, control, formState: { errors } } = form;
 
   // Load Accept.js when the modal opens

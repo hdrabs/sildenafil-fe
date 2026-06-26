@@ -43,4 +43,10 @@ export const shippingAddressService = {
     const res = await api.patch<{ shipping_address: ShippingAddress }>(`/v2/shipping_addresses/${id}`, payload);
     return res.shipping_address;
   },
+
+  // DELETE /v2/shipping_addresses/:id — soft-delete; returns the updated active list.
+  removeV2: async (id: number): Promise<ShippingAddress[]> => {
+    const res = await api.delete<{ shipping_addresses: ShippingAddress[] }>(`/v2/shipping_addresses/${id}`);
+    return res.shipping_addresses;
+  },
 };

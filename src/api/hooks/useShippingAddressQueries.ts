@@ -64,3 +64,11 @@ export const useUpdateShippingAddressV2 = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: shippingAddressV2Keys.list() }),
   });
 };
+
+export const useDeleteShippingAddressV2 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => shippingAddressService.removeV2(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: shippingAddressV2Keys.list() }),
+  });
+};

@@ -59,3 +59,11 @@ export const useSetDefaultCardV2 = () => {
     onSuccess:  () => qc.invalidateQueries({ queryKey: creditCardKeys.listV2() }),
   });
 };
+
+export const useDeleteCreditCardV2 = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (paymentProfileId: string) => creditCardService.removeV2(paymentProfileId),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: creditCardKeys.listV2() }),
+  });
+};

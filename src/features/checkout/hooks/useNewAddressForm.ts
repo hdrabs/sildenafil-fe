@@ -38,7 +38,9 @@ const toFields = (values: ShippingCheckoutFormValues): AddressFields => ({
  * `validation` so the caller can render the matching correction drawer, whose
  * "accept" actions then persist with the appropriate `verified` flag.
  */
-export const useNewAddressForm = ({ me, editing, onSaved }: Options) => {
+// `me` is accepted for caller compatibility but intentionally unused: identity
+// (name + phone) is owned by the backend, not built on the frontend.
+export const useNewAddressForm = ({ editing, onSaved }: Options) => {
   const validate = useValidateAddress();
   const create = useCreateShippingAddressV2();
   const update = useUpdateShippingAddressV2();
@@ -59,11 +61,9 @@ export const useNewAddressForm = ({ me, editing, onSaved }: Options) => {
   });
 
   const persist = async (fields: AddressFields, verified: boolean) => {
+    // Only the typed address fields; the backend fills name + phone from the user.
     const payload = {
       shipping_address: {
-        first_name: me?.first_name ?? "",
-        last_name: me?.last_name ?? "",
-        phone: me?.mobile_phone ?? me?.home_phone ?? "",
         street_1: fields.street_1,
         street_2: fields.street_2 || undefined,
         city: fields.city,
