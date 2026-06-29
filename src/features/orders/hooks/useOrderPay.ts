@@ -29,7 +29,10 @@ export const useOrderPay = (id: number) => {
 
   const cartId = order?.carts[0]?.id ?? 0;
   const destinationZip = order?.shipping_address?.zip ?? "";
-  const { data: deliveryData } = useDeliveryOptions({ cartId, destinationZip }, cartId > 0);
+  const { data: deliveryData } = useDeliveryOptions(
+    { cartId, addressId: order?.shipping_address_id ?? 0, destinationZip },
+    cartId > 0,
+  );
   const deliveryOption =
     deliveryData?.delivery_options.find((option) => option.delivery_type === order?.delivery_type) ??
     null;

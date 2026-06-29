@@ -27,7 +27,9 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ShippingAddress | null>(null);
   const [showAll, setShowAll] = useState(false);
-  const [view, setView] = useState<View>(initialView ?? "address");
+  // URL-driven (?view=delivery) so Continue re-renders into the delivery view the
+  // same way the checkout step does (a plain client navigation).
+  const view: View = initialView ?? "address";
 
   const isLoading = orderLoading || addressesLoading;
   const hasAddresses = addresses.length > 0;
@@ -43,7 +45,7 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
 
   const saveAddressAndContinue = async (addressId: number) => {
     await update.mutateAsync({ shipping_address_id: addressId });
-    setView("delivery");
+    router.push(`${ROUTES.EDIT_SHIPPING}?view=delivery`);
   };
 
   const onAddressSaved = async (saved: ShippingAddress) => {
@@ -68,8 +70,14 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
 
   return {
     me,
-    // Back always returns to the current-order page (product decision, for now).
-    onBack: () => router.push(ROUTES.CURRENT_ORDER),
+    // From the delivery sub-view, back returns to the address view; from the
+    // address view, back leaves to the current-order page. Use an explicit push
+    // (not router.back) because the order-confirmation page can push into the
+    // delivery view — history-back would bounce there instead of to the address.
+    onBack:
+      view === "delivery"
+        ? () => router.push(ROUTES.EDIT_SHIPPING)
+        : () => router.push(ROUTES.CURRENT_ORDER),
     view,
     cartId: order?.carts[0]?.id ?? 0,
     preselectedDeliveryType: order?.delivery_type ?? null,
