@@ -77,7 +77,7 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
     onBack:
       view === "delivery"
         ? () => router.push(ROUTES.EDIT_SHIPPING)
-        : () => router.push(ROUTES.CURRENT_ORDER),
+        : () => router.push(ROUTES.ORDERS),
     view,
     cartId: order?.carts[0]?.id ?? 0,
     preselectedDeliveryType: order?.delivery_type ?? null,

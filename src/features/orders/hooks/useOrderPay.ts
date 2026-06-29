@@ -61,7 +61,7 @@ export const useOrderPay = (id: number) => {
       {
         onSuccess: () => {
           toast.success("Payment complete!");
-          router.push(ROUTES.CURRENT_ORDER);
+          router.push(ROUTES.ORDERS);
         },
         onError: (error) =>
           toast.error((error as { message?: string })?.message ?? "Payment could not be completed."),

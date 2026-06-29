@@ -38,7 +38,7 @@ export const useBecomeUser = (token: string) => {
           token: jwt,
           jti: me.jti,
         });
-        router.replace(ROUTES.CURRENT_ORDER);
+        router.replace(ROUTES.ORDERS);
       } catch {
         if (!cancelled) setError("This sign-in link is invalid or has expired.");
       }

@@ -1,5 +1,6 @@
 import api from "@/api/baseAPI";
 import { OrderDetail, UpdateOrderRequest, PayOrderRequest } from "@/types/order";
+import { OrderHistoryFeed } from "@/types/orderHistory";
 
 /**
  * Patient-facing order payment flow. The order is created on the admin/CRM panel
@@ -8,6 +9,9 @@ import { OrderDetail, UpdateOrderRequest, PayOrderRequest } from "@/types/order"
  * so each call returns the inner { order } payload.
  */
 export const orderService = {
+  // GET /api/v2/orders — the Order History feed (orders + loose in-progress carts).
+  getOrdersHistory: (): Promise<OrderHistoryFeed> => api.get<OrderHistoryFeed>("/v2/orders"),
+
   // GET /api/v2/current_order — the patient's current active order to pay, or null.
   getCurrentOrder: async (): Promise<OrderDetail | null> => {
     const res = await api.get<{ order: OrderDetail | null }>("/v2/current_order");

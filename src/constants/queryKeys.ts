@@ -16,6 +16,7 @@ export const orderKeys = {
   list: (params?: unknown) => [...orderKeys.all, "list", params] as const,
   detail: (id: number) => [...orderKeys.all, "detail", id] as const,
   current: () => [...orderKeys.all, "current"] as const,
+  history: () => [...orderKeys.all, "history"] as const,
 };
 
 export const prescriptionKeys = {
