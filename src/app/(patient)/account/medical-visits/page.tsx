@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { PrescriptionsPage } from "@/features/prescriptions/components/PrescriptionsPage";
+import { MedicalVisitsPage } from "@/features/medical-visits/components/MedicalVisitsPage";
 
 const Page = () => (
   <ErrorBoundary>
-    <PrescriptionsPage />
+    <Suspense>
+      <MedicalVisitsPage />
+    </Suspense>
   </ErrorBoundary>
 );
 

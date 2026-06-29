@@ -60,6 +60,7 @@ export const questionnaireKeys = {
 export const visitKeys = {
   all: ["visits"] as const,
   eligibleStates: () => [...visitKeys.all, "eligible_states"] as const,
+  history: () => [...visitKeys.all, "history"] as const,
 };
 
 export const checkoutKeys = {
