@@ -73,20 +73,35 @@ export const useNewAddressForm = ({ editing, onSaved }: Options) => {
       },
     };
 
-    const saved = editing
-      ? await update.mutateAsync({ id: editing.id, payload })
-      : await create.mutateAsync(payload);
-
-    setValidation(null);
-    onSaved(saved);
+    try {
+      const saved = editing
+        ? await update.mutateAsync({ id: editing.id, payload })
+        : await create.mutateAsync(payload);
+      setValidation(null);
+      onSaved(saved);
+    } catch {
+      // A save failure is surfaced to the form via the returned `error`
+      // (create.error / update.error); swallow here so callers never reject.
+    }
   };
 
   const submit = form.handleSubmit(async (values) => {
     setValidation(null);
-    const result = await validate.mutateAsync(toFields(values));
+    const fields = toFields(values);
+
+    let result: AddressValidationResult;
+    try {
+      result = await validate.mutateAsync(fields);
+    } catch {
+      // Verification is best-effort: if the validation service is unreachable
+      // (e.g. Smarty/DNS down) save the address unverified rather than blocking
+      // the user — the downstream address-issue warning then flags it.
+      await persist(fields, false);
+      return;
+    }
 
     if (result.status === "ok") {
-      await persist(toFields(values), true);
+      await persist(fields, true);
       return;
     }
     setValidation(result);

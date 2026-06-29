@@ -1,6 +1,7 @@
 "use client";
 
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { AddressIssueWarning } from "@/components/AddressIssueWarning";
 import { CheckoutProgressBar } from "@/features/checkout/components/CheckoutProgressBar";
 import { EditCartModal } from "@/features/checkout/components/EditCartModal";
 import { PaymentMethodSection } from "@/features/checkout/components/PaymentMethodSection";
@@ -43,13 +44,6 @@ export const OrderVerificationPage = () => {
     completeOrder,
     isCompleting,
   } = useOrderVerification();
-
-  const showAddressWarning =
-    !!cart &&
-    !!deliveryOption &&
-    address?.verified === false &&
-    cart.delivery_type !== "personal" &&
-    deliveryOption.delivery_type !== "personal";
 
   return (
     <>
@@ -95,16 +89,11 @@ export const OrderVerificationPage = () => {
                   <Divider />
                   <div className="py-[5px]">
                     <DeliveryRow option={deliveryOption} cutoff={cutoff} price={cart.final_delivery_price} />
-                    {showAddressWarning && (
-                      <p className="mt-2 text-xs font-medium text-coral">
-                        Our system shows an issue with your address, shipping delays may occur.
-                        Contact us at{" "}
-                        <a href="tel:7142762040" className="underline">
-                          (714) 276-2040
-                        </a>{" "}
-                        for more information.
-                      </p>
-                    )}
+                    <AddressIssueWarning
+                      verified={address?.verified}
+                      deliveryTypes={[cart.delivery_type, deliveryOption.delivery_type]}
+                      className="mt-2"
+                    />
                   </div>
                 </>
               )}

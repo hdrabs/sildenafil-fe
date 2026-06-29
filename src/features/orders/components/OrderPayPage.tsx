@@ -2,6 +2,7 @@
 
 import { Fragment } from "react";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { AddressIssueWarning } from "@/components/AddressIssueWarning";
 import { PaymentMethodSection } from "@/features/checkout/components/PaymentMethodSection";
 import {
   CouponSection,
@@ -87,6 +88,11 @@ export const OrderPayPage = ({ id }: { id: number }) => {
                   <Divider />
                   <div className="py-[5px]">
                     <DeliveryRow option={deliveryOption} cutoff={cutoff} price={deliveryOption.price_value} />
+                    <AddressIssueWarning
+                      verified={order.shipping_address?.verified}
+                      deliveryTypes={[order.delivery_type, deliveryOption.delivery_type]}
+                      className="mt-2"
+                    />
                   </div>
                 </>
               )}

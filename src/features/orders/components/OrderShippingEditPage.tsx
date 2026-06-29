@@ -13,7 +13,9 @@ export const OrderShippingEditPage = ({
 }: {
   initialView?: "address" | "delivery";
 }) => {
-  const data = useOrderShippingEdit({ initialView });
+  const { isPageLoading, ...rest } = useOrderShippingEdit({ initialView });
 
-  return <ShippingAddressView {...data} />;
+  // Map the hook's combined loader to the view's `isLoading` (it hides the
+  // progress bar, so the page-level loader covers addresses + delivery options).
+  return <ShippingAddressView {...rest} isLoading={isPageLoading} />;
 };
