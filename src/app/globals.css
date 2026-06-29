@@ -21,6 +21,8 @@
   --color-bg-card: #ffffff;
   --color-bg-input: #f1f5f9;
   --color-bg-patient-welcome: #e8f1fb;
+  --color-bg-empty-ellipse: #e1eff5;
+  --color-bg-tile: #f8f9fc;
   --color-bg-announcement: #cce5ff;
   --color-bg-bottle: #c2dae7;
   --color-bg-testimonial: #e1edf3;
@@ -31,12 +33,15 @@
   --color-border-default: #cadae8;
   --color-border-input: #cbd5e1;
   --color-border-selected: #e05252;
+  --color-border-tile: #e3eaf5;
+  --color-ghost-dark: #b1b1b1;
 
   /* Text */
   --color-text-primary: #0f172a;
   --color-text-muted: #64748b;
   --color-text-link: #1b53af;
   --color-text-error: #ef4444;
+  --color-text-faint: #909090;
 
   /* Status */
   --color-success: #22c55e;

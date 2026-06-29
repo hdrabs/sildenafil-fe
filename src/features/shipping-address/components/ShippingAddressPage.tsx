@@ -35,18 +35,18 @@ export const ShippingAddressPage = () => {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-bg-card p-6 shadow-sm">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Skeleton className="h-40 w-full rounded-xl" />
-          <Skeleton className="h-40 w-full rounded-xl" />
+      <div className={ACCOUNT_CARD}>
+        <div className="grid grid-cols-1 gap-[30px] sm:grid-cols-2">
+          <Skeleton className="h-[230px] w-full rounded-md" />
+          <Skeleton className="h-[230px] w-full rounded-md" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-bg-card p-6 shadow-sm">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+    <div className={ACCOUNT_CARD}>
+      <div className="grid grid-cols-1 gap-[30px] sm:grid-cols-2">
         {list.map((addr) => (
           <AddressCard
             key={addr.id}
@@ -60,18 +60,23 @@ export const ShippingAddressPage = () => {
         <button
           type="button"
           onClick={openAdd}
-          className="flex min-h-[160px] items-center justify-center rounded-xl border border-border-default bg-bg-main text-sm font-medium text-text-primary transition-colors hover:bg-bg-input"
+          className="flex min-h-[230px] items-center justify-center rounded-md border border-border-tile bg-bg-tile text-sm font-medium text-text-primary transition-colors hover:border-primary hover:text-primary"
         >
           + Add new shipping address
         </button>
       </div>
 
-      <Modal isOpen={modalOpen} onClose={closeModal} size="md">
+      <Modal isOpen={modalOpen} onClose={closeModal} size="md" className="max-w-[362px]">
         <AccountAddressForm me={me} editing={editing} onClose={closeModal} />
       </Modal>
     </div>
   );
 };
+
+// AUM `.account-card.padded`: white, 12px radius, 30px pad (15px sides on mobile),
+// soft drop shadow.
+const ACCOUNT_CARD =
+  "rounded-xl bg-bg-card p-[30px] shadow-[0px_0px_20px_rgba(128,148,178,0.2)] max-[768px]:px-[15px]";
 
 /* ── Address card ── */
 
@@ -86,22 +91,25 @@ const AddressCard = ({
   onDelete: () => void;
   isDeleting: boolean;
 }) => {
+  // AUM ".btn-aum.ghost small": blue outline pill that fills blue on hover.
   const pill =
-    "flex-1 rounded-full border border-border-default py-2.5 text-center text-xs font-semibold uppercase tracking-wide text-primary-blue transition-colors hover:bg-bg-input disabled:opacity-50";
+    "flex-1 rounded-full border border-border-dropdown py-2.5 text-center text-xs font-semibold uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-50";
 
   return (
-    <div className="flex min-h-[160px] flex-col rounded-xl border border-border-default bg-bg-card p-5">
+    // AUM card: hover turns the border AND all inherited text blue.
+    <div className="flex min-h-[230px] flex-col rounded-md border border-border-tile bg-bg-tile p-[22px] text-text-primary transition-colors hover:border-primary hover:text-primary">
       {address.is_valid === false && (
-        <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-xs font-medium text-text-error">
+        // AUM renders the restriction as plain bold text (inherits the card colour).
+        <div className="mb-2 font-bold">
           We&apos;re not available in your state just yet.
         </div>
       )}
 
       <div className="flex-1">
-        <p className="text-sm text-text-primary">
+        <p className="text-sm">
           {address.street_1}{address.street_2 ? `, ${address.street_2}` : ""}
         </p>
-        <p className="text-sm text-text-primary">
+        <p className="text-sm">
           {address.city} {address.state} {address.zip}
         </p>
       </div>

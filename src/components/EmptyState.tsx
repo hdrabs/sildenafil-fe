@@ -7,13 +7,18 @@ interface EmptyStateProps {
   illustration?: ReactNode;
   illustrationSrc?: string;
   title: string;
-  description: string;
+  description: ReactNode;
   cta?: ReactNode;
   ctaLabel?: string;
   ctaHref?: string;
   onCtaClick?: () => void;
   className?: string;
 }
+
+// Ports AUM's `.empty-screen` pattern: 145px pale-blue ellipse, 16px/600 title,
+// 14px black body (343px wide, 172.5% line-height), and a blue capitalized pill CTA.
+const ctaClass =
+  "mt-9 inline-flex h-11 min-w-[187px] items-center justify-center rounded-full bg-primary px-8 text-xs font-bold text-white hover:opacity-90 transition-opacity";
 
 export const EmptyState = ({
   illustration,
@@ -28,37 +33,36 @@ export const EmptyState = ({
 }: EmptyStateProps) => (
   <div
     className={cn(
-      "flex flex-col items-center justify-center py-16 text-center",
+      "flex min-h-[420px] flex-col items-center justify-center py-10 text-center",
       className,
     )}
   >
-    <div className="mb-5 flex h-32 w-32 items-center justify-center rounded-full bg-bg-patient-welcome">
+    <div className="flex h-[145px] w-[145px] items-center justify-center rounded-full bg-bg-empty-ellipse">
       {illustrationSrc ? (
         <Image
           src={illustrationSrc}
           alt={title}
-          width={90}
-          height={90}
+          width={96}
+          height={96}
           className="object-contain"
+          // Illustrations are non-square; fix width and let height follow the
+          // natural ratio (height:auto) so next/image doesn't flag the ratio.
+          style={{ width: 96, height: "auto" }}
         />
       ) : (
         illustration
       )}
     </div>
-    <h2 className="text-lg font-semibold text-text-primary">{title}</h2>
-    <p className="mt-1.5 max-w-xs text-sm text-text-muted">{description}</p>
+    <h2 className="mt-[22px] text-base font-semibold text-text-primary">{title}</h2>
+    <p className="mt-[18px] max-w-[343px] text-sm leading-[1.725] text-text-primary">
+      {description}
+    </p>
     {cta ?? (ctaHref ? (
-      <Link
-        href={ctaHref}
-        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-      >
+      <Link href={ctaHref} className={ctaClass}>
         {ctaLabel}
       </Link>
     ) : ctaLabel ? (
-      <button
-        onClick={onCtaClick}
-        className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-primary px-8 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-      >
+      <button onClick={onCtaClick} className={ctaClass}>
         {ctaLabel}
       </button>
     ) : null)}

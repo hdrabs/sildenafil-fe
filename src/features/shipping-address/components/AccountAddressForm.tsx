@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
-import { RiMapPinLine, RiMapPin2Line, RiBuildingLine, RiHomeLine } from "react-icons/ri";
+import { RiMapPinLine, RiBuildingLine, RiHomeLine } from "react-icons/ri";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAddressSuggestions } from "@/api/hooks/useAddressQueries";
 import { useNewAddressForm } from "@/features/checkout/hooks/useNewAddressForm";
 import { AddressCorrectionDrawer } from "@/features/checkout/components/drawers/AddressCorrectionDrawer";
+import { StateAutocompleteField } from "@/features/checkout/components/shipping/StateAutocompleteField";
 import { AddressSuggestion, ShippingAddress } from "@/types/shippingAddress";
 import { UserMeResponse } from "@/types/user";
 
@@ -68,6 +69,7 @@ export const AccountAddressForm = ({ me, editing, onClose }: Props) => {
     register,
     watch,
     setValue,
+    trigger,
     formState: { errors },
   } = form;
 
@@ -97,7 +99,7 @@ export const AccountAddressForm = ({ me, editing, onClose }: Props) => {
   return (
     <>
       <form onSubmit={submit} noValidate className="flex flex-col">
-        <h2 className="mb-6 text-[28px] font-bold leading-tight text-text-primary">
+        <h2 className="mb-6 text-xl font-semibold leading-tight text-text-primary">
           Enter a new Shipping Address
         </h2>
 
@@ -141,7 +143,13 @@ export const AccountAddressForm = ({ me, editing, onClose }: Props) => {
 
           <IconField label="Apt/Unit/Suite" icon={RiMapPinLine} reg={register("street_2")} />
           <IconField label="City" icon={RiBuildingLine} reg={register("city")} error={errors.city?.message} />
-          <IconField label="State" icon={RiMapPin2Line} reg={register("state")} error={errors.state?.message} />
+          <StateAutocompleteField
+            label="State"
+            value={watch("state") ?? ""}
+            error={errors.state?.message}
+            onChange={(v) => setValue("state", v, { shouldValidate: true })}
+            onBlur={() => trigger("state")}
+          />
           <IconField label="ZIP" icon={RiHomeLine} reg={register("zip")} error={errors.zip?.message} />
         </div>
 

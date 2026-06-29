@@ -6,13 +6,16 @@ import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import { useUser } from "@/store";
 
-const SidebarIcon = ({ src, color }: { src: string; color: string }) => (
+const SidebarIcon = ({ src }: { src: string }) => (
   <span
+    aria-hidden
     style={{
       display: "inline-block",
-      width: 16,
-      height: 16,
-      backgroundColor: color,
+      width: 20,
+      height: 20,
+      // Mask + currentColor lets the parent recolor the icon via text-color
+      // utilities, so the active tint can stay desktop-only (matches AUM).
+      backgroundColor: "currentColor",
       WebkitMaskImage: `url(${src})`,
       maskImage: `url(${src})`,
       WebkitMaskSize: "contain",
@@ -46,8 +49,8 @@ export const PatientSidebar = () => {
       className={cn(
         // Mobile: full width, transparent, no shadow, padding-bottom
         "w-full bg-transparent pb-10",
-        // Desktop: fixed 310px, white, rounded, shadow
-        "min-[900px]:w-[310px] min-[900px]:min-w-[310px] min-[900px]:max-w-[310px] min-[900px]:rounded-xl min-[900px]:bg-white min-[900px]:pb-0",
+        // Desktop: fixed 310px, white, 5px radius, soft shadow, 60px right margin (wider gap to content)
+        "min-[900px]:w-[310px] min-[900px]:min-w-[310px] min-[900px]:max-w-[310px] min-[900px]:mr-[60px] min-[900px]:rounded-[5px] min-[900px]:bg-white min-[900px]:pb-0",
         "min-[900px]:shadow-[0px_0px_10px_rgba(128,148,178,0.42)] min-[900px]:overflow-auto",
       )}
     >
@@ -69,45 +72,59 @@ export const PatientSidebar = () => {
       <nav
         className={cn(
           "flex flex-col",
-          // Mobile: gap between card-style items, no top margin
-          "gap-4",
-          // Desktop: no gap (border-bottom dividers), top margin
-          "min-[900px]:mt-3 min-[900px]:gap-0",
+          // Mobile: 16px vertical gap between card-style items (AUM .account-nav__items).
+          // Margin-based (space-y) rather than flex `gap` so it renders even where
+          // flex-gap isn't supported (older mobile Safari).
+          "space-y-4",
+          // Desktop: items touch so the bottom-border dividers read as one list.
+          "min-[900px]:mt-3 min-[900px]:space-y-0",
         )}
       >
         {navItems.map(({ label, subtitle, href, icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + "/");
-          const iconColor = isActive ? "#1b53af" : "#262A32";
 
           return (
             <Link
               key={label}
               href={href}
               className={cn(
-                "flex items-center p-5 bg-white no-underline",
+                "group flex items-center p-5 bg-white no-underline",
                 "transition-[border-color,color] duration-200",
 
                 // Mobile: individual card (border all round, radius, shadow)
                 "rounded-lg border border-[#dfe5f2] shadow-[0px_2px_10px_0px_rgba(0,0,0,0.1)]",
 
-                // Desktop: bottom divider only, no radius, active left border
+                // Desktop: bottom divider only, no radius, blue left border on active/hover/focus
                 "min-[900px]:rounded-none",
                 "min-[900px]:border-0 min-[900px]:border-b min-[900px]:border-b-[#d7dce5] min-[900px]:last:border-b-0",
-                "min-[900px]:shadow-none",
+                "min-[900px]:shadow-none min-[900px]:border-l-[3px]",
                 isActive
-                  ? "min-[900px]:border-l-[3px] min-[900px]:border-l-[#1b53af]"
-                  : "min-[900px]:border-l-[3px] min-[900px]:border-l-transparent",
+                  ? "min-[900px]:border-l-[#1b53af]"
+                  : "min-[900px]:border-l-transparent min-[900px]:hover:border-l-[#1b53af] min-[900px]:focus-visible:border-l-[#1b53af]",
               )}
               style={{ textDecoration: "none" }}
             >
-              <span className="mr-4 mt-0.5 shrink-0">
-                <SidebarIcon src={icon} color={iconColor} />
+              {/* Active/hover/focus tint is desktop-only; mobile cards stay neutral (AUM). */}
+              <span
+                className={cn(
+                  "mr-4 mt-0.5 shrink-0 text-[#262A32]",
+                  isActive
+                    ? "min-[900px]:text-[#1b53af]"
+                    : "min-[900px]:group-hover:text-[#1b53af] min-[900px]:group-focus-visible:text-[#1b53af]",
+                )}
+              >
+                <SidebarIcon src={icon} />
               </span>
 
               <span className="flex flex-1 flex-col">
                 <span
-                  className="font-medium leading-snug"
-                  style={{ fontSize: 16, color: isActive ? "#1b53af" : "#000" }}
+                  className={cn(
+                    "font-medium leading-snug text-black",
+                    isActive
+                      ? "min-[900px]:text-[#1b53af]"
+                      : "min-[900px]:group-hover:text-[#1b53af] min-[900px]:group-focus-visible:text-[#1b53af]",
+                  )}
+                  style={{ fontSize: 16 }}
                 >
                   {label}
                 </span>
@@ -116,8 +133,8 @@ export const PatientSidebar = () => {
                 </span>
               </span>
 
-              {/* Chevron */}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+              {/* Chevron — mobile drill-down affordance only; hidden on desktop (AUM) */}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="min-[900px]:hidden" style={{ flexShrink: 0 }}>
                 <path d="M6 12L10 8L6 4" stroke="#6d757f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
