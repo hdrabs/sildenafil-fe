@@ -1,25 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { toast } from "react-toastify";
+import { cn } from "@/lib/utils";
+import { CONFIG } from "@/constants/config";
 import { useCurrentUser, useUpdateProfile } from "@/api/hooks/useUserQueries";
 
-const CheckSquare = ({ checked }: { checked: boolean }) => (
-  <span
-    className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
-      checked ? "border-primary-blue text-primary-blue" : "border-border-input text-transparent"
-    }`}
-  >
-    <svg viewBox="0 0 20 20" fill="none" className="h-3 w-3">
-      <path
-        d="M4.5 10.5l3.2 3.2 7.8-8.4"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  </span>
+// AUM's exact notification checkbox image, swapped empty→blue on check. The source
+// is 12px, so it's rendered near-native to stay crisp.
+const CheckBox = ({ checked }: { checked: boolean }) => (
+  <Image
+    src={checked ? "/icons/account/checkbox-blue.png" : "/icons/account/checkbox-empty.png"}
+    alt=""
+    aria-hidden
+    width={14}
+    height={14}
+    className="mt-1 shrink-0"
+  />
 );
 
 export const NotificationsPage = () => {
@@ -28,13 +26,16 @@ export const NotificationsPage = () => {
 
   const [phoneAllowed, setPhoneAllowed] = useState(false);
   const [drugsIncluded, setDrugsIncluded] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Hydrate the checkboxes from the saved preferences.
-  useEffect(() => {
-    if (!user) return;
+  // Seed the checkboxes from saved preferences once the user loads (render-time
+  // adjustment, not an effect — avoids cascading renders). Later refetches don't
+  // re-seed, so an in-progress toggle is never clobbered.
+  if (user && !hydrated) {
+    setHydrated(true);
     setPhoneAllowed(user.phone_contact_allowed ?? false);
     setDrugsIncluded(user.drugs_names_included ?? false);
-  }, [user]);
+  }
 
   const hasPhone = !!user?.mobile_phone;
 
@@ -58,30 +59,35 @@ export const NotificationsPage = () => {
   };
 
   return (
-    <div className="rounded-2xl bg-bg-card p-8 shadow-sm sm:p-10">
-      <h1 className="text-base text-text-primary">
-        Received <strong className="font-bold">SMS Notifications</strong>:
-      </h1>
+    <div className="mb-[30px] rounded-xl bg-bg-card p-[30px] shadow-[0px_0px_20px_rgba(128,148,178,0.2)] max-[768px]:px-[15px]">
+      <p className="text-base text-text-primary">
+        Received<strong className="font-bold"> SMS Notifications</strong>:
+      </p>
 
       {!hasPhone && (
-        <p className="mt-5 rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-          To receive SMS notifications please add your mobile phone number in your{" "}
-          <a href="/profile" className="font-semibold underline">Profile</a>.
+        <p className="mt-5 text-sm text-warning">
+          To accept SMS notifications please provide your mobile phone number.
         </p>
       )}
 
-      <div className="mt-8 flex flex-col gap-7">
+      <div className="mt-8 flex flex-col gap-4">
         <button
           type="button"
           role="checkbox"
           aria-checked={phoneAllowed}
           onClick={() => setPhoneAllowed((v) => !v)}
-          className="flex w-full cursor-pointer items-start gap-3 text-left"
+          className="flex w-full items-start gap-2 rounded-[5px] bg-white px-6 py-5 text-left"
         >
-          <CheckSquare checked={phoneAllowed} />
-          <span className="text-[15px] leading-relaxed text-primary-blue">
-            I agree to receive SMS (text messages) from and it&apos;s partner pharmacy. We&apos;ll
-            notify you with important updates to your order and refill reminders.
+          <CheckBox checked={phoneAllowed} />
+          <span
+            className={cn(
+              "text-base leading-relaxed",
+              phoneAllowed ? "text-primary" : "text-text-primary",
+            )}
+          >
+            I agree to receive SMS (text messages) from {CONFIG.SITE_NAME} and it&apos;s partner
+            pharmacy. We&apos;ll notify you with important updates to your order and refill
+            reminders.
           </span>
         </button>
 
@@ -90,12 +96,17 @@ export const NotificationsPage = () => {
           role="checkbox"
           aria-checked={drugsIncluded}
           onClick={() => setDrugsIncluded((v) => !v)}
-          className="flex w-full cursor-pointer items-start gap-3 text-left"
+          className="flex w-full items-start gap-2 rounded-[5px] bg-white px-6 py-5 text-left"
         >
-          <CheckSquare checked={drugsIncluded} />
-          <span className="text-[15px] leading-relaxed text-primary-blue">
-            Include medication names in email and SMS from and it&apos;s partner pharmacy
-            (recommended)
+          <CheckBox checked={drugsIncluded} />
+          <span
+            className={cn(
+              "text-base leading-relaxed",
+              drugsIncluded ? "text-primary" : "text-text-primary",
+            )}
+          >
+            Include medication names in email and SMS from {CONFIG.SITE_NAME} and it&apos;s partner
+            pharmacy (recommended)
           </span>
         </button>
       </div>
@@ -105,7 +116,7 @@ export const NotificationsPage = () => {
           type="button"
           onClick={handleSave}
           disabled={isSaving || !hasPhone}
-          className="rounded-full border border-border-input px-8 py-2.5 text-sm font-semibold uppercase tracking-wide text-primary-blue transition-colors hover:bg-primary-blue/5 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border border-border-dropdown px-5 py-[7px] text-xs font-medium uppercase tracking-wide text-primary transition-colors hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-primary"
         >
           {isSaving ? "Saving…" : "Save"}
         </button>

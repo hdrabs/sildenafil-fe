@@ -19,7 +19,9 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="en" className={poppins.variable}>
-    <body>
+    {/* Browser extensions inject attributes (bis_register, __processed_*) onto <body>
+        before hydration; suppress the resulting one-level attribute mismatch warning. */}
+    <body suppressHydrationWarning>
       <QueryProvider>
         <ScrollToTop />
         {children}

@@ -77,7 +77,7 @@ export const ProductLineItem = ({
             width={90}
             height={80}
             unoptimized
-            className="max-h-[90px] w-full object-contain p-1"
+            className="max-h-[90px] w-full h-auto object-contain p-1"
           />
         </div>
         <div className="min-w-0 flex-1">

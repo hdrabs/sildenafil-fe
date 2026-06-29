@@ -25,19 +25,35 @@ declare global {
   }
 }
 
-/**
- * Wraps window.Accept.dispatchData in a Promise.
- * Returns the opaque token or throws with a human-readable message.
- */
+// Accept.js validation codes → the field they belong to (mirrors AUM's
+// CreditCardForm mapping). Anything not listed surfaces as a form-level banner.
+const CODE_TO_FIELD: Partial<Record<string, keyof CreditCardFormValues>> = {
+  E_WC_05: "card_number",
+  E_WC_06: "expiration_date",
+  E_WC_07: "expiration_date",
+  E_WC_08: "expiration_date",
+  E_WC_15: "card_code",
+};
+
+type TokenMessage = { code: string; text: string };
+type TokenizeResult =
+  | { ok: true; opaqueData: AuthorizeNetOpaqueData }
+  | { ok: false; messages: TokenMessage[] };
+
+// Wraps window.Accept.dispatchData in a Promise and never rejects — the caller
+// decides whether each message is a field error or a banner.
 const tokenizeCard = (cardData: {
   cardNumber: string;
   month: string;
   year: string;
   cardCode: string;
-}): Promise<AuthorizeNetOpaqueData> =>
-  new Promise((resolve, reject) => {
+}): Promise<TokenizeResult> =>
+  new Promise((resolve) => {
     if (!window.Accept) {
-      reject(new Error("Authorize.Net Accept.js not loaded. Please refresh and try again."));
+      resolve({
+        ok: false,
+        messages: [{ code: "E_LOAD", text: "Authorize.Net Accept.js not loaded. Please refresh and try again." }],
+      });
       return;
     }
 
@@ -45,7 +61,7 @@ const tokenizeCard = (cardData: {
     const clientKey  = process.env.NEXT_PUBLIC_ANET_CLIENT_KEY ?? "";
 
     if (!apiLoginID || !clientKey) {
-      reject(new Error("Payment gateway is not configured."));
+      resolve({ ok: false, messages: [{ code: "E_CONFIG", text: "Payment gateway is not configured." }] });
       return;
     }
 
@@ -53,13 +69,12 @@ const tokenizeCard = (cardData: {
       { authData: { apiLoginID, clientKey }, cardData },
       (response) => {
         if (response.messages.resultCode === "Ok" && response.opaqueData) {
-          resolve(response.opaqueData);
+          resolve({ ok: true, opaqueData: response.opaqueData });
         } else {
-          const firstMsg = response.messages.message?.[0];
-          const msg = firstMsg
-            ? `[${firstMsg.code}] ${firstMsg.text}`
-            : "Card tokenization failed.";
-          reject(new Error(msg));
+          resolve({
+            ok: false,
+            messages: response.messages.message ?? [{ code: "E_UNKNOWN", text: "Card tokenization failed." }],
+          });
         }
       }
     );
@@ -67,7 +82,8 @@ const tokenizeCard = (cardData: {
 
 interface UseAddCreditCardFormOptions {
   onSuccess: () => void;
-  // The account page adds cards via v1; the checkout payment step uses v2.
+  // The account page adds cards via v2 (matching its v2 card list/delete); the
+  // legacy v1 path remains for callers that still need it.
   apiVersion?: "v1" | "v2";
 }
 
@@ -102,22 +118,32 @@ export const useAddCreditCardForm = ({ onSuccess, apiVersion = "v1" }: UseAddCre
       cardCode: values.card_code.trim(),
     };
 
-    let opaqueData: AuthorizeNetOpaqueData;
-    try {
-      opaqueData = await tokenizeCard(cardData);
-    } catch (err) {
-      setTokenError(err instanceof Error ? err.message : "Card tokenization failed.");
+    const result = await tokenizeCard(cardData);
+    if (!result.ok) {
+      // Route each message to its field; collect the rest into the banner.
+      const banner: string[] = [];
+      result.messages.forEach(({ code, text }) => {
+        const field = CODE_TO_FIELD[code];
+        if (field) form.setError(field, { type: "manual", message: text });
+        else banner.push(text);
+      });
+      if (banner.length) setTokenError(banner.join(" "));
       return;
     }
 
-    await addCard.mutateAsync({
-      billing_address: {
-        first_name: values.first_name,
-        last_name:  values.last_name,
-        zip:        values.zip,
-      },
-      opaque_data: opaqueData,
-    });
+    try {
+      await addCard.mutateAsync({
+        billing_address: {
+          first_name: values.first_name,
+          last_name:  values.last_name,
+          zip:        values.zip,
+        },
+        opaque_data: result.opaqueData,
+      });
+    } catch {
+      // Surfaced via the addCard.error banner below.
+      return;
+    }
 
     onSuccess();
   });

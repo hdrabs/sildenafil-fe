@@ -46,7 +46,7 @@ export const DeliveryOptionDetails = ({ option, cutoff, onMoreInfo }: Props) => 
         width={option.delivery_type === "personal" ? 42 : 29}
         height={17}
         unoptimized
-        className="shrink-0 max-md:h-3.5 max-md:w-auto"
+        className="shrink-0 h-[17px] w-auto max-md:h-3.5"
       />
       <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
         <span className="text-sm font-semibold leading-snug text-text-primary max-md:text-xs">

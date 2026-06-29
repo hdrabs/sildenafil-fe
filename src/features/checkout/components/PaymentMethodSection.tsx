@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dayjs from "dayjs";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { AddCardForm } from "@/features/payments/components/AddCardForm";
@@ -34,6 +35,11 @@ const formatExpiry = (exp: string): string => {
   return m ? `${m[2]}/${m[1]}` : exp;
 };
 
+// AUM: a card is expired once its YYYY-MM month is in the past. Masked ("XXXX")
+// or unparseable expiries are treated as not-expired.
+const isCardExpired = (exp: string): boolean =>
+  /^\d{4}-\d{2}$/.test(exp ?? "") && !dayjs().isBefore(exp, "month");
+
 const ChevronIcon = ({ up }: { up: boolean }) => (
   <svg viewBox="0 0 20 20" fill="currentColor" className={cn("h-5 w-5 transition-transform", up && "rotate-180")}>
     <path
@@ -44,42 +50,47 @@ const ChevronIcon = ({ up }: { up: boolean }) => (
   </svg>
 );
 
-const CardOutlineIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" className="h-6 w-9 shrink-0 text-text-muted">
-    <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M2 9h20" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
+// AUM shows a check on every row: green for the selected/default card, grey otherwise.
+const CheckIcon = ({ green }: { green: boolean }) => (
+  <Image
+    src={green ? "/icons/cards/check-green.svg" : "/icons/cards/check-grey.svg"}
+    alt=""
+    width={16}
+    height={11}
+    className="shrink-0"
+  />
 );
 
-const CheckIcon = () => (
-  <svg viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-[#1D9629]">
-    <path
-      fillRule="evenodd"
-      d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0l-3.5-3.5a1 1 0 011.4-1.4l2.8 2.79 6.8-6.79a1 1 0 011.4 0z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const CardLabel = ({ card }: { card: CreditCard }) => (
-  <span className="flex min-w-0 items-center gap-3">
-    <Image src={cardBadge(card.card_type)} alt="" width={36} height={24} unoptimized className="h-6 w-auto" />
-    <span className="font-medium tracking-wide text-text-primary">{card.card_number}</span>
-  </span>
-);
+const CardLabel = ({ card }: { card: CreditCard }) => {
+  // AUM: an expired card fades its badge + number to 30%.
+  const expired = isCardExpired(card.expiration_date);
+  return (
+    <span className="flex min-w-0 items-center gap-2.5">
+      {/* AUM .card-img: fixed 32×19 box, badge contained. */}
+      <span className={cn("flex h-[19px] w-8 shrink-0 items-center justify-center", expired && "opacity-30")}>
+        <Image src={cardBadge(card.card_type)} alt="" width={32} height={19} unoptimized className="h-full w-full object-contain" />
+      </span>
+      <span className={cn("text-sm tracking-wide text-text-primary", expired && "opacity-30")}>
+        {card.card_number}
+      </span>
+    </span>
+  );
+};
 
 const AddCardLabel = () => (
-  <span className="flex items-center gap-3">
-    <CardOutlineIcon />
-    <span className="font-medium text-text-primary">Add Payment Method</span>
+  <span className="flex items-center gap-2.5">
+    <Image src="/icons/cards/add-card.svg" alt="" width={30} height={20} className="shrink-0" />
+    <span className="text-sm text-text-primary">Add Payment Method</span>
   </span>
 );
 
-// Fixed-width trailing slot so the expiry column stays aligned across the
-// header and every row (whether or not a check is shown).
-const IconSlot = ({ children }: { children?: React.ReactNode }) => (
-  <span className="flex h-5 w-5 items-center justify-center">{children}</span>
-);
+// Expired → "expired" in red (full opacity); otherwise the date faded to 50% (AUM).
+const Expiry = ({ value }: { value: string }) =>
+  isCardExpired(value) ? (
+    <span className="text-sm text-[#ff0000]">expired</span>
+  ) : (
+    <span className="text-sm text-text-primary opacity-50">{formatExpiry(value)}</span>
+  );
 
 interface Props {
   cards: CreditCard[];
@@ -137,56 +148,65 @@ export const PaymentMethodSection = ({
           The header shows the current choice; switching back to a saved card is
           done from this dropdown (no separate link). */}
       {hasCards && selectedCard && (
-        <div className="mt-4">
+        <div className="relative mt-4">
+          {/* Header — the bordered "selected card" box (AUM .selected-card); hover
+              turns the border blue. The list overlays the content below it. */}
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            className="flex w-full items-center justify-between gap-3 rounded-lg border border-border-default bg-white px-4 py-3"
+            className="flex w-full items-center justify-between gap-3 rounded-[5px] border border-[#ced5e1] bg-white px-[18px] py-3 transition-colors hover:border-[#0c9ced] focus-visible:border-[#0c9ced] focus-visible:outline-none"
           >
             {adding ? <AddCardLabel /> : <CardLabel card={selectedCard} />}
-            <span className="flex items-center gap-3 text-text-muted">
-              {!adding && formatExpiry(selectedCard.expiration_date)}
-              <ChevronIcon up={open} />
+            <span className="flex items-center gap-3">
+              {!adding && <Expiry value={selectedCard.expiration_date} />}
+              <span className="text-[#262a32]">
+                <ChevronIcon up={open} />
+              </span>
             </span>
           </button>
 
           {open && (
-            <div className="mt-1 overflow-hidden rounded-lg border border-border-default">
+            <ul className="absolute inset-x-0 top-full z-[300] mt-1 max-h-40 w-full overflow-y-auto border border-[#ced5e1] bg-white">
               {cards.map((card) => {
                 const selected = !adding && card.payment_profile_id === defaultCardId;
                 return (
-                  <button
-                    key={card.payment_profile_id}
-                    type="button"
-                    disabled={isSelecting}
-                    onClick={() => {
-                      onSelect(card.payment_profile_id);
-                      setAdding(false);
-                      setOpen(false);
-                    }}
-                    className="flex w-full items-center justify-between gap-3 bg-bg-input/40 px-4 py-3 text-left hover:bg-bg-input disabled:opacity-60"
-                  >
-                    <CardLabel card={card} />
-                    <span className="flex items-center gap-3 text-text-muted">
-                      {formatExpiry(card.expiration_date)}
-                      <IconSlot>{selected && <CheckIcon />}</IconSlot>
-                    </span>
-                  </button>
+                  <li key={card.payment_profile_id}>
+                    <button
+                      type="button"
+                      disabled={isSelecting}
+                      onClick={() => {
+                        onSelect(card.payment_profile_id);
+                        setAdding(false);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-3 px-[18px] py-3 text-left transition-colors disabled:opacity-60",
+                        selected ? "bg-[#f3f3f3]" : "bg-white hover:bg-[#e7f3f8]",
+                      )}
+                    >
+                      <CardLabel card={card} />
+                      <span className="flex items-center gap-3">
+                        <Expiry value={card.expiration_date} />
+                        <CheckIcon green={selected} />
+                      </span>
+                    </button>
+                  </li>
                 );
               })}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setAdding(true);
-                  setOpen(false);
-                }}
-                className="flex w-full items-center justify-between gap-3 border-t border-border-default bg-white px-4 py-3 text-left hover:bg-bg-input/40"
-              >
-                <AddCardLabel />
-                <IconSlot>{adding && <CheckIcon />}</IconSlot>
-              </button>
-            </div>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdding(true);
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2.5 bg-white px-[18px] py-3 text-left transition-colors hover:bg-[#e7f3f8]"
+                >
+                  <AddCardLabel />
+                </button>
+              </li>
+            </ul>
           )}
         </div>
       )}

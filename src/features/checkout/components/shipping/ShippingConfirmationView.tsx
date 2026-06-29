@@ -5,6 +5,7 @@ import { ShippingAddress } from "@/types/shippingAddress";
 import { DeliveryOption } from "@/types/delivery";
 import { UserMeResponse } from "@/types/user";
 import { SecondaryNav } from "@/components/Navbar/SecondaryNav";
+import { AddressIssueWarning } from "@/components/AddressIssueWarning";
 import { CheckoutProgressBar } from "@/features/checkout/components/CheckoutProgressBar";
 import { DeliveryOptionDetails } from "@/features/checkout/components/shipping/DeliveryOptionDetails";
 
@@ -141,6 +142,11 @@ export const ShippingConfirmationView = ({
                       </InfoRow>
                     </>
                   )}
+                  <AddressIssueWarning
+                    verified={address?.verified}
+                    deliveryTypes={[deliveryOption?.delivery_type]}
+                    className="mt-2"
+                  />
                 </Card>
 
                 {deliveryOption && (

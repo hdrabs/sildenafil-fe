@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useCurrentOrder, useUpdateOrder } from "@/api/hooks/useOrderQueries";
 import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
 import { useGetMe } from "@/api/hooks/useAuthQueries";
+import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
 import { ROUTES } from "@/constants/routes";
 import { ShippingAddress } from "@/types/shippingAddress";
 
@@ -36,12 +37,29 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
   const currentAddressId = order?.shipping_address_id ?? null;
   const selectedId = selectedOverride ?? currentAddressId ?? addresses[0]?.id ?? null;
 
+  // Only the order's *saved* address floats to the top — recomputed off
+  // currentAddressId, not the pending pick, so selecting a card doesn't make it
+  // jump to position 1 mid-interaction.
   const sorted = useMemo(
-    () => [...addresses].sort((a, b) => (a.id === selectedId ? -1 : b.id === selectedId ? 1 : 0)),
-    [addresses, selectedId],
+    () =>
+      [...addresses].sort((a, b) =>
+        a.id === currentAddressId ? -1 : b.id === currentAddressId ? 1 : 0,
+      ),
+    [addresses, currentAddressId],
   );
   const visible = showAll ? sorted : sorted.slice(0, 3);
   const selectedAddress = addresses.find((a) => a.id === selectedId) ?? null;
+
+  const cartId = order?.carts[0]?.id ?? 0;
+  const destinationZip = selectedAddress?.zip ?? order?.shipping_address?.zip ?? "";
+
+  // Read the delivery-options loading state here (same query key as DeliveryView,
+  // so it's deduped) to drive one page-level loader — otherwise landing on
+  // ?view=delivery flashes the "Shipping Options" heading + an empty card.
+  const { isLoading: isDeliveryLoading } = useDeliveryOptions(
+    { cartId, addressId: selectedAddress?.id ?? 0, destinationZip },
+    view === "delivery",
+  );
 
   const saveAddressAndContinue = async (addressId: number) => {
     await update.mutateAsync({ shipping_address_id: addressId });
@@ -79,9 +97,11 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
         ? () => router.push(ROUTES.EDIT_SHIPPING)
         : () => router.push(ROUTES.ORDERS),
     view,
-    cartId: order?.carts[0]?.id ?? 0,
+    cartId,
     preselectedDeliveryType: order?.delivery_type ?? null,
-    isLoading,
+    // One loader for the whole step: order + addresses, plus delivery options on
+    // the delivery view (mapped to the view's `isLoading` prop by the page).
+    isPageLoading: isLoading || (view === "delivery" && isDeliveryLoading),
     hasAddresses,
     addresses,
     visible,
@@ -110,6 +130,6 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
     isAttaching: update.isPending,
     submitDelivery,
     isSubmittingDelivery: update.isPending,
-    destinationZip: selectedAddress?.zip ?? order?.shipping_address?.zip ?? "",
+    destinationZip,
   };
 };

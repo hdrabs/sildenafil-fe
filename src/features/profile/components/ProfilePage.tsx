@@ -81,11 +81,16 @@ const PasswordInput = ({
   );
 };
 
+// AUM `.input-label`: 12px, rgba(0,0,0,.5), normal weight/case.
 const FormLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="mb-1 text-xs font-medium text-text-muted uppercase tracking-wide">
-    {children}
-  </p>
+  <p className="mb-1 text-xs text-black/50">{children}</p>
 );
+
+// AUM `.actions` buttons: small uppercase pills — grey "ghost dark" Cancel + coral Save.
+const CANCEL_BTN =
+  "rounded-full border border-ghost-dark px-5 py-[7px] text-xs font-medium uppercase tracking-wide text-ghost-dark transition-colors hover:bg-ghost-dark hover:text-white";
+const SUBMIT_BTN =
+  "rounded-full bg-coral px-5 py-[7px] text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-coral-hover disabled:opacity-60";
 
 /** Formats raw digits into (XXX) XXX-XXXX as the user types */
 const formatUSPhone = (value: string): string => {
@@ -272,7 +277,7 @@ export const ProfilePage = () => {
   };
 
   return (
-    <div className="rounded-xl border border-border-default bg-bg-card p-6">
+    <div className="rounded-xl bg-bg-card p-[30px] shadow-[0px_0px_20px_rgba(128,148,178,0.2)] max-[768px]:px-[15px]">
       {/* Personal Info */}
       <form onSubmit={handleProfileSubmit(onProfileSave)}>
         {identityLocked && (
@@ -342,17 +347,17 @@ export const ProfilePage = () => {
               onChange={handlePhoneChange("mobilePhone")}
             />
             {profile?.mobile_phone && otpVerified === true ? (
-              <p className="mt-1.5 flex items-center gap-1 text-xs text-green-600">
+              <p className="mt-2.5 flex items-center gap-1 text-sm text-success">
                 <RiCheckboxCircleLine className="h-3.5 w-3.5" />
-                OTP verified
+                OTP is verified
               </p>
             ) : profile?.mobile_phone && otpVerified === false ? (
-              <p className="mt-1.5 text-xs text-text-error">
-                OTP is not verified.{" "}
+              <p className="mt-2.5 text-sm text-coral">
+                OTP is not verified please{" "}
                 <button
                   type="button"
                   onClick={handleVerifyNow}
-                  className="font-semibold underline hover:opacity-80"
+                  className="text-primary underline hover:opacity-80"
                 >
                   Verify Now
                 </button>
@@ -379,13 +384,13 @@ export const ProfilePage = () => {
               {...registerProfile("email")}
             />
             {emailVerified === true ? (
-              <p className="mt-1.5 flex items-center gap-1 text-xs text-green-600">
+              <p className="mt-1.5 flex items-center gap-1 text-xs text-success">
                 <RiCheckboxCircleLine className="h-3.5 w-3.5" />
                 Email verified
               </p>
             ) : emailVerified === false && !emailChanged ? (
               // Unverified but email hasn't been changed — confirmation was already sent at signup
-              <p className="mt-1.5 flex items-center gap-1 text-xs text-green-600">
+              <p className="mt-1.5 flex items-center gap-1 text-xs text-success">
                 <RiCheckboxCircleLine className="h-3.5 w-3.5" />
                 Confirmation link has been sent to your email address.
               </p>
@@ -400,7 +405,7 @@ export const ProfilePage = () => {
                   type="button"
                   onClick={handleResendEmailVerification}
                   disabled={isResendingEmail}
-                  className="self-start text-xs font-semibold uppercase tracking-wide text-primary underline hover:opacity-80 disabled:opacity-50"
+                  className="self-start text-xs font-semibold text-link-blue underline hover:opacity-80 disabled:opacity-50"
                 >
                   {isResendingEmail ? "Sending…" : "Resend verification email, I have not received it."}
                 </button>
@@ -415,29 +420,22 @@ export const ProfilePage = () => {
           </p>
         )}
 
-        <div className="mt-4 flex justify-end gap-3">
-          <button
-            type="button"
-            className="h-10 rounded-full border border-border-input px-6 text-sm font-medium text-text-primary hover:bg-bg-input transition-colors"
-          >
+        <div className="mt-[30px] flex justify-end gap-3">
+          <button type="button" className={CANCEL_BTN}>
             Cancel
           </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="h-10 rounded-full bg-selected px-6 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
+          <button type="submit" disabled={isSaving} className={SUBMIT_BTN}>
             {isSaving ? "Saving…" : "Save"}
           </button>
         </div>
       </form>
 
       {/* Divider */}
-      <div className="my-8 border-t border-border-default" />
+      <div className="my-[30px] border-t border-border-default" />
 
       {/* Password */}
       <form onSubmit={handlePasswordSubmit(onPasswordUpdate)}>
-        <h2 className="mb-5 text-2xl font-bold text-text-primary">Password</h2>
+        <h2 className="mb-5 text-xl font-semibold text-text-primary">Password</h2>
 
         <div className="flex flex-col gap-4 sm:max-w-sm">
           <div>
@@ -471,18 +469,11 @@ export const ProfilePage = () => {
           </p>
         )}
 
-        <div className="mt-4 flex justify-end gap-3">
-          <button
-            type="button"
-            className="h-10 rounded-full border border-border-input px-6 text-sm font-medium text-text-primary hover:bg-bg-input transition-colors"
-          >
+        <div className="mt-[30px] flex justify-end gap-3">
+          <button type="button" className={CANCEL_BTN}>
             Cancel
           </button>
-          <button
-            type="submit"
-            disabled={isChangingPassword}
-            className="h-10 rounded-full bg-selected px-6 text-sm font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
-          >
+          <button type="submit" disabled={isChangingPassword} className={SUBMIT_BTN}>
             {isChangingPassword ? "Updating…" : "Update Password"}
           </button>
         </div>
