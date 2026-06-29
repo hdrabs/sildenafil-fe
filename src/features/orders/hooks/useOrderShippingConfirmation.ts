@@ -18,7 +18,7 @@ export const useOrderShippingConfirmation = () => {
   const cartId = order?.carts[0]?.id ?? 0;
   const destinationZip = order?.shipping_address?.zip ?? "";
   const { data: deliveryData, isLoading: deliveryLoading } = useDeliveryOptions(
-    { cartId, destinationZip },
+    { cartId, addressId: order?.shipping_address_id ?? 0, destinationZip },
     cartId > 0,
   );
 
@@ -32,7 +32,10 @@ export const useOrderShippingConfirmation = () => {
     address: order?.shipping_address ?? null,
     deliveryOption,
     cutoff: deliveryData?.cutoff_time_remaining ?? null,
-    isLoading: orderLoading || deliveryLoading,
+    // Hold the loader until the order, the patient (/me) and the delivery options
+    // are all ready — otherwise navigating back flashes an empty patient card
+    // before `me` resolves. Gated on `enabled` so it can't spin without an order.
+    isLoading: orderLoading || (enabled && (!me || deliveryLoading)),
     back: () => router.push(`${ROUTES.EDIT_SHIPPING}?view=delivery`),
     changeShipping: () => router.push(ROUTES.EDIT_SHIPPING),
     changeDelivery: () => router.push(`${ROUTES.EDIT_SHIPPING}?view=delivery`),
