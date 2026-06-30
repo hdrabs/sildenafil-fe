@@ -36,8 +36,11 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
   // here — and the sole restore source for guest carts, which have no /active_cart.
   const { data: backendCart } = useGetActiveCart(!!user);
 
+  // Sync the store to the server's answer — including `null`, so a completed / paid /
+  // deleted cart actually clears from the navbar. `undefined` means still loading (or a
+  // guest, whose query is disabled), so we leave the persisted fast-paint copy in place.
   useEffect(() => {
-    if (backendCart) setActiveCart(backendCart);
+    if (backendCart !== undefined) setActiveCart(backendCart);
   }, [backendCart, setActiveCart]);
 
   const isHome = pathname === "/";

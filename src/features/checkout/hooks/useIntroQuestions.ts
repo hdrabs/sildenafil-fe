@@ -133,10 +133,11 @@ export const useIntroQuestions = (slug: string) => {
     if (prev) {
       router.push(ROUTES.INTRO_QUESTIONS(prev));
     } else {
-      // First intro step — back exits to the product page.
-      router.push(ROUTES.PRODUCT_DETAIL);
+      // First intro step — back exits to the page this cart was initiated from
+      // (backend-computed origin), falling back to the generic product page.
+      router.push(activeCart?.originPath ?? ROUTES.PRODUCT_DETAIL);
     }
-  }, [slug, router]);
+  }, [slug, router, activeCart?.originPath]);
 
   // Revisiting an already-answered step (back-navigation): the answer is in the
   // store buffer or the backend. Such a step keeps its Continue button instead of

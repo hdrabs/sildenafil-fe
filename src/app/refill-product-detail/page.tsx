@@ -1,5 +1,8 @@
 import { ProductDetailPage } from "@/features/landing/components/ProductDetailPage";
 
+// Mirror of /product-detail for the account refill/reorder flows. Same configurator
+// (variant + quantity preselected from slug + qty); a distinct URL so refill entry
+// points are tracked and the BranchResolver still decides instant-refill vs visit.
 interface Props {
   searchParams: Promise<{
     slug?: string;
@@ -10,7 +13,7 @@ interface Props {
   }>;
 }
 
-const ProductDetailRoute = async ({ searchParams }: Props) => {
+const RefillProductDetailRoute = async ({ searchParams }: Props) => {
   const { slug, qty, discount, landing_context } = await searchParams;
 
   return (
@@ -19,9 +22,11 @@ const ProductDetailRoute = async ({ searchParams }: Props) => {
       initialQty={qty ? parseInt(qty, 10) : undefined}
       discountCode={discount}
       landingContext={landing_context}
-      landingUrl="product-detail"
+      landingUrl="refill-product-detail"
+      autoSelectDosage
+      autoSelectPopular
     />
   );
 };
 
-export default ProductDetailRoute;
+export default RefillProductDetailRoute;

@@ -9,6 +9,7 @@ import {
   OrderHistoryAction,
   OrderHistoryLineItem,
 } from "@/types/orderHistory";
+import { ROUTES } from "@/constants/routes";
 
 const money = (n: number): string => `$${Number(n).toFixed(2)}`;
 const pad = (n: number): string => String(n).padStart(2, "0");
@@ -98,7 +99,7 @@ export const OrderHistoryCard = ({ card }: { card: Card }) => {
   };
 
   const reorder = (r: { slug: string; quantity: number }) =>
-    router.push(`/product-selection/${r.slug}?qty=${r.quantity}`);
+    router.push(`${ROUTES.REFILL_PRODUCT_DETAIL}?slug=${r.slug}&qty=${r.quantity}`);
 
   // AUM __delivered: blue for shipped; dark once delivered.
   const timelineColor = p.tone === "success" ? "text-[#262a32]" : "text-[#204ad7]";

@@ -13,6 +13,9 @@ import { VisitEligibilityModal } from "@/types/visit";
 
 interface UseStartVisitOptions {
   landingContext?: string;
+  // The entry page id, persisted on the cart for "back" navigation out of the
+  // questionnaire. Defaults to landingContext (the marketing pages already set it).
+  landingUrl?: string;
   cartToken?: string;
 }
 
@@ -37,7 +40,8 @@ const MODAL_MESSAGES: Record<VisitEligibilityModal, { title: string; body: strin
   },
 };
 
-export const useStartVisit = ({ landingContext, cartToken }: UseStartVisitOptions = {}) => {
+export const useStartVisit = ({ landingContext, landingUrl, cartToken }: UseStartVisitOptions = {}) => {
+  const originId = landingUrl ?? landingContext;
   const router = useRouter();
   const setActiveCart = useSetActiveCart();
   const [blockingModal, setBlockingModal] = useState<VisitEligibilityModal | null>(null);
@@ -68,6 +72,7 @@ export const useStartVisit = ({ landingContext, cartToken }: UseStartVisitOption
             slug,
             quantity,
             ...(landingContext && { landing_context: landingContext }),
+            ...(originId && { landing_url: originId }),
             ...(cartToken && { cart_token: cartToken }),
           },
         });
@@ -77,6 +82,7 @@ export const useStartVisit = ({ landingContext, cartToken }: UseStartVisitOption
           quantity,
           ...(cartToken && { cart_token: cartToken }),
           ...(landingContext && { landing_context: landingContext }),
+          ...(originId && { landing_url: originId }),
         });
       }
 
@@ -86,6 +92,7 @@ export const useStartVisit = ({ landingContext, cartToken }: UseStartVisitOption
         orderId: null,
         variantLabel,
         redirectPath: result.redirect_path,
+        originPath: result.origin_path,
       });
 
       router.push(result.redirect_path);

@@ -19,9 +19,9 @@ export const orderKeys = {
   history: () => [...orderKeys.all, "history"] as const,
 };
 
-export const prescriptionKeys = {
-  all: ["prescriptions"] as const,
-  list: () => [...prescriptionKeys.all, "list"] as const,
+export const refillKeys = {
+  all: ["refills"] as const,
+  list: () => [...refillKeys.all, "list"] as const,
 };
 
 export const paymentKeys = {

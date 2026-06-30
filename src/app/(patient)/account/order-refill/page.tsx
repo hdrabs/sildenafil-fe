@@ -1,9 +1,9 @@
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { ProductsPage } from "@/features/products/components/ProductsPage";
+import { RefillPage } from "@/features/refills/components/RefillPage";
 
 const Page = () => (
   <ErrorBoundary>
-    <ProductsPage />
+    <RefillPage />
   </ErrorBoundary>
 );
 

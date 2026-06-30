@@ -11,6 +11,13 @@ interface ProductDetailPageProps {
   initialQty?: number;
   discountCode?: string;
   landingContext?: string;
+  // Entry id persisted on the cart for "back" navigation (e.g. "product-detail",
+  // "refill-product-detail"). Distinct from landingContext (price tier).
+  landingUrl?: string;
+  // Refill flows preselect the drug/strength/quantity from the slug; the fresh
+  // "start a new order" flow leaves them unselected.
+  autoSelectDosage?: boolean;
+  autoSelectPopular?: boolean;
 }
 
 export const ProductDetailPage = ({
@@ -18,6 +25,9 @@ export const ProductDetailPage = ({
   initialQty,
   discountCode,
   landingContext,
+  landingUrl,
+  autoSelectDosage = false,
+  autoSelectPopular = false,
 }: ProductDetailPageProps) => {
   const {
     variants,
@@ -34,14 +44,14 @@ export const ProductDetailPage = ({
     initialQty,
     discountCode,
     landingContext,
-    autoSelectDosage: false,
-    autoSelectPopular: false,
+    autoSelectDosage,
+    autoSelectPopular,
   });
 
   const cartToken = useCartToken();
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
+    useStartVisit({ landingContext, landingUrl, cartToken: cartToken ?? undefined });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;

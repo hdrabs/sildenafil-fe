@@ -93,6 +93,7 @@ export const cartService = {
           order_id: number | null;
           variant_label: string;
           redirect_path: string;
+          origin_path?: string;
         }
       | { cart: null; carts: [] }
     >("/v2/active_cart");
@@ -105,6 +106,7 @@ export const cartService = {
       orderId: res.order_id ?? null,
       variantLabel: res.variant_label,
       redirectPath: res.redirect_path,
+      originPath: res.origin_path,
     };
   },
 };

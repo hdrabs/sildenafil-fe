@@ -171,6 +171,7 @@ export interface CartV2 {
 export interface CartV2Response {
   cart: CartV2;
   redirect_path: string;
+  origin_path?: string;
 }
 
 /**
@@ -198,6 +199,8 @@ export interface ActiveCartEntry {
   orderId: number | null;
   variantLabel: string;
   redirectPath: string;
+  // The page this cart was initiated from — used for "back" out of the questionnaire.
+  originPath?: string;
 }
 
 export interface CreateCartV2Request {
@@ -205,10 +208,13 @@ export interface CreateCartV2Request {
   quantity: number;
   cart_token?: string;
   landing_context?: string;
+  landing_url?: string;
 }
 
 export interface UpdateCartV2Request {
   slug: string;
   quantity: number;
   landing_context?: string;
+  landing_url?: string;
+  cart_token?: string;
 }
