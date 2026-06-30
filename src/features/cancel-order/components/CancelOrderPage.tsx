@@ -11,7 +11,8 @@ export const CancelOrderPage = () => (
         <Link href="tel:7142762040" className="text-primary hover:underline">
           (714) 276-2040
         </Link>
-        , Mon - Fri - 9 am - 6pm PT
+        ,<br />
+        Mon - Fri - 9 am - 6pm PT
       </>
     }
   />

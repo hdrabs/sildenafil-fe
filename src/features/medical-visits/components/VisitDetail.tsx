@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
+import { useCatalog } from "@/api/hooks/useCatalogQueries";
+import { DrugInfoModal } from "@/features/landing/components/DrugInfoModal";
 import { MedicalVisit, VisitAction, VisitPharmacy } from "@/types/medicalVisit";
 
 const bottleSrc = (drug: string): string =>
@@ -38,17 +40,18 @@ const ToneIcon = ({ tone }: { tone: string }) => {
 const Meta = ({ label, value }: { label: string; value: string }) => (
   <div>
     <p className="text-sm font-bold text-text-primary">{label}</p>
-    <p className="text-text-primary">{value}</p>
+    <p className="text-sm text-text-primary">{value}</p>
   </div>
 );
 
+// AUM .image-box: 150×150, 5px radius; skipped state = #d9ebf3 with #6b8bbf text.
 const PhotoBox = ({ url, skippedLabel }: { url: string | null; skippedLabel: string }) =>
   url ? (
-    <div className="h-44 w-32 overflow-hidden rounded-xl border border-border-default">
-      <Image src={url} alt="" width={128} height={176} unoptimized className="h-full w-full object-cover" />
+    <div className="h-[150px] w-[150px] overflow-hidden rounded-[5px]">
+      <Image src={url} alt="" width={150} height={150} unoptimized className="h-full w-full object-cover" />
     </div>
   ) : (
-    <div className="flex h-44 w-32 items-center justify-center rounded-xl bg-[#d9ebf7] text-sm font-medium text-[#5b9bc9]">
+    <div className="flex h-[150px] w-[150px] items-center justify-center rounded-[5px] bg-[#d9ebf3] text-sm font-medium text-[#6b8bbf]">
       {skippedLabel}
     </div>
   );
@@ -73,24 +76,6 @@ const PharmacyInfoModal = ({
   </Modal>
 );
 
-const MedicationInfoModal = ({
-  open,
-  onClose,
-  visit,
-}: {
-  open: boolean;
-  onClose: () => void;
-  visit: MedicalVisit;
-}) => (
-  <Modal isOpen={open} onClose={onClose} title="Medication Info" size="md">
-    <p className="font-semibold text-text-primary">{visit.medication_name}</p>
-    {visit.medication_quantity && <p className="mt-1 text-text-muted">{visit.medication_quantity}</p>}
-    <p className="mt-4 text-sm text-text-muted">
-      For full medication information, please refer to the product page or contact our support team.
-    </p>
-  </Modal>
-);
-
 const BackArrow = () => (
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-primary-blue">
     <path d="M12 16l-6-6 6-6" />
@@ -103,6 +88,11 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
   const [showMedication, setShowMedication] = useState(false);
   const detail = visit.presentation.detail;
 
+  // Full drug info for the "Medication Info" modal — same catalog source the
+  // product pages use (AUM's MedicationDetailsModal shows the same sections).
+  const { data: catalog } = useCatalog();
+  const drugInfo = catalog?.find((v) => v.product.drug === visit.drug)?.drug_info ?? null;
+
   const runAction = (action: VisitAction) => () => {
     if (!action.href) return;
     if (action.external) window.open(action.href, "_blank", "noopener,noreferrer");
@@ -111,32 +101,34 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
 
   return (
     <div>
+      {/* AUM .active-visit-heading: 40px bordered back button + 20px/600 title. */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onBack}
           aria-label="Back"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border-default bg-bg-card transition-colors hover:bg-bg-input"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#deeef5] bg-white transition-colors hover:bg-bg-input"
         >
           <BackArrow />
         </button>
-        <h1 className="text-2xl font-bold text-text-primary">{detail?.heading ?? "Visit Details"}</h1>
+        <h1 className="text-xl font-semibold leading-[33px] text-text-primary">{detail?.heading ?? "Visit Details"}</h1>
       </div>
 
       {detail && (
-        <div className="mt-6 rounded-2xl bg-bg-card p-6 shadow-sm">
+        <div className="mt-6 rounded-xl bg-bg-card p-6 shadow-[0px_0px_20px_rgba(128,148,178,0.2)]">
           <div className="flex items-start gap-4">
             <ToneIcon tone={detail.tone} />
-            <p className="pt-1 text-text-primary">{detail.message}</p>
+            <p className="pt-1 text-sm text-text-primary">{detail.message}</p>
           </div>
           {detail.actions.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-3 rounded-xl bg-[#eef5fb] p-4">
+            // AUM .bg-light-blue action box (#f1f8fb) with outline-white buttons.
+            <div className="mt-4 flex flex-wrap gap-3 rounded-[5px] bg-bg-main p-3">
               {detail.actions.map((action) => (
                 <button
                   key={action.type}
                   type="button"
                   onClick={runAction(action)}
-                  className="rounded-full border border-border-default bg-white px-6 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-input"
+                  className="rounded-full border border-[#d1d1d1] bg-white px-6 py-2.5 text-sm font-medium text-black transition-colors hover:bg-[#e7f3f8]"
                 >
                   {action.label}
                 </button>
@@ -146,8 +138,8 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl bg-bg-card p-6 shadow-sm">
-        <div className="grid grid-cols-2 gap-4 rounded-xl bg-[#eef5fb] p-5 sm:grid-cols-4">
+      <div className="mt-6 rounded-xl bg-bg-card p-6 shadow-[0px_0px_20px_rgba(128,148,178,0.2)]">
+        <div className="grid grid-cols-2 gap-4 rounded-[5px] bg-bg-main p-5 sm:grid-cols-4">
           <Meta label="Visit Date" value={formatDate(visit.created_at)} />
           <Meta label="Visit Type" value={visit.visit_type_label} />
           <Meta label="Cost" value={visit.cost} />
@@ -155,34 +147,36 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#eef5fb] p-2">
+          <div className="flex items-center gap-5">
+            {/* AUM .img-wrapper: 80×80 circle, #f1f8fb bg. */}
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-bg-main p-2">
               <Image src={bottleSrc(visit.drug)} alt="" width={44} height={44} unoptimized className="h-full w-full object-contain" />
             </div>
-            <div className="text-text-primary">
-              <p className="font-bold">Medication Preference</p>
+            <div className="text-text-primary [&>p]:text-sm">
+              <p className="text-sm font-semibold">Medication Preference</p>
               <p>{visit.medication_name}</p>
               {visit.medication_quantity && <p>{visit.medication_quantity}</p>}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {visit.pharmacy && (
+          {/* AUM shows both info buttons together, only for a completed visit with a pharmacy. */}
+          {visit.pharmacy && visit.presentation.badge_tone === "completed" && (
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => setShowPharmacy(true)}
-                className="rounded-full border border-border-default px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-text-primary transition-colors hover:bg-bg-input"
+                className="rounded-full border border-[#d1d1d1] bg-white px-[30px] py-2.5 text-sm font-medium text-black transition-colors hover:bg-[#e7f3f8]"
               >
                 Pharmacy Info
               </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setShowMedication(true)}
-              className="rounded-full border border-border-default px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-text-primary transition-colors hover:bg-bg-input"
-            >
-              Medication Info
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setShowMedication(true)}
+                className="rounded-full border border-[#d1d1d1] bg-white px-[30px] py-2.5 text-sm font-medium text-black transition-colors hover:bg-[#e7f3f8]"
+              >
+                Medication Info
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -196,7 +190,13 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
       {visit.pharmacy && (
         <PharmacyInfoModal open={showPharmacy} onClose={() => setShowPharmacy(false)} pharmacy={visit.pharmacy} />
       )}
-      <MedicationInfoModal open={showMedication} onClose={() => setShowMedication(false)} visit={visit} />
+      <DrugInfoModal
+        isOpen={showMedication}
+        onClose={() => setShowMedication(false)}
+        drugInfo={drugInfo}
+        drugDisplayName={`${visit.medication_name} oral tablet`}
+        activeDrug={visit.drug}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { useMedicalVisits } from "@/api/hooks/useMedicalVisitQueries";
 import { EmptyState } from "@/components/EmptyState";
 import { StartVisitButton } from "@/components/StartVisitButton";
@@ -15,11 +16,13 @@ const formatDate = (iso: string): string => {
   return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${String(d.getFullYear()).slice(-2)}`;
 };
 
+// AUM `.badge` colors, mapped from the backend's 4 tones (draft→grey,
+// submitted→green, completed→blue, cancelled/rejected→red).
 const BADGE_TONE: Record<VisitPresentation["badge_tone"], string> = {
-  neutral: "bg-bg-input text-text-muted",
-  info: "bg-[#d9ebf7] text-[#3b7bb0]",
-  completed: "bg-[#d9ebf7] text-[#3b7bb0]",
-  ended: "bg-bg-input text-text-muted",
+  neutral: "bg-[#efefef] text-[#6d757f]",
+  info: "bg-[#eef7f1] text-[#52b76e]",
+  completed: "bg-[#e2f0f6] text-[#65a2bc]",
+  ended: "bg-[#ffeeef] text-[#e1787c]",
 };
 
 const VisitListCard = ({ visit, onView }: { visit: MedicalVisit; onView: () => void }) => {
@@ -29,21 +32,24 @@ const VisitListCard = ({ visit, onView }: { visit: MedicalVisit; onView: () => v
   const onClick = () => (p.resume_href ? router.push(p.resume_href) : onView());
 
   return (
-    <div className="rounded-2xl bg-bg-card p-6 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="rounded-xl bg-bg-card p-5 shadow-[0px_0px_20px_rgba(128,148,178,0.2)]">
+      <div className="flex items-center justify-between gap-4 max-[649px]:flex-col max-[649px]:items-stretch">
         <div className="min-w-0">
-          <p className="font-bold text-text-primary">{visit.visit_type_title}</p>
+          {/* AUM .visit-status: 14px/600 */}
+          <p className="text-sm font-semibold text-text-primary">{visit.visit_type_title}</p>
           <div className="mt-2 flex items-center gap-3">
-            <span className={`rounded-full px-3 py-1 text-sm font-medium ${BADGE_TONE[p.badge_tone]}`}>
+            {/* AUM .badge: pill, 8px/12px pad, weight 400 */}
+            <span className={cn("rounded-full px-3 py-2 text-xs font-normal", BADGE_TONE[p.badge_tone])}>
               {p.badge}
             </span>
-            <span className="text-sm text-text-primary">{formatDate(visit.created_at)}</span>
+            <span className="text-xs text-text-primary">{formatDate(visit.created_at)}</span>
           </div>
         </div>
+        {/* AUM secondary button: coral, 12px/600, not uppercase */}
         <button
           type="button"
           onClick={onClick}
-          className="rounded-full bg-[#e0584b] px-8 py-3 text-sm font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
+          className="shrink-0 cursor-pointer rounded-full bg-coral px-6 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-coral-hover max-[649px]:w-full"
         >
           {p.resume_href ? "Resume visit" : "View details"}
         </button>
@@ -67,8 +73,8 @@ export const MedicalVisitsPage = () => {
     return (
       <div className="flex flex-col gap-5">
         <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
+        <Skeleton className="h-28 w-full rounded-xl" />
       </div>
     );
   }
@@ -90,7 +96,8 @@ export const MedicalVisitsPage = () => {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-text-primary">Medical Visits</h1>
+      {/* AUM .main-heading h3: 18px/600 */}
+      <h1 className="mb-4 text-lg font-semibold text-text-primary">Medical Visits</h1>
       <div className="flex flex-col gap-5">
         {visits.map((visit) => (
           <VisitListCard

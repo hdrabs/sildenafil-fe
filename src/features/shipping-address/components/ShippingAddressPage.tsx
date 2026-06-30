@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
+import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
 import {
   useShippingAddressesV2,
@@ -41,6 +42,24 @@ export const ShippingAddressPage = () => {
           <Skeleton className="h-[230px] w-full rounded-md" />
         </div>
       </div>
+    );
+  }
+
+  // No saved addresses → AUM empty-screen (illustration + "Add Shipping Address").
+  if (list.length === 0) {
+    return (
+      <>
+        <EmptyState
+          illustrationSrc="/illustrations/shipping-address.svg"
+          title="Shipping Address"
+          description="Where should we send your orders? Review and edit your shipping address here."
+          ctaLabel="Add Shipping Address"
+          onCtaClick={openAdd}
+        />
+        <Modal isOpen={modalOpen} onClose={closeModal} size="md" className="max-w-[362px]">
+          <AccountAddressForm me={me} editing={editing} onClose={closeModal} />
+        </Modal>
+      </>
     );
   }
 
