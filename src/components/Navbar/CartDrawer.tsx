@@ -84,7 +84,7 @@ export const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
 
   const handleShopMedications = () => {
     onClose();
-    router.push(ROUTES.PRODUCT_SELECTION(DEFAULT_PRODUCT_SLUG));
+    router.push(ROUTES.CHECKOUT_PRODUCT_DETAIL(DEFAULT_PRODUCT_SLUG));
   };
 
   // Order line items come through `carts` and are read-only; a single open cart is

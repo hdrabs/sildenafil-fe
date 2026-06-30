@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RiArrowRightLine, RiShieldCheckLine, RiMedicineBottleLine } from "react-icons/ri";
 import { ROUTES } from "@/constants/routes";
+import { DEFAULT_SLUG } from "@/features/landing/catalogParams";
 
 export const HeroSection = () => (
   <section className="bg-bg-main">
@@ -37,7 +38,7 @@ export const HeroSection = () => (
         {/* CTA */}
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row md:justify-start">
           <Link
-            href={ROUTES.PRODUCT_DETAIL}
+            href={ROUTES.CHECKOUT_PRODUCT_DETAIL(DEFAULT_SLUG)}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
           >
             Start My Free Visit

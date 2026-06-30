@@ -89,8 +89,9 @@ export const LoginPage = () => {
     setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "" });
     const me = await authService.me();
     setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti });
+    // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
     const redirectTo = searchParams.get("redirectTo");
-    router.replace(redirectTo ?? ROUTES.DASHBOARD);
+    router.replace(redirectTo ?? ROUTES.HOME);
   };
 
   return (

@@ -1,12 +1,14 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { ProductSidebar, ProductConfigurator, LandingTheme } from "./ProductConfigurator";
 import { BottleSection } from "./BottleSection";
 import { ProductHeroSection } from "./ProductHeroSection";
 import dynamic from "next/dynamic";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
-import { useCartToken } from "@/store";
+import { useGetActiveCart } from "@/api/hooks/useCartQueries";
+import { useActiveCart, useCartToken, useSetConfiguratorDrug, useUser } from "@/store";
 import { Modal } from "@/components/ui/Modal";
 
 // Below-the-fold marketing sections — code-split so they stay out of the initial
@@ -43,10 +45,18 @@ interface ProductLandingPageProps {
   discountCode?: string;
   landingContext?: string;
   theme: LandingTheme;
-  /** Left column: "sidebar" (default), "bottle" (/product-selection), or "hero" (dark jar hero). */
+  /** Left column: "sidebar" (default), "bottle" (/checkout/product-detail), or "hero" (dark jar hero). */
   leftVariant?: "sidebar" | "bottle" | "hero";
-  /** Marketing sections below the fold — off for the bare /product-selection page. */
+  /** Marketing sections below the fold — off for the bare /checkout/product-detail page. */
   showMarketingSections?: boolean;
+  /** Preselect the slug's strength on load (default true). Off → "pick your strength" with nothing selected. */
+  autoSelectDosage?: boolean;
+  /** Preselect the popular/default quantity on load (default true). */
+  autoSelectPopular?: boolean;
+  /** When an in-progress cart is open, preselect its drug/strength/quantity. */
+  resumeFromActiveCart?: boolean;
+  /** Show the drug switcher in the configurator. Defaults to the "bottle" layout only. */
+  allowDrugSwitch?: boolean;
 }
 
 export const ProductLandingPage = ({
@@ -57,7 +67,31 @@ export const ProductLandingPage = ({
   theme,
   leftVariant = "sidebar",
   showMarketingSections = true,
+  autoSelectDosage = true,
+  autoSelectPopular = true,
+  resumeFromActiveCart = false,
+  allowDrugSwitch,
 }: ProductLandingPageProps) => {
+  // Resume the open cart only for non-marketing entries (the drawer drug-name pages). A URL
+  // carrying an explicit ?qty / ?discount is a marketing link — its slug/qty/discount win.
+  // For a logged-in user we fetch /active_cart directly (authenticated, reliable); guests
+  // fall back to the persisted cart-restore store.
+  const user = useUser();
+  const storeCart = useActiveCart();
+  const { data: fetchedCart } = useGetActiveCart(resumeFromActiveCart && !!user);
+  const activeCart = user ? fetchedCart : storeCart;
+  const isMarketingUrl = initialQty != null || !!discountCode;
+  const resumeCart = useMemo(
+    () =>
+      resumeFromActiveCart && !isMarketingUrl && activeCart
+        ? {
+            label: activeCart.variantLabel.replace(/^\s*\d+\s*x\s*/i, "").trim(),
+            quantity: activeCart.cart.quantity,
+          }
+        : null,
+    [resumeFromActiveCart, isMarketingUrl, activeCart],
+  );
+
   const {
     variants,
     contextVariant,
@@ -68,7 +102,23 @@ export const ProductLandingPage = ({
     handleQtyChange,
     handleStrengthChange,
     handleDrugChange,
-  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  } = useProductConfigurator({
+    slug,
+    initialQty,
+    discountCode,
+    landingContext,
+    autoSelectDosage,
+    autoSelectPopular,
+    resumeCart,
+  });
+
+  // Publish the configurator's active drug so the marketing navbar's banner + theme follow
+  // the in-page drug selector (a separate component); clear it when leaving the page.
+  const setConfiguratorDrug = useSetConfiguratorDrug();
+  useEffect(() => {
+    setConfiguratorDrug(activeDrug);
+    return () => setConfiguratorDrug(null);
+  }, [activeDrug, setConfiguratorDrug]);
 
   // Derive theme from the resolved drug so routes that hardcode theme="sildenafil"
   // still render correctly when a tadalafil slug is passed.
@@ -82,7 +132,7 @@ export const ProductLandingPage = ({
   const cartToken = useCartToken();
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, cartToken: cartToken ?? undefined });
+    useStartVisit({ landingContext, cartToken: cartToken ?? undefined, discountCode });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
@@ -150,7 +200,7 @@ export const ProductLandingPage = ({
           onDrugChange={handleDrugChange}
           onAddToCart={handleAddToCart}
           isSubmitting={isPending}
-          allowDrugSwitch={leftVariant === "bottle"}
+          allowDrugSwitch={(allowDrugSwitch ?? leftVariant === "bottle") && !isMarketingUrl}
           className={
             leftVariant === "hero"
               ? "w-full md:mx-auto xl:w-[80%]"

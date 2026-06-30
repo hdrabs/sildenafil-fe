@@ -13,7 +13,10 @@ export const PatientShell = ({ children }: { children: React.ReactNode }) => {
 
   return (
     // Centered, capped at AUM's account width (.content.main-account max-width: 1250px).
-    <div className="mx-auto flex w-full max-w-[1250px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 min-[900px]:flex-row min-[900px]:gap-0">
+    // Desktop: row height tracks the sidebar (align-items: stretch), so it does NOT
+    // stretch to the full viewport — matching AUM, where a bottom-pinned CTA lands at
+    // the sidebar's bottom edge. Mobile keeps flex-1 to fill the screen (sidebar hidden).
+    <div className="mx-auto flex w-full max-w-[1250px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 min-[900px]:flex-none min-[900px]:flex-row min-[900px]:gap-0">
       {/* Sidebar: always visible on desktop; on mobile only on /account */}
       <div
         className={cn(

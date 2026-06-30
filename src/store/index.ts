@@ -2,6 +2,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useUserStore } from "./userStore";
 import { useCartStore } from "./cartStore";
 import { useQuestionnaireStore } from "./questionnaireStore";
+import { useConfiguratorStore } from "./configuratorStore";
 
 export const useUser = () => useUserStore((s) => s.user);
 export const useIsAuthenticated = () => useUserStore((s) => !!s.user?.token);
@@ -18,6 +19,9 @@ export const useAuthState = () =>
       isLoading: s.isLoading,
     }))
   );
+
+export const useConfiguratorDrug = () => useConfiguratorStore((s) => s.activeDrug);
+export const useSetConfiguratorDrug = () => useConfiguratorStore((s) => s.setActiveDrug);
 
 export const useActiveCart = () => useCartStore((s) => s.activeCart);
 export const useCartToken = () => useCartStore((s) => s.activeCart?.cart.token ?? null);

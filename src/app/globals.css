@@ -56,6 +56,27 @@
   --color-accent-amber: #d49a00;
   --color-accent-amber-hover: #b88200;
 
+  /* Refill / account cards (AUM .rx-card / .needs-action-card / .explore-treatments-cta) */
+  --color-border-card: #dfe5f2;          /* rx / needs-action card outline */
+  --color-border-soft: #d7dce5;          /* outline-button border + dashed explore CTA */
+  --color-bg-card-hover: #f5f7fc;        /* outline-button hover fill */
+  --color-bg-explore-arrow: #d9ecf6;     /* explore CTA arrow button */
+  --color-bg-tooltip: #1e2330;           /* desktop "+N more" tooltip */
+  --color-text-tooltip-muted: #b0bac8;   /* tooltip quantity */
+  --color-text-card-strong: #262a32;     /* outline-button label + explore title */
+  --color-text-card-muted: #8994a2;      /* card subtitle / description */
+  --color-text-card-subtle: #6d757f;     /* explore subtitle */
+  --color-text-section-label: #acacac;   /* ACTIVE RX / NEEDS ACTION labels */
+
+  /* Refill card status tones (badge bg / text pairs) */
+  --color-bg-tag-yellow: #fff4e5;
+  --color-text-tag-yellow: #ff990f;
+  --color-bg-tag-green: #ddf4e9;
+  --color-text-tag-green: #35b276;
+  --color-bg-tag-blue: #e8effe;          /* blue tag + "+N more" badge */
+  --color-bg-pill-active: #e4eff4;       /* "N items active" count pill */
+  --color-text-pill-active: #839dc6;
+
   /* Fonts */
   --font-sans: var(--font-poppins);
 

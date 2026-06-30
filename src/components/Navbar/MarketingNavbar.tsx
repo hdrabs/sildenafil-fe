@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
 import { buildCatalogParams } from "@/features/landing/catalogParams";
+import { useConfiguratorDrug } from "@/store";
 
 const DEFAULT_BANNER = "Save Up To 90% + FREE Consultation + FREE Shipping";
 
@@ -21,8 +22,12 @@ export const MarketingNavbar = () => {
   const params = useParams<{ slug?: string | string[] }>();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const configuratorDrug = useConfiguratorDrug();
 
-  const slug = Array.isArray(params?.slug) ? params.slug[0] : (params?.slug ?? "");
+  const urlSlug = Array.isArray(params?.slug) ? params.slug[0] : (params?.slug ?? "");
+  // Follow the in-page drug selector so the banner + theme react to a drug switch (the
+  // backend then resolves the cart's discount only when it matches this drug); else the URL.
+  const slug = configuratorDrug ?? urlSlug;
   const isTadalafil = slug.includes("tadalafi");
   const bannerBg = isTadalafil ? "#CD8F24" : "#204AD7";
 

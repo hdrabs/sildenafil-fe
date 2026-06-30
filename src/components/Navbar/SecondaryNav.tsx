@@ -7,12 +7,15 @@ import { ROUTES } from "@/constants/routes";
 
 interface Props {
   onBack?: () => void;
+  // Fixed back target (overrides the default router.back()); used where "back" must
+  // always land on a specific page, e.g. refill-product-detail → Order Refill.
+  backHref?: string;
   isLoading?: boolean;
 }
 
-export const SecondaryNav = ({ onBack, isLoading = false }: Props) => {
+export const SecondaryNav = ({ onBack, backHref, isLoading = false }: Props) => {
   const router = useRouter();
-  const handleBack = onBack ?? (() => router.back());
+  const handleBack = onBack ?? (backHref ? () => router.push(backHref) : () => router.back());
 
   return (
     <header className="sticky top-0 z-30 bg-bg-card shadow-[0_6px_20px_-6px_rgba(0,0,0,0.12)]">

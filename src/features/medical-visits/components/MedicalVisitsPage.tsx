@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { useMedicalVisits } from "@/api/hooks/useMedicalVisitQueries";
 import { EmptyState } from "@/components/EmptyState";
 import { StartVisitButton } from "@/components/StartVisitButton";
-import { Skeleton } from "@/components/Skeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { VisitDetail } from "@/features/medical-visits/components/VisitDetail";
 import { MedicalVisit, VisitPresentation } from "@/types/medicalVisit";
 import { ROUTES } from "@/constants/routes";
@@ -69,15 +69,7 @@ export const MedicalVisitsPage = () => {
   // deep-link, card clicks, and the back button all flow through one source.
   const selected = visitUuid ? visits.find((visit) => visit.uuid === visitUuid) ?? null : null;
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-5">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-28 w-full rounded-xl" />
-        <Skeleton className="h-28 w-full rounded-xl" />
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   if (selected) {
     return <VisitDetail visit={selected} onBack={() => router.push(ROUTES.PRESCRIPTIONS)} />;

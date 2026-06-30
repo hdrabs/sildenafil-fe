@@ -7,6 +7,10 @@ interface Props {
   searchParams: Promise<{ qty?: string; discount?: string; landing_context?: string; ml?: string }>;
 }
 
+// Drug-level product picker (/product-selection/sildenafil | tadalafil): the same hero
+// layout + marketing sections + navbar as /new-user, but with the drug selector visible.
+// A drug-name slug selects that drug with nothing else preselected; a full variant slug
+// (+ ?qty) preselects strength + quantity.
 const ProductSelectionPage = async ({ params, searchParams }: Props) => {
   const { slug } = await params;
   const { qty, discount, landing_context } = await searchParams;
@@ -27,9 +31,10 @@ const ProductSelectionPage = async ({ params, searchParams }: Props) => {
         initialQty={initialQty}
         discountCode={discount}
         landingContext={landingContext}
-        theme="tadalafil"
-        leftVariant="bottle"
-        showMarketingSections={false}
+        theme={slug.includes("tadalafi") ? "tadalafil" : "sildenafil"}
+        leftVariant="hero"
+        allowDrugSwitch
+        resumeFromActiveCart
       />
     </HydrationBoundary>
   );
