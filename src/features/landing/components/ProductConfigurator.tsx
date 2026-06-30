@@ -7,10 +7,18 @@ import {
   RiTruckLine,
   RiTimeLine,
 } from "react-icons/ri";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { CatalogVariant } from "@/types/catalog";
-import { DrugInfoModal } from "@/features/landing/components/DrugInfoModal";
-import { StrengthGuideModal } from "@/features/landing/components/StrengthGuideModal";
+
+// Modals only render once opened — keep their JS (incl. the strength-guide data
+// tables) out of the configurator's initial bundle.
+const DrugInfoModal = dynamic(() =>
+  import("@/features/landing/components/DrugInfoModal").then((m) => m.DrugInfoModal),
+);
+const StrengthGuideModal = dynamic(() =>
+  import("@/features/landing/components/StrengthGuideModal").then((m) => m.StrengthGuideModal),
+);
 
 const DRUG_DISPLAY_NAMES: Record<string, string> = {
   sildenafil: "Sildenafil(Generic Viagra)",
@@ -236,13 +244,27 @@ export const ProductConfigurator = ({
   }, []);
 
   useEffect(() => {
-    const navbar = document.querySelector("header");
-    if (!navbar) return;
-    const ro = new ResizeObserver(() => {
-      setNavbarHeight(navbar.getBoundingClientRect().height);
-    });
-    ro.observe(navbar);
-    return () => ro.disconnect();
+    let ro: ResizeObserver | null = null;
+    let raf = 0;
+    // The navbar may mount after this effect (e.g. it's behind a Suspense boundary),
+    // so retry until the <header> exists rather than bailing permanently — otherwise
+    // navbarHeight stays 0 and the sticky price header tucks under the navbar.
+    const attach = () => {
+      const navbar = document.querySelector("header");
+      if (!navbar) {
+        raf = requestAnimationFrame(attach);
+        return;
+      }
+      ro = new ResizeObserver(() => {
+        setNavbarHeight(navbar.getBoundingClientRect().height);
+      });
+      ro.observe(navbar);
+    };
+    attach();
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+    };
   }, []);
 
   // Warm the browser cache with every tablet image in the catalog so switching
@@ -252,17 +274,34 @@ export const ProductConfigurator = ({
     .map((v) => `${v.product.drug}:${v.product.dosage}`)
     .join(",");
   useEffect(() => {
-    tabletImageSignature
-      .split(",")
-      .filter(Boolean)
-      .forEach((combo) => {
-        const [d, dose] = combo.split(":");
-        getTabletImages(d, dose)?.forEach((src) => {
-          const img = new window.Image();
-          img.src = src;
-        });
+    const warm = (srcs: [string, string] | null) =>
+      srcs?.forEach((src) => {
+        const img = new window.Image();
+        img.src = src;
       });
-  }, [tabletImageSignature]);
+
+    // The two pills on screen now — warm immediately so a drug/strength swap never flashes.
+    warm(getTabletImages(drug, dosage));
+
+    // The rest are only needed if the user switches; warm them during idle time so
+    // they don't compete with the initial page load (LCP/bandwidth).
+    const warmRest = () => {
+      tabletImageSignature
+        .split(",")
+        .filter(Boolean)
+        .forEach((combo) => {
+          const [d, dose] = combo.split(":");
+          warm(getTabletImages(d, dose));
+        });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      const handle = window.requestIdleCallback(warmRest);
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = window.setTimeout(warmRest, 1500);
+    return () => window.clearTimeout(handle);
+  }, [tabletImageSignature, drug, dosage]);
 
   return (
     <div className={cn("mx-auto flex flex-col", className)}>

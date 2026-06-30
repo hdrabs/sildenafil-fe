@@ -1,4 +1,6 @@
+import { HydrationBoundary } from "@tanstack/react-query";
 import { ProductLandingPage } from "@/features/landing/components/ProductLandingPage";
+import { prefetchCatalog } from "@/features/landing/prefetchCatalog";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -9,16 +11,27 @@ const ProductSelectionPage = async ({ params, searchParams }: Props) => {
   const { slug } = await params;
   const { qty, discount, landing_context } = await searchParams;
 
+  const initialQty = qty ? parseInt(qty, 10) : undefined;
+  const landingContext = landing_context ?? "product-selection";
+  const dehydratedState = await prefetchCatalog({
+    slug,
+    discountCode: discount,
+    initialQty,
+    landingContext,
+  });
+
   return (
-    <ProductLandingPage
-      slug={slug}
-      initialQty={qty ? parseInt(qty, 10) : undefined}
-      discountCode={discount}
-      landingContext={landing_context ?? "product-selection"}
-      theme="tadalafil"
-      leftVariant="bottle"
-      showMarketingSections={false}
-    />
+    <HydrationBoundary state={dehydratedState}>
+      <ProductLandingPage
+        slug={slug}
+        initialQty={initialQty}
+        discountCode={discount}
+        landingContext={landingContext}
+        theme="tadalafil"
+        leftVariant="bottle"
+        showMarketingSections={false}
+      />
+    </HydrationBoundary>
   );
 };
 

@@ -7,8 +7,16 @@ import { usePathname } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { useUser, useActiveCart, useSetActiveCart } from "@/store";
 import { useGetActiveCart } from "@/api/hooks/useCartQueries";
-import { NavDrawer } from "@/components/Navbar/NavDrawer";
-import { CartDrawer } from "@/components/Navbar/CartDrawer";
+import dynamic from "next/dynamic";
+
+// Drawers only render on click — keep them out of the navbar's initial bundle
+// (NavDrawer pulls the logout/auth chain, CartDrawer the cart-delete mutation).
+const NavDrawer = dynamic(() => import("@/components/Navbar/NavDrawer").then((m) => m.NavDrawer), {
+  ssr: false,
+});
+const CartDrawer = dynamic(() => import("@/components/Navbar/CartDrawer").then((m) => m.CartDrawer), {
+  ssr: false,
+});
 
 interface MainNavProps {
   showAnnouncement?: boolean;
