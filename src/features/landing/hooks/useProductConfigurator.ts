@@ -20,6 +20,11 @@ interface UseProductConfiguratorOptions {
   autoSelectDosage?: boolean;
   // Landing pages gate certain variants (e.g. 20mg); the edit modal needs all of them.
   includeGated?: boolean;
+  // An in-progress cart to resume — preselects its drug/strength/quantity by matching the
+  // variant fullname (the active cart's variantLabel, "<qty> x <fullname>", stripped).
+  // Auth-independent: matches the catalog variant list, not a server-resolved
+  // default_package. Ignored when the cart's variant isn't in the catalog.
+  resumeCart?: { label: string; quantity: number } | null;
 }
 
 export const useProductConfigurator = ({
@@ -30,6 +35,7 @@ export const useProductConfigurator = ({
   autoSelectPopular = true,
   autoSelectDosage = true,
   includeGated = false,
+  resumeCart = null,
 }: UseProductConfiguratorOptions) => {
   const catalogSlug = normalizeSlug(slug ?? DEFAULT_SLUG);
 
@@ -45,16 +51,38 @@ export const useProductConfigurator = ({
   const variants = includeGated
     ? normalizedVariants
     : normalizedVariants?.filter(
-        (v) => !GATED_SLUGS.includes(v.product.slug) || v.product.slug === catalogSlug,
+        (v) =>
+          !GATED_SLUGS.includes(v.product.slug) ||
+          v.product.slug === catalogSlug ||
+          // Keep the open cart's variant even when gated (e.g. a 20mg cart on the
+          // /product-selection/sildenafil page), so its strength resumes and shows.
+          v.product.display_name === resumeCart?.label,
       );
 
-  // The catalog flags the variant to resume — e.g. an existing cart's variant — with a
-  // default_package. When the page wasn't opened for a specific slug, preselect that
-  // variant (drug + strength + qty) instead of falling back to the 20mg default.
+  // Match the open cart to a catalog variant by fullname (the variant list is always
+  // present regardless of auth), so the resume works even before the catalog request
+  // resolves the cart server-side.
+  const cartVariant = useMemo(() => {
+    if (!resumeCart || !variants) return undefined;
+    const match = variants.find((v) => v.product.display_name === resumeCart.label);
+    if (!match) return undefined;
+    // On a drug-name page (e.g. /product-selection/sildenafil from the drawer), only resume
+    // a cart of THAT drug. A different-drug cart (tadalafil cart on the sildenafil page)
+    // leaves the drug selected from the slug but its strength/quantity unpopulated.
+    const isDrugSlug = variants.some((v) => v.product.drug === catalogSlug);
+    if (isDrugSlug && match.product.drug !== catalogSlug) return undefined;
+    return match;
+  }, [resumeCart, variants, catalogSlug]);
+
+  // Resume the cart's variant; otherwise fall back to the catalog's default_package signal
+  // for slug-less callers. (Marketing-URL precedence is handled by the caller, which only
+  // passes resumeCart for non-marketing entries.) Drug + strength + quantity derive below.
   const resumeVariant = useMemo(
-    () => (slug ? undefined : variants?.find((v) => v.default_package)),
-    [slug, variants],
+    () => cartVariant ?? (slug ? undefined : variants?.find((v) => v.default_package)),
+    [cartVariant, slug, variants],
   );
+
+  const resumeQty = cartVariant ? resumeCart!.quantity : null;
 
   // Drug selected by user — null means derive from the initial slug
   const [selectedDrug, setSelectedDrug] = useState<string | null>(null);
@@ -69,6 +97,9 @@ export const useProductConfigurator = ({
     if (resumeVariant) return resumeVariant.product.drug;
     return (
       variants?.find((v) => v.product.slug === catalogSlug)?.product.drug ??
+      // A drug-name slug ("sildenafil" / "tadalafil") selects that drug with no strength
+      // preselected — used by the /product-selection drug pages.
+      variants?.find((v) => v.product.drug === catalogSlug)?.product.drug ??
       variants?.[0]?.product.drug ??
       null
     );
@@ -85,11 +116,12 @@ export const useProductConfigurator = ({
 
   // API-seeded dosage: derived from the slug-matched variant when user hasn't picked yet
   const apiDosage = useMemo(() => {
-    // Resume the cart's strength even when auto-select is off (the default-package signal).
-    if (resumeVariant) return resumeVariant.product.dosage;
+    // Resume the cart's strength only while the cart's drug is the active one — don't carry
+    // it onto a different drug the user switched to.
+    if (resumeVariant && resumeVariant.product.drug === activeDrug) return resumeVariant.product.dosage;
     if (!autoSelectDosage || !variants) return null;
     return variants.find((v) => v.product.slug === catalogSlug)?.product.dosage ?? null;
-  }, [resumeVariant, variants, catalogSlug, autoSelectDosage]);
+  }, [resumeVariant, activeDrug, variants, catalogSlug, autoSelectDosage]);
 
   const activeDosage = selectedDosage ?? apiDosage;
 
@@ -107,13 +139,17 @@ export const useProductConfigurator = ({
 
   // API-seeded qty: only derived when auto-selection is allowed
   const apiQty = useMemo(() => {
-    // Resume the cart's quantity from the backend's default_package, regardless of flags.
-    if (resumeVariant?.default_package) return resumeVariant.default_package.quantity;
+    // The open cart's quantity wins — but only on the cart's own drug, so switching to a
+    // different drug doesn't carry the cart's quantity over.
+    if (resumeVariant && resumeVariant.product.drug === activeDrug) {
+      if (resumeQty != null) return resumeQty;
+      if (resumeVariant.default_package) return resumeVariant.default_package.quantity;
+    }
     if (!autoSelectPopular || !activeVariant) return 0;
     const defaultQty = activeVariant.default_package?.quantity;
     const popularQty = activeVariant.packages.find((p) => p.is_popular)?.quantity ?? 0;
     return defaultQty ?? popularQty ?? 0;
-  }, [resumeVariant, activeVariant, autoSelectPopular]);
+  }, [resumeQty, resumeVariant, activeDrug, activeVariant, autoSelectPopular]);
 
   const effectiveQty = useMemo(() => {
     const qty = selectedQty > 0 ? selectedQty : apiQty;

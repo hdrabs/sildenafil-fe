@@ -40,8 +40,9 @@ export const useLoginUser = () => {
               token,
               jti: me.jti,
             });
+            // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
             const redirectTo = searchParams.get("redirectTo");
-            router.replace(redirectTo ?? ROUTES.DASHBOARD);
+            router.replace(redirectTo ?? ROUTES.HOME);
           } catch {
             toast.error("Could not load your profile. Please try again.");
           }

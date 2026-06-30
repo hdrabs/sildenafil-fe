@@ -1,55 +1,50 @@
 "use client";
 
-import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useRefills } from "@/api/hooks/useRefillQueries";
 import { EmptyState } from "@/components/EmptyState";
 import { StartVisitButton } from "@/components/StartVisitButton";
-import { Skeleton } from "@/components/Skeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { RefillCard } from "@/features/refills/components/RefillCard";
 import { ROUTES } from "@/constants/routes";
 
-const COUNT_TONE: Record<"active" | "needs_action", string> = {
-  active: "bg-[#e6edf7] text-[#6b7a99]",
-  needs_action: "bg-[#fdecd8] text-[#cf8a2e]",
-};
-
-const Section = ({
-  label,
-  count,
-  tone,
-  className,
-  children,
-}: {
-  label: string;
-  count: string;
-  tone: "active" | "needs_action";
-  className?: string;
-  children: ReactNode;
-}) => (
-  <section className={className}>
-    <div className="mb-4 flex items-center justify-between">
-      <span className="text-sm font-semibold uppercase tracking-wide text-text-muted">{label}</span>
-      <span className={`rounded-full px-3 py-1 text-xs font-medium ${COUNT_TONE[tone]}`}>{count}</span>
-    </div>
-    <div className="flex flex-col gap-5">{children}</div>
-  </section>
+// AUM .rx-section-header / .needs-action-section__header: 12px/700 uppercase label + pill count.
+const SectionHeader = ({ label, count, pill }: { label: string; count: string; pill: string }) => (
+  <div className="flex items-center gap-5 max-[649px]:gap-3">
+    <span className="flex-1 text-xs font-bold uppercase tracking-[0.08em] text-text-section-label">
+      {label}
+    </span>
+    <span className={`whitespace-nowrap rounded-full px-3 py-1 text-[10px] font-medium ${pill}`}>
+      {count}
+    </span>
+  </div>
 );
 
 const ExploreFooter = ({ onClick }: { onClick: () => void }) => (
-  <div className="mt-10 flex items-center justify-between gap-4 rounded-2xl border border-dashed border-border-default px-6 py-5">
-    <div>
-      <p className="font-bold text-text-primary">Explore other treatments</p>
-      <p className="text-sm text-text-muted">Start a new consultation today.</p>
+  // AUM .explore-treatments-cta: dashed card, round arrow button (40×40 on mobile).
+  <div
+    onClick={onClick}
+    className="mt-auto flex cursor-pointer items-center justify-between rounded-xl border-[1.8px] border-dashed border-border-soft p-5 transition-colors hover:border-ghost-dark max-[649px]:p-4"
+  >
+    <div className="flex flex-1 flex-col gap-1 pr-4">
+      <p className="m-0 text-sm font-bold text-text-card-strong">Explore other treatments</p>
+      <p className="m-0 text-xs font-medium leading-5 text-text-card-subtle">
+        Start a new consultation today.
+      </p>
     </div>
     <button
       type="button"
-      onClick={onClick}
       aria-label="Explore other treatments"
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e6eefb] text-primary-blue transition-opacity hover:opacity-80"
+      className="flex shrink-0 items-center justify-center rounded-full bg-bg-explore-arrow px-4 py-[18px] text-primary transition-opacity hover:opacity-90 max-[649px]:h-10 max-[649px]:w-10 max-[649px]:p-0"
     >
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-        <path d="M4 10h11M11 6l4 4-4 4" />
+      <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M8.75 0.75L10.75 2.75M10.75 2.75L8.75 4.75M10.75 2.75H0.75"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </button>
   </div>
@@ -63,15 +58,7 @@ export const RefillPage = () => {
   const needsAction = data?.needs_action ?? [];
   const hasItems = active.length + needsAction.length > 0;
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-5">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-24 w-full rounded-2xl" />
-        <Skeleton className="h-24 w-full rounded-2xl" />
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   if (!hasItems) {
     return (
@@ -85,33 +72,42 @@ export const RefillPage = () => {
   }
 
   return (
-    <div>
-      <h1 className="mb-8 text-2xl font-bold text-text-primary">Order Refill</h1>
+    <div className="flex min-h-full flex-col gap-10 max-[649px]:gap-8">
+      <h1 className="m-0 text-2xl font-semibold leading-[1.1] text-text-primary max-[649px]:text-lg">
+        Order Refill
+      </h1>
 
-      {active.length > 0 && (
-        <Section
-          label="Active Rx"
-          tone="active"
-          count={`${active.length} item${active.length !== 1 ? "s" : ""} active`}
-        >
-          {active.map((card) => (
-            <RefillCard key={`${card.source}-${card.id}`} card={card} accent="active" />
-          ))}
-        </Section>
-      )}
+      <div className="flex flex-col gap-8">
+        {active.length > 0 && (
+          <section className="flex flex-col gap-5 max-[649px]:gap-3">
+            <SectionHeader
+              label="Active Rx"
+              count={`${active.length} item${active.length !== 1 ? "s" : ""} active`}
+              pill="bg-bg-pill-active text-text-pill-active"
+            />
+            <div className="flex flex-col gap-5 max-[649px]:gap-3">
+              {active.map((card) => (
+                <RefillCard key={`${card.source}-${card.id}`} card={card} accent="active" />
+              ))}
+            </div>
+          </section>
+        )}
 
-      {needsAction.length > 0 && (
-        <Section
-          label="Needs Action"
-          tone="needs_action"
-          count={`${needsAction.length} action required`}
-          className={active.length > 0 ? "mt-12" : undefined}
-        >
-          {needsAction.map((card) => (
-            <RefillCard key={`${card.source}-${card.id}`} card={card} accent="needs_action" />
-          ))}
-        </Section>
-      )}
+        {needsAction.length > 0 && (
+          <section className="flex flex-col gap-5 max-[649px]:gap-3">
+            <SectionHeader
+              label="Needs Action"
+              count={`${needsAction.length} action required`}
+              pill="bg-bg-tag-yellow text-text-tag-yellow"
+            />
+            <div className="flex flex-col gap-5 max-[649px]:gap-3">
+              {needsAction.map((card) => (
+                <RefillCard key={`${card.source}-${card.id}`} card={card} accent="needs_action" />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
       <ExploreFooter onClick={() => router.push(ROUTES.REFILL_PRODUCT_DETAIL)} />
     </div>

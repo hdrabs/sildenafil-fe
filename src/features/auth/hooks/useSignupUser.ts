@@ -57,7 +57,8 @@ export const useSignupUser = () => {
               setActiveCart({ cart, carts: [], orderId: null, variantLabel: "", redirectPath: redirect_path });
               router.replace(redirect_path);
             } else {
-              router.replace(ROUTES.DASHBOARD);
+              // Manual signup (no in-flow guest cart) → land on the home page.
+              router.replace(ROUTES.HOME);
             }
           } catch {
             toast.error("Could not load your profile. Please try again.");

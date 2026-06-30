@@ -209,6 +209,8 @@ export interface CreateCartV2Request {
   cart_token?: string;
   landing_context?: string;
   landing_url?: string;
+  // URL ?discount= (uuid or code) — applied to the cart so it matches the catalog preview.
+  discount?: string;
 }
 
 export interface UpdateCartV2Request {
@@ -217,4 +219,5 @@ export interface UpdateCartV2Request {
   landing_context?: string;
   landing_url?: string;
   cart_token?: string;
+  discount?: string;
 }

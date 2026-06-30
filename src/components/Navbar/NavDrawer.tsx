@@ -10,7 +10,6 @@ import { useUser, useClearUser, useClearActiveCart, useResetQuestionnaire } from
 import { useLogout } from "@/api/hooks/useAuthQueries";
 
 const SILDENAFIL_SLUG = "sildenafil-citrate-20-mg";
-const TADALAFIL_SLUG  = "tadalafi-generic-10-mg";
 
 interface NavDrawerProps {
   open: boolean;
@@ -92,22 +91,24 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
 
   return (
     <>
-      {/* Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-[rgba(14,31,58,0.45)]"
-          style={{ animation: "drawerFadeIn 0.25s ease-in-out" }}
-          onClick={onClose}
-        />
-      )}
+      {/* Overlay — always mounted; fades in/out in sync with the panel */}
+      <div
+        aria-hidden
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-[rgba(14,31,58,0.45)] transition-opacity duration-300 ease-out ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
 
-      {/* Drawer panel */}
+      {/* Drawer panel — translate3d + will-change keep the slide on the GPU
+          compositor (shadow painted once, no main-thread repaint per frame). */}
       <div
         ref={drawerRef}
-        className={`fixed right-0 top-0 z-50 flex h-full w-[290px] min-[1040px]:w-[440px] flex-col bg-white shadow-[-4px_0_24px_rgba(14,31,58,0.13)] rounded-l-2xl overflow-y-auto overflow-x-hidden overscroll-contain transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-        style={{ scrollbarWidth: "none" }}
+        className="fixed right-0 top-0 z-50 flex h-full w-[290px] min-[1040px]:w-[440px] flex-col bg-white shadow-[-4px_0_24px_rgba(14,31,58,0.13)] rounded-l-2xl overflow-y-auto overflow-x-hidden overscroll-contain transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] will-change-transform"
+        style={{
+          transform: open ? "translate3d(0,0,0)" : "translate3d(100%,0,0)",
+          scrollbarWidth: "none",
+        }}
       >
         {/* Sticky header row */}
         <div
@@ -143,8 +144,8 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
             <NavLink href={ROUTES.SETTINGS}     label="Shipping Address" onClose={onClose} />
 
             <Section label="ED Treatment Options" />
-            <NavButton label="Sildenafil (Viagra)" onClick={() => goTo(ROUTES.PRODUCT_SELECTION(SILDENAFIL_SLUG))} />
-            <NavButton label="Tadalafil (Cialis)"  onClick={() => goTo(ROUTES.PRODUCT_SELECTION(TADALAFIL_SLUG))} />
+            <NavButton label="Sildenafil (Viagra)" onClick={() => goTo(ROUTES.PRODUCT_SELECTION("sildenafil"))} />
+            <NavButton label="Tadalafil (Cialis)"  onClick={() => goTo(ROUTES.PRODUCT_SELECTION("tadalafil"))} />
 
             <Section label="Exit" />
             <div className="mx-6 min-[1040px]:mx-10">
@@ -165,8 +166,8 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
           /* ── Unauthenticated ── */
           <>
             <Section label="ED Treatment Options" />
-            <NavButton label="Sildenafil (Viagra)" onClick={() => goTo(ROUTES.PRODUCT_SELECTION(SILDENAFIL_SLUG))} />
-            <NavButton label="Tadalafil (Cialis)"  onClick={() => goTo(ROUTES.PRODUCT_SELECTION(TADALAFIL_SLUG))} />
+            <NavButton label="Sildenafil (Viagra)" onClick={() => goTo(ROUTES.PRODUCT_SELECTION("sildenafil"))} />
+            <NavButton label="Tadalafil (Cialis)"  onClick={() => goTo(ROUTES.PRODUCT_SELECTION("tadalafil"))} />
 
             <Section label="Explore" />
             <NavLink href="/#process"   label="How It Works" onClose={onClose} />
@@ -191,7 +192,7 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
 
             <div className="px-6 pb-6 min-[1040px]:px-10">
               <button
-                onClick={() => goTo(ROUTES.PRODUCT_SELECTION(SILDENAFIL_SLUG))}
+                onClick={() => goTo(ROUTES.CHECKOUT_PRODUCT_DETAIL(SILDENAFIL_SLUG))}
                 className="w-full rounded-[300px] bg-primary py-3.5 text-[13px] min-[1040px]:text-[14px] font-semibold text-white hover:opacity-90 transition-opacity"
               >
                 Start A New Order
@@ -200,10 +201,6 @@ export const NavDrawer = ({ open, onClose }: NavDrawerProps) => {
           </>
         )}
       </div>
-
-      <style>{`
-        @keyframes drawerFadeIn { from { opacity: 0; } to { opacity: 1; } }
-      `}</style>
     </>
   );
 };

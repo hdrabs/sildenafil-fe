@@ -97,7 +97,7 @@ interface Props {
   defaultCardId: string | null;
   onSelect: (paymentProfileId: string) => void;
   isSelecting: boolean;
-  completeOrder: () => void;
+  completeOrder: (opts?: { cardJustAdded?: boolean }) => void;
   isCompleting: boolean;
   hasSelectedCard: boolean;
 }
@@ -117,9 +117,11 @@ export const PaymentMethodSection = ({
   const showForm = adding || !hasCards;
 
   // Adding a card and completing are one action: "Complete My Order" submits this
-  // form, which tokenizes + saves the card, then completes via onSuccess.
+  // form, which tokenizes + saves the card, then completes via onSuccess. The card is
+  // already the backend default at this point, so flag it so completion doesn't gate
+  // on the not-yet-refetched client card list.
   const { form, submit, isLoading: isAddingCard, error: cardError } = useAddCreditCardForm({
-    onSuccess: completeOrder,
+    onSuccess: () => completeOrder({ cardJustAdded: true }),
     apiVersion: "v2",
   });
 
@@ -216,7 +218,7 @@ export const PaymentMethodSection = ({
       <button
         type={showForm ? "submit" : "button"}
         form={showForm ? CARD_FORM_ID : undefined}
-        onClick={showForm ? undefined : completeOrder}
+        onClick={showForm ? undefined : () => completeOrder()}
         disabled={processing || (!showForm && !hasSelectedCard)}
         className="mt-6 w-full cursor-pointer rounded-full bg-coral py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-coral-hover disabled:cursor-not-allowed disabled:opacity-60"
       >

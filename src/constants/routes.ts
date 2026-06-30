@@ -25,7 +25,9 @@ export const ROUTES = {
   NEW_USER:         (slug: string) => `/new-user/${slug}`,
   BEST_VALUE:       (slug: string) => `/best-value/${slug}`,
   LOWEST_PRICE:     (slug: string) => `/lowest-price/${slug}`,
-  PRODUCT_SELECTION:(slug: string) => `/product-selection/${slug}`,
+  CHECKOUT_PRODUCT_DETAIL: (slug: string) => `/checkout/product-detail/${slug}`,
+  // Marketing drug picker (/product-selection/sildenafil | tadalafil) — drug selector on.
+  PRODUCT_SELECTION:       (drug: string) => `/product-selection/${drug}`,
   PRODUCT_DETAIL:   "/product-detail",
   REFILL_PRODUCT_DETAIL: "/refill-product-detail",
 

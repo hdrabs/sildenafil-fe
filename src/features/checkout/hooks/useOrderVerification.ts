@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useActiveCart } from "@/store";
+import { useActiveCart, useClearActiveCart } from "@/store";
 import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
 import { useOrderSummary, useCompleteOrderVerification } from "@/api/hooks/useCheckoutQueries";
 import { useApplyDiscount, useRemoveDiscount } from "@/api/hooks/useDiscountQueries";
 import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
 import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
 import { useCreditCardsV2, useSetDefaultCardV2 } from "@/api/hooks/useCreditCardQueries";
-import { checkoutKeys } from "@/constants/queryKeys";
+import { checkoutKeys, orderKeys, cartKeys } from "@/constants/queryKeys";
 import { APIError } from "@/api/baseAPI";
 import { CartSummaryResponse } from "@/types/orderSummary";
 
@@ -23,6 +23,7 @@ export const useOrderVerification = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const activeCart = useActiveCart();
+  const clearActiveCart = useClearActiveCart();
   const cartId = activeCart?.cart.id ?? 0;
   const cartToken = activeCart?.cart.token ?? undefined;
   const enabled = cartId > 0;
@@ -79,9 +80,19 @@ export const useOrderVerification = () => {
   const selectCard = (paymentProfileId: string) => setDefault.mutate(paymentProfileId);
 
   const complete = useCompleteOrderVerification();
-  const completeOrder = async () => {
-    if (!enabled || !defaultCardId) return;
+  // `cardJustAdded`: a card added via the inline form is already the backend default,
+  // but the cards query hasn't refetched yet — so don't gate on the stale client-side
+  // `defaultCardId` (which made the first "Complete" click silently no-op).
+  const completeOrder = async (opts?: { cardJustAdded?: boolean }) => {
+    if (!enabled) return;
+    if (!opts?.cardJustAdded && !defaultCardId) return;
     const { redirect_path } = await complete.mutateAsync({ cart_id: cartId, cart_token: cartToken });
+    // The cart is now a placed order: clear it from the navbar and refresh the orders
+    // list + active-cart query so the destination page shows it without a manual
+    // refresh (the global 5-min staleTime would otherwise serve stale data).
+    clearActiveCart();
+    queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    queryClient.invalidateQueries({ queryKey: cartKeys.active() });
     router.push(redirect_path);
   };
 

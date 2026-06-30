@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/EmptyState";
-import { Skeleton } from "@/components/Skeleton";
+import { PageLoader } from "@/components/PageLoader";
 import {
   useShippingAddressesV2,
   useDeleteShippingAddressV2,
@@ -34,16 +34,7 @@ export const ShippingAddressPage = () => {
         toast.error((err as { message?: string })?.message ?? "Couldn't remove this address."),
     });
 
-  if (isLoading) {
-    return (
-      <div className={ACCOUNT_CARD}>
-        <div className="grid grid-cols-1 gap-[30px] sm:grid-cols-2">
-          <Skeleton className="h-[230px] w-full rounded-md" />
-          <Skeleton className="h-[230px] w-full rounded-md" />
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   // No saved addresses → AUM empty-screen (illustration + "Add Shipping Address").
   if (list.length === 0) {

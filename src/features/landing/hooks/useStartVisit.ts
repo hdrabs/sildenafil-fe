@@ -17,6 +17,8 @@ interface UseStartVisitOptions {
   // questionnaire. Defaults to landingContext (the marketing pages already set it).
   landingUrl?: string;
   cartToken?: string;
+  // URL ?discount= forwarded onto the cart so its price matches the catalog/banner.
+  discountCode?: string;
 }
 
 interface StartVisitParams {
@@ -40,7 +42,7 @@ const MODAL_MESSAGES: Record<VisitEligibilityModal, { title: string; body: strin
   },
 };
 
-export const useStartVisit = ({ landingContext, landingUrl, cartToken }: UseStartVisitOptions = {}) => {
+export const useStartVisit = ({ landingContext, landingUrl, cartToken, discountCode }: UseStartVisitOptions = {}) => {
   const originId = landingUrl ?? landingContext;
   const router = useRouter();
   const setActiveCart = useSetActiveCart();
@@ -74,6 +76,7 @@ export const useStartVisit = ({ landingContext, landingUrl, cartToken }: UseStar
             ...(landingContext && { landing_context: landingContext }),
             ...(originId && { landing_url: originId }),
             ...(cartToken && { cart_token: cartToken }),
+            ...(discountCode && { discount: discountCode }),
           },
         });
       } else {
@@ -83,6 +86,7 @@ export const useStartVisit = ({ landingContext, landingUrl, cartToken }: UseStar
           ...(cartToken && { cart_token: cartToken }),
           ...(landingContext && { landing_context: landingContext }),
           ...(originId && { landing_url: originId }),
+          ...(discountCode && { discount: discountCode }),
         });
       }
 

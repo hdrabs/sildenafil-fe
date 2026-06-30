@@ -51,7 +51,7 @@ export const ProductDetailPage = ({
   const cartToken = useCartToken();
 
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, landingUrl, cartToken: cartToken ?? undefined });
+    useStartVisit({ landingContext, landingUrl, cartToken: cartToken ?? undefined, discountCode });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;

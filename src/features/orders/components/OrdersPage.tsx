@@ -4,20 +4,12 @@ import { useOrdersHistory } from "@/api/hooks/useOrderQueries";
 import { OrderHistoryCard } from "@/features/orders/components/OrderHistoryCard";
 import { EmptyState } from "@/components/EmptyState";
 import { StartVisitButton } from "@/components/StartVisitButton";
-import { Skeleton } from "@/components/Skeleton";
+import { PageLoader } from "@/components/PageLoader";
 
 export const OrdersPage = () => {
   const { data, isLoading } = useOrdersHistory();
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-5">
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   // Orders + loose in-progress carts, interleaved newest-first (matches legacy).
   const items = [...(data?.orders ?? []), ...(data?.carts ?? [])].sort(

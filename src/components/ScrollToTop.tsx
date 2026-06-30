@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
  *
  * Next.js App Router only scrolls to top reliably when a navigation mounts a new
  * page segment. Navigating between instances of the *same* dynamic route
- * (e.g. /intro-questions/[slug] → next slug, /product-selection/[slug] → another
+ * (e.g. /intro-questions/[slug] → next slug, /checkout/product-detail/[slug] → another
  * slug) reconciles the component in place, so the previous scroll position
  * sticks. This resets it for every client navigation.
  */

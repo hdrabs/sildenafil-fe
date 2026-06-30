@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/EmptyState";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
-import { Skeleton } from "@/components/Skeleton";
+import { PageLoader } from "@/components/PageLoader";
 import { toast } from "react-toastify";
 import {
   useCreditCardsV2,
@@ -65,15 +65,7 @@ export const PaymentHistoryPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={`${ACCOUNT_CARD} flex flex-col gap-4`}>
-        <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    );
-  }
+  if (isLoading) return <PageLoader />;
 
   if (cards.length === 0) {
     return (
