@@ -88,10 +88,15 @@ export const MarketingLandingPage = ({
   const configHref = `/${configPrefix}/product_selection/${slug}${query ? `?${query}` : ""}`;
   const getStarted = { label: "Get Started", href: configHref };
 
-  // Free-tier (try) hero values come from the resolved variant's default sample pack.
-  const defaultPkg = variant?.default_package;
-  const freeTierQuantity = defaultPkg ? String(defaultPkg.quantity) : undefined;
-  const shippingCost = defaultPkg?.shipping_cost ? Number(defaultPkg.shipping_cost) : undefined;
+  // Free-tier (try) hero: the free sample pack is the $0 package (its quantity = the
+  // number of free tablets), and the struck-through "value" + shipping come from the
+  // applied discount. default_package is null on the free tier, so these can't be
+  // derived from it.
+  const freePkg = packages.find((p) => p.final_price === 0);
+  const freeTierQuantity = freePkg ? String(freePkg.quantity) : undefined;
+  const discount = variant?.discount;
+  const discountAmount = discount?.amount ? Number(discount.amount) : undefined;
+  const shippingCost = discount?.shipping_cost ? Number(discount.shipping_cost) : undefined;
 
   if (isLoading) {
     return (
@@ -109,7 +114,7 @@ export const MarketingLandingPage = ({
         pricePerTablet={lowestPerTablet?.toFixed(2)}
         regular={regular}
         href={configHref}
-        discountAmount={defaultPkg?.original_price}
+        discountAmount={discountAmount}
         quantity={freeTierQuantity}
         shippingCost={shippingCost}
       />

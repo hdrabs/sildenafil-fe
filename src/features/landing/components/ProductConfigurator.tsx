@@ -9,7 +9,7 @@ import {
 } from "react-icons/ri";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
-import { CatalogVariant } from "@/types/catalog";
+import { CatalogVariant, CatalogPackage } from "@/types/catalog";
 
 // Modals only render once opened — keep their JS (incl. the strength-guide data
 // tables) out of the configurator's initial bundle.
@@ -189,19 +189,35 @@ export const ProductConfigurator = ({
   const [drugInfoOpen, setDrugInfoOpen] = useState(false);
   const [strengthGuideOpen, setStrengthGuideOpen] = useState(false);
 
-  const packages = (activeVariant ?? contextVariant)?.packages ?? [];
+  const variant = activeVariant ?? contextVariant;
+  const packages = variant?.packages ?? [];
+  const discount = variant?.discount ?? null;
+  // amount ($ off) and shipping fee arrive as strings on the wire.
+  const discountAmount = discount?.amount ? Number(discount.amount) : 0;
+  const shippingCost = discount?.shipping_cost ? Number(discount.shipping_cost) : null;
 
   const selectedPkg = selectedQty > 0
     ? (packages.find((p) => p.quantity === selectedQty) ?? null)
     : null;
   const total = selectedPkg?.final_price ?? 0;
 
-  // Base per-tablet price is the first (smallest) package — all savings are relative to it
-  const basePerTablet = packages[0]?.per_tablet ?? 0;
-  const selectedSavePct = selectedPkg && basePerTablet > selectedPkg.per_tablet
-    ? Math.round((1 - selectedPkg.per_tablet / basePerTablet) * 100)
-    : 0;
-  const selectedOriginalTotal = selectedPkg ? basePerTablet * selectedPkg.quantity : 0;
+  // A "free" pack is the $0 try-tier sample pack. Savings/strike come from the backend
+  // fields — discount_percentage (else derived from original vs final) and original_price.
+  // A free pack has original_price 0, so it strikes the discount's $ value instead.
+  const isFreePkg = (pkg: CatalogPackage) => pkg.final_price === 0;
+  // Backend-owned: regular_price is the retail strike-through; discount_percentage is the
+  // bulk saving vs retail. A free pack strikes the discount's $ value ("~$10~ Free").
+  const savePctFor = (pkg: CatalogPackage) =>
+    pkg.discount_percentage > 0 ? Math.round(pkg.discount_percentage) : 0;
+  const strikeFor = (pkg: CatalogPackage) => (isFreePkg(pkg) ? discountAmount : pkg.regular_price);
+
+  const selectedIsFree = selectedPkg ? isFreePkg(selectedPkg) : false;
+  const selectedStrike = selectedPkg ? strikeFor(selectedPkg) : 0;
+  const selectedStrikePerTablet = selectedPkg ? selectedStrike / selectedPkg.quantity : 0;
+  // A percentage promo is "applied" only when it actually reduced the tier price
+  // (final < original) — true on new-user, false on product-selection (shows original).
+  const promoApplied =
+    discount?.type === "percentage" && !!selectedPkg && selectedPkg.final_price < selectedPkg.original_price;
 
   const currentDrug = contextVariant?.product.drug;
   const dosages = Array.from(
@@ -214,9 +230,11 @@ export const ProductConfigurator = ({
 
   const uniqueDrugs = Array.from(new Set(allVariants.map((v) => v.product.drug)));
 
-  // Best Value = the last (highest qty) non-popular package that has savings vs base
+  // Best Value = the last (highest qty) non-popular paid package that has a discount.
   const bestValuePkg =
-    [...packages].reverse().find((pkg) => !pkg.is_popular && pkg.per_tablet < basePerTablet) ?? null;
+    [...packages].reverse().find(
+      (pkg) => !pkg.is_popular && !isFreePkg(pkg) && pkg.regular_price > pkg.final_price,
+    ) ?? null;
 
   const drug = (activeVariant ?? contextVariant)?.product.drug;
   const dosage = activeVariant?.product.dosage ?? dosages[0];
@@ -332,22 +350,45 @@ export const ProductConfigurator = ({
             <span className="text-[36px] font-bold leading-[1.4] text-text-primary">
               ${total.toFixed(2)}
             </span>
-            {selectedSavePct > 0 && (
+            {selectedStrike > total && (
               <span className="ml-2 text-[30px] font-medium not-italic leading-[140%] line-through text-[#767676]">
-                ${selectedOriginalTotal.toFixed(2)}
+                ${selectedStrike.toFixed(2)}
               </span>
             )}
           </div>
-          {selectedPkg && (
-            <p className="mb-2 text-[14px] font-semibold leading-normal text-[#262a32]">
-              (${selectedPkg.per_tablet.toFixed(2)}/tablet)
-            </p>
+          {/* Per-tablet cost is meaningless for a free pack, so hide it there. */}
+          {selectedPkg && !selectedIsFree && (
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <p className="text-[14px] font-semibold leading-normal text-[#262a32]">
+                (${selectedPkg.per_tablet.toFixed(2)}
+                {selectedStrike > total && (
+                  <span className="ml-1 font-medium line-through text-[#767676]">
+                    ${selectedStrikePerTablet.toFixed(2)}
+                  </span>
+                )}{" "}
+                per tablet)
+              </p>
+              {promoApplied && (
+                <span className="rounded-full bg-[#e6f6ee] px-2.5 py-0.5 text-xs font-bold text-save">
+                  {Math.round(discountAmount)}% discount applied
+                </span>
+              )}
+            </div>
           )}
           {activeVariant && selectedQty > 0 && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-save">
-              <RiTruckLine className="h-4 w-4" />
-              FREE 1 to 3 Day Priority Shipping
-            </div>
+            // The shipping fee applies only to the free sample pack; paid packs keep
+            // free priority shipping (unchanged from before).
+            selectedIsFree && shippingCost != null ? (
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+                <RiTruckLine className="h-4 w-4" />
+                ${shippingCost.toFixed(2)} Shipping and handling fee
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-save">
+                <RiTruckLine className="h-4 w-4" />
+                FREE 1 to 3 Day Priority Shipping
+              </div>
+            )
           )}
         </div>
         {tabletImgs && (
@@ -499,10 +540,9 @@ export const ProductConfigurator = ({
         <div className="flex flex-col gap-4">
           {packages.map((pkg, pkgIdx) => {
             const isSelected = pkg.quantity === selectedQty;
-            const pkgSavePct = basePerTablet > pkg.per_tablet
-              ? Math.round((1 - pkg.per_tablet / basePerTablet) * 100)
-              : 0;
-            const pkgOriginalPrice = basePerTablet * pkg.quantity;
+            const free = isFreePkg(pkg);
+            const pkgSavePct = savePctFor(pkg);
+            const pkgStrike = strikeFor(pkg);
             const isBestValue = bestValuePkg?.quantity === pkg.quantity;
             const label = pkg.extra_tablets > 0
               ? `${pkg.quantity} + ${pkg.extra_tablets} tablets`
@@ -554,18 +594,21 @@ export const ProductConfigurator = ({
                 </div>
                 <div className="text-right">
                   <div className="flex items-baseline justify-end gap-1.5">
-                    {pkgSavePct > 0 && (
+                    {pkgStrike > pkg.final_price && (
                       <span className="text-[#526077] line-through">
-                        ${pkgOriginalPrice.toFixed(2)}
+                        ${pkgStrike.toFixed(2)}
                       </span>
                     )}
                     <span className="font-semibold text-text-primary">
-                      ${pkg.final_price.toFixed(2)}
+                      {free ? "Free" : `$${pkg.final_price.toFixed(2)}`}
                     </span>
                   </div>
-                  {pkgSavePct > 0 && (
+                  {!free && pkgSavePct > 0 && (
                     <div className="font-medium text-save">
                       save {pkgSavePct}%
+                      {discount?.type === "fixed_amount" && discountAmount > 0
+                        ? ` + $${Math.round(discountAmount)} Off`
+                        : ""}
                     </div>
                   )}
                 </div>

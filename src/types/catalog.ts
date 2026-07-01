@@ -21,6 +21,8 @@ export interface CatalogDrugInfo {
 export interface CatalogPackage {
   quantity: number;
   original_price: number;
+  // Retail/"regular" total (highest per-tablet threshold × qty) — the strike-through price.
+  regular_price: number;
   final_price: number;
   per_tablet: number;
   discount_percentage: number;

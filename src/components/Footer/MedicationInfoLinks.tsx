@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, usePathname } from "next/navigation";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
 import { buildCatalogParams } from "@/features/landing/catalogParams";
 import { Modal } from "@/components/ui/Modal";
@@ -29,9 +30,19 @@ const TITLE: Record<Drug, string> = {
 const normalizeDrug = (drug: string) => (drug === "tadalafi" ? "tadalafil" : drug);
 
 export const MedicationInfoLinks = () => {
+  const params = useParams<{ slug?: string | string[] }>();
+  const pathname = usePathname();
   const [drug, setDrug] = useState<Drug | null>(null);
   const [active, setActive] = useState<keyof CatalogDrugInfo>("overview");
-  const { data: variants } = useCatalog(buildCatalogParams({}));
+
+  // Rebuild the page's catalog context (slug + landing_context) from the URL so the
+  // footer shares the page's price tier instead of firing a separate default-tier
+  // (v5d) request. drug_info is tier-independent — this only keeps the footer's catalog
+  // call on the same tier as the page (e.g. /try/ → v5_free).
+  const urlSlug = Array.isArray(params?.slug) ? params.slug[0] : params?.slug;
+  const { data: variants } = useCatalog(
+    buildCatalogParams({ slug: urlSlug, landingContext: pathname.split("/")[1] }),
+  );
 
   const drugInfo = drug
     ? (variants?.find((v) => normalizeDrug(v.product.drug) === drug)?.drug_info ?? null)

@@ -182,7 +182,7 @@ export const LandingHeroSection = ({
                     height={tab.mobile}
                     unoptimized
                     style={{ transform: tab.mM1.transform, width: tab.mobile, height: tab.mobile }}
-                    className={cn("absolute left-1/2 object-contain", tab.mM1.top)}
+                    className={cn("absolute left-1/2 max-w-none object-contain", tab.mM1.top)}
                   />
                   <Image
                     src={m2}
@@ -191,7 +191,7 @@ export const LandingHeroSection = ({
                     height={tab.mobile}
                     unoptimized
                     style={{ transform: tab.mM2.transform, width: tab.mobile, height: tab.mobile }}
-                    className={cn("absolute left-1/2 z-[2] object-contain", tab.mM2.top)}
+                    className={cn("absolute left-1/2 z-[2] max-w-none object-contain", tab.mM2.top)}
                   />
                 </div>
               </div>
@@ -211,7 +211,7 @@ export const LandingHeroSection = ({
                 height={tab.desktop}
                 unoptimized
                 style={{ transform: tab.dM1.transform, width: tab.desktop, height: tab.desktop }}
-                className={cn("absolute right-[100px] z-[1] object-contain", tab.dM1.top)}
+                className={cn("absolute right-[100px] z-[1] max-w-none object-contain", tab.dM1.top)}
               />
               <Image
                 src={m2}
@@ -220,7 +220,7 @@ export const LandingHeroSection = ({
                 height={tab.desktop}
                 unoptimized
                 style={{ transform: tab.dM2.transform, width: tab.desktop, height: tab.desktop }}
-                className={cn("absolute right-[150px] z-[2] object-contain", tab.dM2.top)}
+                className={cn("absolute right-[150px] z-[2] max-w-none object-contain", tab.dM2.top)}
               />
             </div>
           </div>
