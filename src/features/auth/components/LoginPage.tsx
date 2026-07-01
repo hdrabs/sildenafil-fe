@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { LoginPhoneStep } from "./LoginPhoneStep";
 import { LoginEmailStep } from "./LoginEmailStep";
 import { LoginPasswordStep } from "./LoginPasswordStep";
 import { OtpModal } from "@/components/modals/OtpModal";
 import { useLoginUser } from "../hooks/useLoginUser";
+import { useLoginSuccess } from "../hooks/useLoginSuccess";
 import { authService } from "@/api/services/authService";
-import { useSetUser } from "@/store";
-import { ROUTES } from "@/constants/routes";
+import { useCartToken } from "@/store";
 
 type Step = "phone" | "email" | "password";
 
@@ -20,8 +20,8 @@ interface LoginHints {
 
 export const LoginPage = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const setUser = useSetUser();
+  const cartToken = useCartToken();
+  const onLoginSuccess = useLoginSuccess();
   const prefillEmail = searchParams.get("email") ?? undefined;
 
   const [step, setStep] = useState<Step>("email");
@@ -85,13 +85,8 @@ export const LoginPage = () => {
   const handleOtpSubmit = async (code: string) => {
     if (!otpIdentifier) return;
     // Let errors propagate so the modal surfaces them inline.
-    const { token } = await authService.verifyPhoneOtp(otpIdentifier, code);
-    setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "", pocketmedUuid: null });
-    const me = await authService.me();
-    setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti, pocketmedUuid: me.pocketmed_uuid ?? null });
-    // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
-    const redirectTo = searchParams.get("redirectTo");
-    router.replace(redirectTo ?? ROUTES.HOME);
+    const response = await authService.verifyPhoneOtp(otpIdentifier, code, cartToken ?? undefined);
+    await onLoginSuccess(response, otpIdentifier.includes("@") ? otpIdentifier : "");
   };
 
   return (

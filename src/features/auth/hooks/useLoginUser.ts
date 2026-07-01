@@ -1,50 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useLogin } from "@/api/hooks/useAuthQueries";
-import { authService } from "@/api/services/authService";
-import { useSetUser } from "@/store";
-import { ROUTES } from "@/constants/routes";
+import { useCartToken } from "@/store";
 import { LoginFormValues } from "../schemas/loginSchema";
+import { useLoginSuccess } from "./useLoginSuccess";
 
 export const useLoginUser = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const setUser = useSetUser();
   const { mutate, isPending } = useLogin();
+  const cartToken = useCartToken();
+  const onLoginSuccess = useLoginSuccess();
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const login = (values: LoginFormValues) => {
     setLoginError(null);
     mutate(
-      { identifier: values.identifier, password: values.password },
       {
-        onSuccess: async ({ token }) => {
-          setUser({
-            id: 0,
-            email: values.identifier,
-            firstName: "",
-            lastName: "",
-            token,
-            jti: "",
-            pocketmedUuid: null,
-          });
+        identifier: values.identifier,
+        password: values.password,
+        ...(cartToken && { cart_token: cartToken }),
+      },
+      {
+        onSuccess: async (response) => {
           try {
-            const me = await authService.me();
-            setUser({
-              id: me.id,
-              email: me.email,
-              firstName: me.first_name,
-              lastName: me.last_name,
-              token,
-              jti: me.jti,
-              pocketmedUuid: me.pocketmed_uuid ?? null,
-            });
-            // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
-            const redirectTo = searchParams.get("redirectTo");
-            router.replace(redirectTo ?? ROUTES.HOME);
+            await onLoginSuccess(response, values.identifier);
           } catch {
             toast.error("Could not load your profile. Please try again.");
           }

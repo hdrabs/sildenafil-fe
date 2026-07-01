@@ -18,6 +18,8 @@ export interface RegisterRequest {
 export interface LoginRequest {
   identifier: string;
   password: string;
+  // Guest cart token from cartStore, forwarded so the backend can reconcile it on login.
+  cart_token?: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -32,8 +34,12 @@ export interface ResetPasswordRequest {
 
 export interface AuthTokenResponse {
   token: string;
-  cart?: CartV2;
-  redirect_path?: string;
+  cart?: CartV2 | null;
+  redirect_path?: string | null;
+  // Login reconcile (S1–S4): true when the backend dropped the guest token cart.
+  cart_token_cleared?: boolean;
+  // Set on S4 (ineligible) — one of 'retake' | 'under_review' | 'order_processing'.
+  ineligible_reason?: string | null;
 }
 
 export interface CheckEmailResponse {
@@ -80,8 +86,8 @@ export const authService = {
   sendEmailOtp: (email: string): Promise<{ sent: boolean }> =>
     api.post<{ sent: boolean }>("/v2/email_logins", { email }),
 
-  verifyPhoneOtp: (phone: string, otp_code: string): Promise<AuthTokenResponse> =>
-    api.post<AuthTokenResponse>("/v2/session", { identifier: phone, otp_code }),
+  verifyPhoneOtp: (phone: string, otp_code: string, cart_token?: string): Promise<AuthTokenResponse> =>
+    api.post<AuthTokenResponse>("/v2/session", { identifier: phone, otp_code, ...(cart_token && { cart_token }) }),
 
   me: (): Promise<UserMeResponse> =>
     api.get<UserMeResponse>("/v2/me"),
