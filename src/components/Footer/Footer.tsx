@@ -113,8 +113,8 @@ export const Footer = ({ theme = "sildenafil", className, bgColor }: FooterProps
         </div>
       </div>
 
-      {/* Copyright + disclaimer */}
-      <div className="mt-8 text-white/60">
+      {/* Copyright + disclaimer. white/75 (not /60) clears WCAG AA (4.9:1) on the blue footer. */}
+      <div className="mt-8 text-white/75">
         <p className="leading-6">
           All information provided herein is for informational purposes only and is not meant to be a
           substitute for professional medical advice, diagnosis or treatment, nor is it intended to be

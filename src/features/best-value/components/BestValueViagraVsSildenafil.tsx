@@ -51,7 +51,7 @@ const MedicineCard = ({ side }: { side: Side }) => (
     </div>
     {/* card-footer — standalone rounded lavender label box */}
     <div className="w-full rounded-[10px] bg-[#ebeff8] px-2 py-4 text-center leading-[1.3]">
-      <span className="text-[16px] text-[#056cb6]">
+      <span className="text-[16px] text-primary">
         {side.label}
         <br />
         {side.sub}
@@ -78,7 +78,7 @@ const MobilePill = ({ side }: { side: Side }) => (
 
 const MobileLabel = ({ label }: { label: string }) => (
   <div className="flex w-1/2 items-center justify-center bg-[#e1e4eb]">
-    <span className="text-[16px] text-[#056cb6]">{label}</span>
+    <span className="text-[16px] text-primary">{label}</span>
   </div>
 );
 

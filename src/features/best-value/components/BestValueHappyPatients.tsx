@@ -66,9 +66,10 @@ export const BestValueHappyPatients = ({ theme = "sildenafil", onGetStarted, cla
         {/* Headings */}
         <div className="relative z-20 mb-6 flex flex-col items-center px-[18px] lg:mb-[70px]">
           <h2 className="text-center text-[30px] font-semibold text-black min-[331px]:text-[32px]">Happy Patients</h2>
-          <h6 className="mt-[10px] text-center text-[16px] font-semibold text-black min-[331px]:text-[20px]">
+          {/* Descriptive subtitle, not a heading — avoids an h2→h6 skip in the page outline. */}
+          <p className="mt-[10px] text-center text-[16px] font-semibold text-black min-[331px]:text-[20px]">
             Find out what men think about {drugLabel}
-          </h6>
+          </p>
         </div>
 
         {/* Mobile customer photos — row above the card, middle one dropped (below lg) */}
@@ -104,7 +105,7 @@ export const BestValueHappyPatients = ({ theme = "sildenafil", onGetStarted, cla
                   className="pointer-events-none mx-auto h-[18px] w-[112px]"
                   draggable={false}
                 />
-                <h6 className="mt-6 text-[16px] font-semibold text-black">{t.name}</h6>
+                <h3 className="mt-6 text-[16px] font-semibold text-black">{t.name}</h3>
                 <p className="mt-[15px] mb-0 text-[14px] font-medium leading-[21px] text-[#5b5b5b]">{text}</p>
                 {long && (
                   <button
@@ -136,9 +137,14 @@ export const BestValueHappyPatients = ({ theme = "sildenafil", onGetStarted, cla
                 const track = trackRef.current;
                 if (track) track.scrollTo({ left: i * stepOf(track), behavior: "smooth" });
               }}
-              className="h-2.5 w-2.5 rounded-full transition-colors"
-              style={{ backgroundColor: i === current ? activeDot : "#a3c7dc" }}
-            />
+              // 24×24 tap target (a11y) wrapping the 10px visual dot.
+              className="flex h-6 w-6 items-center justify-center rounded-full"
+            >
+              <span
+                className="h-2.5 w-2.5 rounded-full transition-colors"
+                style={{ backgroundColor: i === current ? activeDot : "#a3c7dc" }}
+              />
+            </button>
           ))}
         </div>
 
