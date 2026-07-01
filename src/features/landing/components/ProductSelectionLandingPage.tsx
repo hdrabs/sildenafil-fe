@@ -86,26 +86,29 @@ export const ProductSelectionLandingPage = ({
 
   return (
     <>
-      {/* Configurator (left) + bottle hero (right) */}
-      <div className="grid min-h-screen grid-cols-1 min-[992px]:grid-cols-2">
-        <div className="h-full bg-white pt-[40px] min-[992px]:pt-[45px]">
-          <ProductConfigurator
-            contextVariant={contextVariant}
-            activeVariant={activeVariant}
-            allVariants={variants}
-            activeDrug={activeDrug}
-            selectedQty={effectiveQty}
-            onQtyChange={handleQtyChange}
-            onStrengthChange={handleStrengthChange}
-            onDrugChange={handleDrugChange}
-            onAddToCart={handleAddToCart}
-            isSubmitting={isPending}
-            allowDrugSwitch={false}
-            className="w-full md:mx-auto xl:w-[80%]"
-          />
-        </div>
-        <div className="hidden h-full bg-white p-4 min-[992px]:block min-[992px]:p-6">
-          <ProductSelectionHero theme={bottleTheme} dosage={dosage} />
+      {/* Top section (aum): configurator (left 46%) + bottle hero (right 46%),
+          centered max-w 1380, padding 50/0/60, space-between. Full-bleed white bg. */}
+      <div className="bg-white">
+        <div className="mx-auto flex w-full max-w-[1380px] flex-col px-4 pt-[50px] pb-[60px] min-[992px]:flex-row min-[992px]:justify-between min-[992px]:px-0">
+          <div className="w-full min-[992px]:w-[46%]">
+            <ProductConfigurator
+              contextVariant={contextVariant}
+              activeVariant={activeVariant}
+              allVariants={variants}
+              activeDrug={activeDrug}
+              selectedQty={effectiveQty}
+              onQtyChange={handleQtyChange}
+              onStrengthChange={handleStrengthChange}
+              onDrugChange={handleDrugChange}
+              onAddToCart={handleAddToCart}
+              isSubmitting={isPending}
+              allowDrugSwitch={false}
+              className="w-full"
+            />
+          </div>
+          <div className="hidden w-full min-[992px]:block min-[992px]:w-[46%]">
+            <ProductSelectionHero theme={bottleTheme} dosage={dosage} />
+          </div>
         </div>
       </div>
 

@@ -1,17 +1,44 @@
+import { CSSProperties } from "react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { LandingTheme } from "./ProductConfigurator";
 
 interface ProductSelectionHeroProps {
-  /** Active drug — drives bg, glow, jar + tablet images. */
+  /** Active drug — drives bg gradient, jar + tablet images. */
   theme: LandingTheme;
-  /** Resolved dosage, e.g. "20 mg" — picks the floating tablet pair. */
+  /** Resolved dosage, e.g. "20 mg" — picks the selected-strength tablet pair. */
   dosage: string;
 }
 
-const THEME: Record<LandingTheme, { bg: string; glow: string; jar: string }> = {
-  sildenafil: { bg: "bg-[#0e2836]", glow: "bg-[#1b53af]", jar: "/images/jars/sildenafil-jar.png" },
-  tadalafil: { bg: "bg-[#2d1c09]", glow: "bg-[#6a5229]", jar: "/images/jars/tadalafil-jar.png" },
+// Faithful port of aum MarketingProductDetail .product-selection-free-tier-image:
+// a radial-gradient panel with the -ps jar (width 500) and the selected-strength
+// pills laid over it via the desktop-image-{drug}TabletImg offsets/rotations.
+const THEME: Record<
+  LandingTheme,
+  {
+    bg: string;
+    jar: string;
+    size: number;
+    /** aum .desktop-image-{drug}PairsContainer rotate. */
+    pairRotate?: string;
+    p1: CSSProperties;
+    p2: CSSProperties;
+  }
+> = {
+  sildenafil: {
+    bg: "radial-gradient(50% 50% at 50% 50%, #1b53af 0%, #081d29 100%)",
+    jar: "/images/jars/sildenafil-jar-ps.png",
+    size: 90,
+    pairRotate: "rotate(30deg)",
+    p1: { bottom: 150, left: "50%", transform: "translateX(-50%) rotate(-30deg)", zIndex: 1 },
+    p2: { top: -20, left: "50%", transform: "translateX(-50%) rotate(-30deg)", zIndex: 2 },
+  },
+  tadalafil: {
+    bg: "radial-gradient(50% 50% at 50% 50%, #423317 0%, #2d1c09 100%)",
+    jar: "/images/jars/tadalafil-jar-ps.png",
+    size: 143,
+    p1: { bottom: 113, left: 285, transform: "translateX(-55%) rotate(100deg)", zIndex: 1 },
+    p2: { bottom: 20, left: "50%", transform: "translateX(-55%) rotate(107deg)", zIndex: 2 },
+  },
 };
 
 const tabletSrc = (theme: LandingTheme, dosage: string, n: 1 | 2) => {
@@ -25,38 +52,47 @@ export const ProductSelectionHero = ({ theme, dosage }: ProductSelectionHeroProp
   const m2 = tabletSrc(theme, dosage, 2);
 
   return (
-    <div className={cn("relative h-full min-h-[420px] overflow-hidden rounded-[24px] min-[992px]:min-h-[700px]", t.bg)}>
-      {/* Ambient blue glow */}
-      <div className={cn("absolute left-1/2 top-[38%] h-[440px] w-[440px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-40 blur-[90px]", t.glow)} />
+    <div
+      className="mb-[40px] flex h-[calc(100%-40px)] min-h-[600px] items-end justify-center overflow-hidden rounded-[24px]"
+      style={{ background: t.bg }}
+    >
+      {/* aum .image-content: a block at the jar width so the pill pair keeps a
+          real box (~400px after margins) to resolve its offsets against */}
+      <div className="w-[500px] max-w-full">
+        {/* Pills pair container */}
+        <div className="ml-[60px] mr-[40px] flex flex-col" style={{ transform: t.pairRotate }}>
+          <div className="relative h-[120px] w-full">
+            <Image
+              src={m1}
+              alt=""
+              width={t.size}
+              height={t.size}
+              unoptimized
+              className="absolute object-contain drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
+              style={{ width: t.size, height: t.size, ...t.p1 }}
+            />
+            <Image
+              src={m2}
+              alt=""
+              width={t.size}
+              height={t.size}
+              unoptimized
+              className="absolute object-contain drop-shadow-[0_14px_22px_rgba(0,0,0,0.45)]"
+              style={{ width: t.size, height: t.size, ...t.p2 }}
+            />
+          </div>
+        </div>
 
-      {/* Floating tablets (selected strength) */}
-      <Image
-        src={m1}
-        alt=""
-        width={120}
-        height={120}
-        unoptimized
-        className="absolute left-[44%] top-[42%] z-10 w-[70px] -translate-x-1/2 drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)] min-[992px]:w-[96px]"
-      />
-      <Image
-        src={m2}
-        alt=""
-        width={120}
-        height={120}
-        unoptimized
-        style={{ transform: "translateX(-50%) rotate(-12deg)" }}
-        className="absolute left-[56%] top-[55%] z-10 w-[64px] drop-shadow-[0_18px_24px_rgba(0,0,0,0.45)] min-[992px]:w-[88px]"
-      />
-
-      {/* Bottle */}
-      <Image
-        src={t.jar}
-        alt={`${theme} bottle`}
-        width={303}
-        height={694}
-        priority
-        className="absolute bottom-0 left-1/2 z-20 w-[200px] max-w-none -translate-x-1/2 min-[992px]:w-[300px]"
-      />
+        {/* Jar (aum -ps crop, width 500) */}
+        <Image
+          src={t.jar}
+          alt={`${theme} jar`}
+          width={500}
+          height={367}
+          priority
+          className="block w-[500px] max-w-full object-contain"
+        />
+      </div>
     </div>
   );
 };

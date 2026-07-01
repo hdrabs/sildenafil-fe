@@ -1,5 +1,5 @@
 import { HydrationBoundary } from "@tanstack/react-query";
-import { ProductLandingPage } from "@/features/landing/components/ProductLandingPage";
+import { ProductSelectionLandingPage } from "@/features/landing/components/ProductSelectionLandingPage";
 import { prefetchCatalog } from "@/features/landing/prefetchCatalog";
 
 interface Props {
@@ -7,12 +7,14 @@ interface Props {
   searchParams: Promise<{ qty?: string; discount?: string; landing_context?: string; ml?: string }>;
 }
 
-const BestValuePage = async ({ params, searchParams }: Props) => {
+// Page 2 (aum FreeTierProductSelection): the "Try" funnel configurator. Reached
+// from the page-1 hero/CTAs. Mirrors aum's /try/product_selection/:product URL.
+const TryProductSelectionPage = async ({ params, searchParams }: Props) => {
   const { slug } = await params;
   const { qty, discount, landing_context } = await searchParams;
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
-  const landingContext = landing_context ?? "best-value";
+  const landingContext = landing_context ?? "try";
   const dehydratedState = await prefetchCatalog({
     slug,
     discountCode: discount,
@@ -22,17 +24,15 @@ const BestValuePage = async ({ params, searchParams }: Props) => {
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <ProductLandingPage
+      <ProductSelectionLandingPage
         slug={slug}
         initialQty={initialQty}
         discountCode={discount}
         landingContext={landingContext}
         theme="sildenafil"
-        leftVariant="bottle"
-        marketingVariant="best-value"
       />
     </HydrationBoundary>
   );
 };
 
-export default BestValuePage;
+export default TryProductSelectionPage;

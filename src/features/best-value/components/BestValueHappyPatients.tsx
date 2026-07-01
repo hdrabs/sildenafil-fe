@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
 import { PATIENT_TESTIMONIALS, type PatientTestimonial } from "@/features/home/data/testimonials";
@@ -10,29 +9,25 @@ import { LandingTheme } from "@/features/landing/components/ProductConfigurator"
 
 const MAX_CHARS = 280;
 
-interface HappyPatientsCta {
-  label: string;
-  freeLabel?: string;
-  href?: string;
-  onClick?: () => void;
-}
-
-interface HappyPatientsSectionProps {
-  /** Drives the subheading drug name + CTA/dot accent. Defaults to sildenafil. */
+interface BestValueHappyPatientsProps {
+  /** Drives the subheading drug name + active-dot accent. Defaults to sildenafil. */
   theme?: LandingTheme;
-  cta?: HappyPatientsCta;
+  /** Primary CTA below the carousel — scrolls to the configurator. Omit to hide. */
+  onGetStarted?: () => void;
   className?: string;
 }
 
-export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: HappyPatientsSectionProps) => {
+export const BestValueHappyPatients = ({ theme = "sildenafil", onGetStarted, className }: BestValueHappyPatientsProps) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ active: false, moved: false, startX: 0, scrollLeft: 0 });
   const [current, setCurrent] = useState(0);
   const [active, setActive] = useState<PatientTestimonial | null>(null);
   const [show, setShow] = useState(false);
   const isTada = theme === "tadalafil";
-  const drugLabel = isTada ? "tadalafil" : "sildenafil";
-  const activeDot = isTada ? "#CD8F24" : "#0057b8";
+  const drugLabel = isTada ? "Tadalafil" : "Sildenafil";
+  const activeDot = isTada ? "#CD8F24" : "#1b53af";
+  const accent = isTada ? "#CD8F24" : "#1b53af";
+  const accentHover = isTada ? "#956004" : "#2269db";
 
   const stepOf = (track: HTMLDivElement) =>
     track.children.length < 2
@@ -58,26 +53,29 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
     drag.current.active = false;
   };
 
-  const ctaClasses = cn(
-    "flex w-full items-center justify-center gap-2 rounded-[30px] border border-transparent px-[50px] py-3 text-[16px] font-semibold text-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] lg:max-w-[330px]",
-    isTada ? "bg-[#CD8F24] hover:bg-[#956004]" : "bg-[#204AD7] hover:bg-[#08299A]",
-  );
-  const ctaInner = (
-    <span className="flex items-center justify-center gap-[5px] font-bold">
-      <span>{cta?.label}</span>
-      {cta?.freeLabel && <span className="hover:underline">{cta.freeLabel}</span>}
-      <Image src="/images/why-love/arrow-figma.svg" alt="" width={17} height={17} className="h-[17px] w-[17px]" />
-    </span>
-  );
-
   return (
-    <div className={cn("w-full bg-[#F4F6FB]", className)}>
-      <div className="mx-auto max-w-[1320px] px-6 py-[100px] max-[1024px]:py-[30px]">
-        <div className="mb-14 flex w-full flex-col items-start justify-center max-[900px]:mb-0 max-[900px]:items-center">
-          <span className="text-[32px] font-medium leading-[142.5%] text-black min-[901px]:text-[45px]">Happy Customers</span>
-          <span className="mt-5 text-base font-normal leading-[172.5%] text-[#0E2836] min-[901px]:text-[20px]">
+    <section id="happy-patients" className={cn("w-full bg-[#c4dbe8]", className)}>
+      <div className="relative mx-auto max-w-[1320px] px-[18px] py-[30px] lg:py-[100px]">
+        {/* Flanking customer photos — sit BEHIND the cards (z-0) */}
+        <div className="pointer-events-none absolute inset-x-0 top-[110px] z-0 mx-auto hidden w-[95%] max-w-[1284px] lg:block">
+          <Image src="/images/best-value/happy-patients/happy_customer1.webp" alt="" width={143} height={143} className="absolute left-0 top-0 h-[143px] w-[143px] rounded-full" />
+          <Image src="/images/best-value/happy-patients/happy_customer2.webp" alt="" width={137} height={137} className="absolute left-[190px] top-[43px] h-[137px] w-[137px] rounded-full" />
+          <Image src="/images/best-value/happy-patients/happy_customer3.webp" alt="" width={157} height={157} className="absolute right-0 top-0 h-[157px] w-[157px] rounded-full" />
+        </div>
+
+        {/* Headings */}
+        <div className="relative z-20 mb-6 flex flex-col items-center px-[18px] lg:mb-[70px]">
+          <h2 className="text-center text-[30px] font-semibold text-black min-[331px]:text-[32px]">Happy Patients</h2>
+          <h6 className="mt-[10px] text-center text-[16px] font-semibold text-black min-[331px]:text-[20px]">
             Find out what men think about {drugLabel}
-          </span>
+          </h6>
+        </div>
+
+        {/* Mobile customer photos — row above the card, middle one dropped (below lg) */}
+        <div className="relative z-0 mx-auto flex w-[92%] max-w-[440px] items-start justify-between lg:hidden">
+          <Image src="/images/best-value/happy-patients/happy_customer2.webp" alt="" width={86} height={86} className="h-[70px] w-[70px] rounded-full min-[371px]:h-[86px] min-[371px]:w-[86px]" />
+          <Image src="/images/best-value/happy-patients/happy_customer3.webp" alt="" width={86} height={86} className="mt-10 h-[70px] w-[70px] rounded-full min-[371px]:h-[86px] min-[371px]:w-[86px]" />
+          <Image src="/images/best-value/happy-patients/happy_customer1.webp" alt="" width={86} height={86} className="h-[70px] w-[70px] rounded-full min-[371px]:h-[86px] min-[371px]:w-[86px]" />
         </div>
 
         {/* Carousel */}
@@ -88,7 +86,7 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerLeave={endDrag}
-          className="-mx-6 -my-8 flex cursor-grab select-none items-stretch gap-4 overflow-x-auto px-6 py-8 [-ms-overflow-style:none] [scroll-snap-type:x_mandatory] [scrollbar-width:none] active:cursor-grabbing md:gap-10 [&::-webkit-scrollbar]:hidden"
+          className="relative z-10 -mt-2 flex cursor-grab select-none items-stretch gap-4 overflow-x-auto pb-2 [-ms-overflow-style:none] [scroll-snap-type:x_mandatory] [scrollbar-width:none] active:cursor-grabbing md:gap-10 lg:mt-0 [&::-webkit-scrollbar]:hidden"
         >
           {PATIENT_TESTIMONIALS.map((t, i) => {
             const long = t.content.length > MAX_CHARS;
@@ -96,14 +94,14 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
             return (
               <div
                 key={i}
-                className="flex h-[339px] w-full shrink-0 flex-col rounded-[16px] bg-white px-6 pt-[50px] pb-6 text-center shadow-[0px_8px_24px_rgba(21,41,71,0.08)] [scroll-snap-align:center] md:h-auto md:min-h-[387px] md:w-[calc((100%-80px)/3)] md:max-w-[400px]"
+                className="flex h-[339px] w-full shrink-0 flex-col rounded-[16px] bg-white px-6 pt-[50px] pb-6 text-center shadow-[0px_0px_45px_rgba(21,41,71,0.1)] [scroll-snap-align:center] md:h-auto md:min-h-[387px] md:w-[calc((100%-80px)/3)] md:max-w-[400px]"
               >
                 <Image
-                  src="/icons/rating-stars.svg"
+                  src="/images/best-value/happy-patients/rating-stars.svg"
                   alt="5 star rating"
                   width={112}
-                  height={20}
-                  className="pointer-events-none mx-auto h-[18px] w-auto"
+                  height={18}
+                  className="pointer-events-none mx-auto h-[18px] w-[112px]"
                   draggable={false}
                 />
                 <h6 className="mt-6 text-[16px] font-semibold text-black">{t.name}</h6>
@@ -139,22 +137,25 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
                 if (track) track.scrollTo({ left: i * stepOf(track), behavior: "smooth" });
               }}
               className="h-2.5 w-2.5 rounded-full transition-colors"
-              style={{ backgroundColor: i === current ? activeDot : "#D9D9D9" }}
+              style={{ backgroundColor: i === current ? activeDot : "#a3c7dc" }}
             />
           ))}
         </div>
 
-        {cta && (
+        {/* CTA */}
+        {onGetStarted && (
           <div className="mt-10 flex justify-center">
-            {cta.href ? (
-              <Link href={cta.href} onClick={cta.onClick} className={ctaClasses}>
-                {ctaInner}
-              </Link>
-            ) : (
-              <button type="button" onClick={cta.onClick} className={ctaClasses}>
-                {ctaInner}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onGetStarted}
+              className="flex items-center rounded-full px-[60px] py-3 text-[16px] font-normal capitalize text-white transition-colors"
+              style={{ backgroundColor: accent }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = accentHover)}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = accent)}
+            >
+              <span>Start My Free Visit</span>
+              <Image src="/images/best-value/process/arrow.svg" alt="" width={10} height={17} className="ml-4 h-[15px] w-[9px]" />
+            </button>
           </div>
         )}
       </div>
@@ -162,12 +163,12 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
       <Modal isOpen={show} onClose={() => setShow(false)} title="Patient Testimonial" size="lg">
         {active && (
           <div>
-            <Image src="/icons/rating-stars.svg" alt="5 star rating" width={112} height={20} className="h-[18px] w-auto" />
+            <Image src="/images/best-value/happy-patients/rating-stars.svg" alt="5 star rating" width={112} height={18} className="h-[18px] w-[112px]" />
             <p className="mt-3 text-sm leading-relaxed text-text-primary">{active.content}</p>
             <p className="mt-4 text-sm font-semibold text-text-muted">{active.name}</p>
           </div>
         )}
       </Modal>
-    </div>
+    </section>
   );
 };

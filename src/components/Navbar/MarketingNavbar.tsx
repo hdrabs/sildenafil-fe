@@ -1,49 +1,31 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
-import { useCatalog } from "@/api/hooks/useCatalogQueries";
-import { buildCatalogParams } from "@/features/landing/catalogParams";
-import { useConfiguratorDrug } from "@/store";
-
-const DEFAULT_BANNER = "Save Up To 90% + FREE Consultation + FREE Shipping";
-
-const PhoneIcon = ({ className }: { className: string }) => (
-  <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className={className} />
-);
+import { useMarketingBanner } from "@/components/Navbar/useMarketingBanner";
 
 /**
- * Slim, drug-themed marketing navbar for the funnel/landing pages (NOT the home
- * page). Theme is inferred from the route slug; banner copy comes from the v2
- * catalog's discount.banner_text. The banner scrolls away with the page while the
- * nav row stays pinned to the top. Logo is intentionally not a link.
+ * Themed dark marketing navbar for the funnel/landing pages (aum SecondaryNavBar
+ * free-tier variant). Drug-themed: navy/blue for sildenafil, brown/gold for
+ * tadalafil. Banner scrolls away; the nav row stays pinned.
  */
 export const MarketingNavbar = () => {
+  const { text, isTadalafil } = useMarketingBanner();
   const params = useParams<{ slug?: string | string[] }>();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const configuratorDrug = useConfiguratorDrug();
 
-  const urlSlug = Array.isArray(params?.slug) ? params.slug[0] : (params?.slug ?? "");
-  // Follow the in-page drug selector so the banner + theme react to a drug switch (the
-  // backend then resolves the cart's discount only when it matches this drug); else the URL.
-  const slug = configuratorDrug ?? urlSlug;
-  const isTadalafil = slug.includes("tadalafi");
   const bannerBg = isTadalafil ? "#CD8F24" : "#204AD7";
+  const navBg = isTadalafil ? "#1D1204" : "#041925";
+  const btnBg = isTadalafil ? "#CD8F24" : "#204AD7";
+  const btnHover = isTadalafil ? "#956004" : "#08299A";
 
-  // Banner copy comes from the v2 catalog's discount.banner_text. Rebuild the same
-  // query params the page uses so this reuses the prefetched cache (no extra fetch).
-  const qtyParam = searchParams.get("qty");
-  const { data: variants } = useCatalog(
-    buildCatalogParams({
-      slug,
-      discountCode: searchParams.get("discount") ?? undefined,
-      initialQty: qtyParam ? parseInt(qtyParam, 10) : undefined,
-      landingContext: searchParams.get("landing_context") ?? pathname.split("/")[1],
-    }),
-  );
-  const bannerText =
-    variants?.find((v) => v.discount?.banner_text)?.discount?.banner_text?.trim() || DEFAULT_BANNER;
+  // "Get Started" hands off to the configurator, preserving the query string.
+  const slug = Array.isArray(params?.slug) ? params.slug[0] : (params?.slug ?? "");
+  const prefix = pathname.split("/")[1] || "lowest-price";
+  const query = searchParams.toString();
+  const getStartedHref = `/${prefix}/product_selection/${slug}${query ? `?${query}` : ""}`;
 
   return (
     <>
@@ -52,51 +34,50 @@ export const MarketingNavbar = () => {
         className="px-5 py-3 text-center text-[14px] font-semibold leading-tight text-white"
         style={{ backgroundColor: bannerBg }}
       >
-        {bannerText}
+        {text}
       </div>
 
-      {/* Nav row — stays pinned to the top while the banner scrolls away. */}
-      <header className="sticky top-0 z-50 flex items-center justify-between bg-white px-[18px] py-3 shadow-[0_6px_20px_-6px_rgba(0,0,0,0.12)]">
+      {/* Dark themed nav row — stays pinned while the banner scrolls away. */}
+      <header
+        className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 md:px-16"
+        style={{ backgroundColor: navBg }}
+      >
         {/* Logo — intentionally NOT a link */}
         <Image
-          src="/icons/logo.svg"
+          src="/icons/logo-sildenafil-com.svg"
           alt="Sildenafil.com"
-          width={153}
-          height={30}
+          width={154}
+          height={22}
           className="h-[22px] w-auto select-none"
           priority
         />
 
-        {/* Phone — 3 responsive variants */}
-        <div>
-          {/* Desktop pill: ≥992px */}
-          <a
-            href="tel:8447453362"
-            className="hidden items-center gap-2.5 rounded-full border border-[#d1d1d1] bg-white px-6 py-2.5 transition-colors hover:bg-[#f4f6fb] min-[992px]:flex"
-          >
-            <PhoneIcon className="h-[18px] w-[18px] shrink-0" />
-            <span className="flex items-center gap-1 whitespace-nowrap">
-              <span className="text-xs font-medium text-[#262a32]">Need help? Call us:</span>
-              <span className="text-xs font-semibold uppercase text-primary">(844) 745-3362</span>
-            </span>
+        <div className="flex items-center gap-[15px]">
+          {/* Need help? Call us! — desktop only */}
+          <a href="tel:8447453362" className="hidden flex-col text-[12px] font-bold leading-[1.3] text-white sm:flex">
+            <span>Need help?</span>
+            <span>Call us!</span>
           </a>
 
-          {/* Tablet compact: 648–991px */}
+          {/* Phone pill — desktop only */}
           <a
             href="tel:8447453362"
-            className="hidden items-center gap-2 min-[648px]:flex min-[992px]:hidden"
+            className="hidden items-center gap-2 rounded-full border border-[#262a32] px-4 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-white/10 sm:flex"
           >
-            <span className="flex flex-col items-end leading-[1.2]">
-              <span className="whitespace-nowrap text-[11px] font-medium text-text-primary">Need help?</span>
-              <span className="whitespace-nowrap text-[11px] font-semibold text-primary">Call us</span>
-            </span>
-            <PhoneIcon className="h-[18px] w-[18px] shrink-0" />
+            <Image src="/icons/navbar/phone-blue.svg" alt="" width={10} height={10} className="h-[10px] w-[10px] shrink-0" />
+            (844)-745-3362
           </a>
 
-          {/* Mobile icon only: <648px */}
-          <a href="tel:8447453362" aria-label="Need help? Call us" className="flex min-[648px]:hidden">
-            <PhoneIcon className="h-5 w-5 shrink-0" />
-          </a>
+          {/* Get Started — themed pill */}
+          <Link
+            href={getStartedHref}
+            className="rounded-full border border-transparent px-4 py-2 text-[12px] font-semibold text-white transition-colors"
+            style={{ backgroundColor: btnBg }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = btnHover)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = btnBg)}
+          >
+            Get Started
+          </Link>
         </div>
       </header>
     </>

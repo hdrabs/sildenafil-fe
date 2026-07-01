@@ -42,7 +42,7 @@ export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
             alt="Sildenafil.com"
             width={153}
             height={30}
-            className="h-[18px] w-auto [filter:brightness(0)_invert(1)]"
+            className="h-[18px] w-auto self-start [filter:brightness(0)_invert(1)]"
           />
           <a href="tel:(844) 745-3362" className="mt-7 text-[18px] font-semibold hover:underline">
             Contact Us (844) 745-3362
@@ -121,7 +121,8 @@ export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
           rights holders and are used solely to represent the products of these rights holders.
         </p>
         <p className="mt-2">© Sildenafil.com LLC</p>
-        <p className="mt-2">
+        {/* Present for legal/SEO but visually hidden — coloured to match the footer bg. */}
+        <p className="mt-2" style={{ color: theme === "tadalafil" ? "#2C2115" : "#0E2836" }}>
           Medication provided only if a prescription is deemed appropriate after an online consultation
           with a licensed provider. Results may vary. See website for full details and important safety
           information.
