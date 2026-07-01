@@ -47,6 +47,10 @@ export const ROUTES = {
   SHIPPING_CONFIRMATION:      "/checkout/shipping-confirmation",
   ORDER_VERIFICATION:         "/checkout/order-verification",
 
+  // Post-payment one-time upsell offer (order-verification redirects here when an
+  // upsell tier applies; carries ?redirect_path= for the final destination).
+  UPSELL_OFFER:               "/upsell-offer",
+
   // ── Patient post-approval payment flow (admin become-link → pay) ─────────────
   // Paths match the legacy aum_mine/client routes so existing links don't 404.
   BECOME:                      (token: string) => `/users/become/${token}`,

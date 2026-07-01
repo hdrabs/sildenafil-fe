@@ -40,6 +40,11 @@ export const creditCardKeys = {
   listV2: () => [...creditCardKeys.all, "listV2"] as const,
 };
 
+export const upsellKeys = {
+  all: ["upsell"] as const,
+  offer: (cartId: number) => [...upsellKeys.all, "offer", cartId] as const,
+};
+
 export const catalogKeys = {
   all: ["catalog"] as const,
   list: (params?: unknown) => [...catalogKeys.all, "list", params] as const,

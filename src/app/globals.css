@@ -77,8 +77,24 @@
   --color-bg-pill-active: #e4eff4;       /* "N items active" count pill */
   --color-text-pill-active: #839dc6;
 
+  /* Upsell offer page (matches the legacy bespoke design) */
+  --color-upsell-bg: #f4f6fb;
+  --color-upsell-banner-to: #112771;
+  --color-upsell-arch: #5b82ff;
+  --color-upsell-green: #3bde97;
+  --color-upsell-discount: #077b67;
+  --color-upsell-oldprice: #77909d;
+  --color-upsell-titleblue: #152e56;
+  --color-upsell-darkgreen: #0e2836;
+  --color-upsell-subgrey: #777777;
+  --color-upsell-support: #8297cd;
+  --color-upsell-primary-hover: #08299a;
+  --color-upsell-pass-border: #ddd4d4;
+  --color-upsell-border: #bfd9e4;
+
   /* Fonts */
   --font-sans: var(--font-poppins);
+  --font-inter: var(--font-inter-google);
 
   /* Custom breakpoints */
   --breakpoint-xs: 480px;
