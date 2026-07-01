@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 import { useCurrentOrder } from "@/api/hooks/useOrderQueries";
 import { useGetMe } from "@/api/hooks/useAuthQueries";
 import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
+import { useRedirectGuard } from "@/hooks/useRedirectGuard";
 import { ROUTES } from "@/constants/routes";
 
 /**
@@ -11,6 +12,11 @@ import { ROUTES } from "@/constants/routes";
 export const useOrderShippingConfirmation = () => {
   const router = useRouter();
   const { data: order, isLoading: orderLoading } = useCurrentOrder();
+
+  // Confirmation is a pre-payment step. No active order (stale link) OR an order that's
+  // already paid → order history; a paid order has nothing left to confirm. The guard
+  // keeps the page on its loader (isLoading below) so it never flashes first.
+  const redirecting = useRedirectGuard(!orderLoading && (!order || order.paid), ROUTES.ORDERS);
 
   const enabled = !!order;
   const { data: me } = useGetMe(enabled);
@@ -35,7 +41,7 @@ export const useOrderShippingConfirmation = () => {
     // Hold the loader until the order, the patient (/me) and the delivery options
     // are all ready — otherwise navigating back flashes an empty patient card
     // before `me` resolves. Gated on `enabled` so it can't spin without an order.
-    isLoading: orderLoading || (enabled && (!me || deliveryLoading)),
+    isLoading: orderLoading || redirecting || (enabled && (!me || deliveryLoading)),
     back: () => router.push(`${ROUTES.EDIT_SHIPPING}?view=delivery`),
     changeShipping: () => router.push(ROUTES.EDIT_SHIPPING),
     changeDelivery: () => router.push(`${ROUTES.EDIT_SHIPPING}?view=delivery`),

@@ -18,6 +18,13 @@ export const orderService = {
     return res.order;
   },
 
+  // Draft/pending order only — the editable set for /edit/shipping (a submitted order
+  // is not editable and returns null here).
+  getEditableOrder: async (): Promise<OrderDetail | null> => {
+    const res = await api.get<{ order: OrderDetail | null }>("/v2/current_order?scope=editable");
+    return res.order;
+  },
+
   // GET /api/v2/orders/:id
   getOrder: async (id: number): Promise<OrderDetail> => {
     const res = await api.get<{ order: OrderDetail }>(`/v2/orders/${id}`);

@@ -21,13 +21,31 @@ export interface CheckoutProgress {
   to?: number;
 }
 
+// Backend-owned funnel guard decision for the viewed step. The guard follows this
+// verbatim — it never computes step order or redirect targets itself.
+export type CheckoutAccessReason =
+  | "current"
+  | "complete"
+  | "upcoming"
+  | "no_cart"
+  | "missing_precondition"
+  | "has_order"
+  | "retake";
+
+export interface CheckoutAccess {
+  allowed: boolean;
+  reason: CheckoutAccessReason;
+  redirect_path: string | null;
+}
+
 export interface CheckoutNavigation {
   current_step: string;
   previous: CheckoutNavLink | null;
   next: CheckoutNavLink | null;
   progress: CheckoutProgress | null;
-  furthest_step: string;
+  furthest_step: string | null;
   steps: CheckoutNavStep[];
+  access: CheckoutAccess;
 }
 
 export interface CheckoutNavigationParams {

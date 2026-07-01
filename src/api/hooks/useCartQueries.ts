@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartService } from "@/api/services/cartService";
-import { cartKeys, orderKeys } from "@/constants/queryKeys";
+import { cartKeys, checkoutKeys, orderKeys } from "@/constants/queryKeys";
 import {
   CartListParams,
   OrderListParams,
@@ -131,6 +131,10 @@ export const useAdvanceCartStep = () => {
       cartService.advanceCartStep(id, cartToken),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.all });
+      // cart.step moved — drop the funnel guard's cached access verdict so it can't
+      // act on a stale reachability decision. (Per-step navigation already refetches
+      // per new step; this covers advance-without-navigation.)
+      queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
     },
   });
 };

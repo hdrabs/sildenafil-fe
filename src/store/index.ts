@@ -24,6 +24,9 @@ export const useConfiguratorDrug = () => useConfiguratorStore((s) => s.activeDru
 export const useSetConfiguratorDrug = () => useConfiguratorStore((s) => s.setActiveDrug);
 
 export const useActiveCart = () => useCartStore((s) => s.activeCart);
+// Cart store's OWN rehydration flag — distinct from useHasHydrated (user store).
+// Anything that reads activeCart on first paint must wait on this too.
+export const useCartHasHydrated = () => useCartStore((s) => s.hasHydrated);
 export const useCartToken = () => useCartStore((s) => s.activeCart?.cart.token ?? null);
 export const useSetActiveCart = () => useCartStore((s) => s.setActiveCart);
 export const useClearActiveCart = () => useCartStore((s) => s.clearActiveCart);

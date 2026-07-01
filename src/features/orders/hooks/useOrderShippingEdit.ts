@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCurrentOrder, useUpdateOrder } from "@/api/hooks/useOrderQueries";
+import { useEditableOrder, useUpdateOrder } from "@/api/hooks/useOrderQueries";
 import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
 import { useGetMe } from "@/api/hooks/useAuthQueries";
 import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
+import { useRedirectGuard } from "@/hooks/useRedirectGuard";
 import { ROUTES } from "@/constants/routes";
 import { ShippingAddress } from "@/types/shippingAddress";
 
@@ -16,7 +17,13 @@ type View = "address" | "delivery";
  */
 export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {}) => {
   const router = useRouter();
-  const { data: order, isLoading: orderLoading } = useCurrentOrder();
+  const { data: order, isLoading: orderLoading } = useEditableOrder();
+
+  // /edit/shipping requires an editable (draft/pending) order. No such order — e.g. a
+  // stale bookmark, or after the order was submitted/shipped — bounces to order history.
+  // The guard keeps the page on its loader (isPageLoading below) so it never flashes.
+  const redirecting = useRedirectGuard(!orderLoading && !order, ROUTES.ORDERS);
+
   const orderId = order?.id ?? 0;
   const enabled = orderId > 0;
 
@@ -101,7 +108,7 @@ export const useOrderShippingEdit = ({ initialView }: { initialView?: View } = {
     preselectedDeliveryType: order?.delivery_type ?? null,
     // One loader for the whole step: order + addresses, plus delivery options on
     // the delivery view (mapped to the view's `isLoading` prop by the page).
-    isPageLoading: isLoading || (view === "delivery" && isDeliveryLoading),
+    isPageLoading: isLoading || redirecting || (view === "delivery" && isDeliveryLoading),
     hasAddresses,
     addresses,
     visible,

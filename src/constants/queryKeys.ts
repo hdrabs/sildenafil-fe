@@ -16,6 +16,8 @@ export const orderKeys = {
   list: (params?: unknown) => [...orderKeys.all, "list", params] as const,
   detail: (id: number) => [...orderKeys.all, "detail", id] as const,
   current: () => [...orderKeys.all, "current"] as const,
+  // Draft/pending order for /edit/shipping — distinct cache from the active (view/pay) set.
+  editable: () => [...orderKeys.all, "current", "editable"] as const,
   history: () => [...orderKeys.all, "history"] as const,
 };
 

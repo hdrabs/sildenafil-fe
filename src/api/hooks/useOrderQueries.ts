@@ -16,6 +16,14 @@ export const useCurrentOrder = (enabled = true) =>
     enabled,
   });
 
+// Draft/pending order for /edit/shipping (editable set). Null once submitted.
+export const useEditableOrder = (enabled = true) =>
+  useQuery({
+    queryKey: orderKeys.editable(),
+    queryFn: () => orderService.getEditableOrder(),
+    enabled,
+  });
+
 export const useOrder = (id: number, enabled = true) =>
   useQuery({
     queryKey: orderKeys.detail(id),
@@ -30,6 +38,7 @@ export const useUpdateOrder = (id: number) => {
     onSuccess: (order: OrderDetail) => {
       queryClient.setQueryData(orderKeys.detail(id), order);
       queryClient.invalidateQueries({ queryKey: orderKeys.current() });
+      queryClient.invalidateQueries({ queryKey: orderKeys.editable() });
       queryClient.invalidateQueries({ queryKey: orderKeys.history() });
     },
   });

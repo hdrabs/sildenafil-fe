@@ -11,6 +11,7 @@ import {
 } from "@/api/hooks/useOrderQueries";
 import { useCreditCardsV2, useSetDefaultCardV2 } from "@/api/hooks/useCreditCardQueries";
 import { useDeliveryOptions } from "@/api/hooks/useDeliveryQueries";
+import { useRedirectGuard } from "@/hooks/useRedirectGuard";
 import { APIError } from "@/api/baseAPI";
 import { ROUTES } from "@/constants/routes";
 
@@ -20,7 +21,13 @@ import { ROUTES } from "@/constants/routes";
  */
 export const useOrderPay = (id: number) => {
   const router = useRouter();
-  const { data: order, isLoading } = useOrder(id);
+  const { data: order, isLoading, isError } = useOrder(id);
+
+  // The pay page is only for an unpaid order the user owns. Already paid, missing, or a
+  // foreign/invalid id (useOrder 404s) → order history; there's nothing to pay. The
+  // guard keeps the page on its loader (isLoading below) so it never flashes first.
+  const redirecting = useRedirectGuard(!isLoading && (isError || !order || order.paid), ROUTES.ORDERS);
+
   const { data: cardsData } = useCreditCardsV2();
   const selectCard = useSetDefaultCardV2();
   const pay = usePayOrder(id);
@@ -70,7 +77,7 @@ export const useOrderPay = (id: number) => {
 
   return {
     order,
-    isLoading,
+    isLoading: isLoading || redirecting,
     deliveryOption,
     cutoff: deliveryData?.cutoff_time_remaining ?? null,
     cards,
