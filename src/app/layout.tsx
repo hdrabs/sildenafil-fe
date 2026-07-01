@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-<<<<<<< Updated upstream
 import { Suspense } from "react";
-import { Poppins, Inter } from "next/font/google";
-=======
-import { Poppins } from "next/font/google";
->>>>>>> Stashed changes
+import { Poppins} from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { RetakeGate } from "@/features/retake/components/RetakeGate";
