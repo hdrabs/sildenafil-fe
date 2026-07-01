@@ -22,7 +22,7 @@ export const HeroSection = () => (
       />
 
       {/* Left copy column */}
-      <div className="relative z-10 w-full text-center lg:w-[76%] lg:text-left">
+      <div className="relative z-10 w-full text-left lg:w-[76%]">
         <h5 className="mb-2 text-[16px] font-medium leading-[1.2] text-[#1b53af] lg:text-[18px]">
           Official Lab Tested Source for Sildenafil
         </h5>
@@ -40,7 +40,7 @@ export const HeroSection = () => (
             home.
           </p>
 
-          <div className="flex items-center justify-center gap-2 lg:justify-start">
+          <div className="flex items-center gap-2">
             <PatientTestimonials />
             <Image src="/icons/rating-stars.svg" alt="5 star rating" width={84} height={15} className="h-[15px] w-auto" />
           </div>
@@ -56,18 +56,19 @@ export const HeroSection = () => (
         </div>
 
         {/* Get started + trust badges */}
-        <div className="mt-8 flex flex-col items-center gap-6 lg:mt-[50px] lg:flex-row lg:items-center lg:gap-0">
-          <div className="relative lg:mr-6">
+        <div className="mt-8 flex flex-col gap-6 lg:mt-[50px] lg:flex-row lg:items-center lg:gap-0">
+          {/* Mobile: discount above the button (aum column-reverse), full-width button */}
+          <div className="relative flex flex-col-reverse items-center gap-[15px] lg:mr-6 lg:block lg:gap-0">
             <Link
               href={ROUTES.CHECKOUT_PRODUCT_DETAIL(DEFAULT_SLUG)}
-              className="inline-flex items-center gap-2 rounded-full bg-[#1b53af] px-[60px] py-3 text-[16px] font-normal uppercase text-white transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#1b53af] px-[60px] py-3 text-[16px] font-normal uppercase text-white transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] lg:inline-flex lg:w-auto"
             >
               Start My Free Visit
               <svg width="9" height="16" viewBox="0 0 9 16" fill="none" aria-hidden>
                 <path d="M1.5 2L7 8L1.5 14" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
-            <div className="mt-[15px] flex items-center justify-center gap-1.5 lg:absolute lg:inset-x-0 lg:top-full">
+            <div className="flex items-center justify-center gap-1.5 lg:absolute lg:inset-x-0 lg:top-full lg:mt-[15px]">
               <Image src="/icons/discount_tag.svg" alt="" width={25} height={22} className="h-[22px] w-[25px]" />
               <small className="text-[13px] font-semibold text-[#262a32]">From $1.33 per tablet</small>
             </div>
