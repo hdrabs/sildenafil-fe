@@ -74,7 +74,7 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
     <div className={cn("w-full bg-[#F4F6FB]", className)}>
       <div className="mx-auto max-w-[1320px] px-6 py-[100px] max-[1024px]:py-[30px]">
         <div className="mb-14 flex w-full flex-col items-start justify-center max-[900px]:mb-0 max-[900px]:items-center">
-          <span className="text-[32px] font-medium leading-[142.5%] text-black min-[901px]:text-[45px]">Happy Customers</span>
+          <h2 className="text-[32px] font-medium leading-[142.5%] text-black min-[901px]:text-[45px]">Happy Customers</h2>
           <span className="mt-5 text-base font-normal leading-[172.5%] text-[#0E2836] min-[901px]:text-[20px]">
             Find out what men think about {drugLabel}
           </span>
@@ -106,7 +106,7 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
                   className="pointer-events-none mx-auto h-[18px] w-auto"
                   draggable={false}
                 />
-                <h6 className="mt-6 text-[16px] font-semibold text-black">{t.name}</h6>
+                <h3 className="mt-6 text-[16px] font-semibold text-black">{t.name}</h3>
                 <p className="mt-[15px] mb-0 text-[14px] font-medium leading-[21px] text-[#5b5b5b]">{text}</p>
                 {long && (
                   <button
@@ -138,9 +138,14 @@ export const HappyPatientsSection = ({ theme = "sildenafil", cta, className }: H
                 const track = trackRef.current;
                 if (track) track.scrollTo({ left: i * stepOf(track), behavior: "smooth" });
               }}
-              className="h-2.5 w-2.5 rounded-full transition-colors"
-              style={{ backgroundColor: i === current ? activeDot : "#D9D9D9" }}
-            />
+              // 24×24 tap target (a11y) wrapping the 10px visual dot.
+              className="flex h-6 w-6 items-center justify-center rounded-full"
+            >
+              <span
+                className="h-2.5 w-2.5 rounded-full transition-colors"
+                style={{ backgroundColor: i === current ? activeDot : "#D9D9D9" }}
+              />
+            </button>
           ))}
         </div>
 

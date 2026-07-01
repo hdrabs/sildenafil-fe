@@ -152,7 +152,7 @@ export const WhyLoveSection = ({ theme = "sildenafil", cta, className }: WhyLove
                   style={{ color: isTada ? "#CD8F24" : "#262a32" }}
                 >
                   <div className="mb-5">{copy.panelMain}</div>
-                  <div className="text-[11px] italic text-[#777] lg:text-[12px]">{copy.panelSource}</div>
+                  <div className="text-[11px] italic text-[#767676] lg:text-[12px]">{copy.panelSource}</div>
                 </div>
               </div>
             </li>
