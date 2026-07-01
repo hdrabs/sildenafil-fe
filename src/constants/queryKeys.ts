@@ -90,6 +90,12 @@ export const addressKeys = {
     [...addressKeys.all, "suggestions", prefix, selected] as const,
 };
 
+export const retakeKeys = {
+  all: ["retakePhotos"] as const,
+  status: () => [...retakeKeys.all, "status"] as const,
+  pending: () => [...retakeKeys.all, "pending"] as const,
+};
+
 export const deliveryKeys = {
   all: ["deliveryOptions"] as const,
   // Keyed by address (not just zip): pickup availability/pricing is per-address,

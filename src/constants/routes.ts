@@ -34,6 +34,8 @@ export const ROUTES = {
   REFILL_PRODUCT_DETAIL: "/refill-product-detail",
   // Magic-link deep link (SMS refill nudge); token in the path.
   MAGIC_LINK: (token: string) => `/magic-link/${token}`,
+  // Photo retake (provider asked for a clearer ID/selfie).
+  RETAKE_PHOTOS: "/retake-photos",
 
   // ── Checkout flow ──────────────────────────────────────────────────────────
   INTRO_QUESTIONS:            (slug: string) => `/intro-questions/${slug}`,

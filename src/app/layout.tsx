@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { RetakeGate } from "@/features/retake/components/RetakeGate";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -31,6 +32,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     <body suppressHydrationWarning>
       <QueryProvider>
         <ScrollToTop />
+        <RetakeGate />
         {children}
         <ToastContainer position="top-right" theme="light" />
       </QueryProvider>
