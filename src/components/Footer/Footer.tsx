@@ -2,12 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
+import { MedicationInfoLinks } from "@/components/Footer/MedicationInfoLinks";
 
 type FooterTheme = "sildenafil" | "tadalafil";
 
 interface FooterProps {
   /** Drug drives the dark background colour. Defaults to sildenafil. */
   theme?: FooterTheme;
+  /** Overrides the background colour (e.g. best-value's brand blue). Also recolours the
+   *  hidden legal disclaimer to match, so it stays invisible against the new background. */
+  bgColor?: string;
   className?: string;
 }
 
@@ -28,10 +32,11 @@ const LEGAL_LINKS = [
   { label: "Shipping Policy", href: "/shipping_policy" },
 ];
 
-export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
-  <footer
-    className={cn("text-[14px] text-white", theme === "tadalafil" ? "bg-[#2C2115]" : "bg-[#0E2836]", className)}
-  >
+export const Footer = ({ theme = "sildenafil", className, bgColor }: FooterProps) => {
+  // Background + the hidden legal disclaimer share one colour so the disclaimer stays invisible.
+  const bg = bgColor ?? (theme === "tadalafil" ? "#2C2115" : "#0E2836");
+  return (
+    <footer className={cn("text-[14px] text-white", className)} style={{ backgroundColor: bg }}>
     <div className="mx-auto max-w-[1320px] px-6 py-[75px] md:py-[100px]">
       {/* Columns */}
       <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
@@ -66,8 +71,7 @@ export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
         {/* Medication Info */}
         <div className="flex flex-col">
           <h3 className="mb-2.5 text-[16px] font-semibold">Medication Info</h3>
-          <p className="mb-2 leading-6 whitespace-nowrap">Sildenafil (Viagra / Revatio)</p>
-          <p className="leading-6 whitespace-nowrap">Tadalafil (Cialis / Adcirca)</p>
+          <MedicationInfoLinks />
         </div>
 
         {/* For Doctors */}
@@ -122,7 +126,7 @@ export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
         </p>
         <p className="mt-2">© Sildenafil.com LLC</p>
         {/* Present for legal/SEO but visually hidden — coloured to match the footer bg. */}
-        <p className="mt-2" style={{ color: theme === "tadalafil" ? "#2C2115" : "#0E2836" }}>
+        <p className="mt-2" style={{ color: bg }}>
           Medication provided only if a prescription is deemed appropriate after an online consultation
           with a licensed provider. Results may vary. See website for full details and important safety
           information.
@@ -130,4 +134,5 @@ export const Footer = ({ theme = "sildenafil", className }: FooterProps) => (
       </div>
     </div>
   </footer>
-);
+  );
+};

@@ -58,13 +58,13 @@ export const Modal = ({
       />
       <div
         className={cn(
-          "relative z-10 w-full rounded-xl bg-bg-card shadow-xl",
+          "relative z-10 flex max-h-[90vh] w-full flex-col rounded-xl bg-bg-card shadow-xl",
           sizeClasses[size],
           className,
         )}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-border-default px-6 py-4">
+          <div className="flex shrink-0 items-center justify-between border-b border-border-default px-6 py-4">
             <h2
               id="modal-title"
               className="text-lg font-semibold text-text-primary"
@@ -80,7 +80,7 @@ export const Modal = ({
             </button>
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
       </div>
     </div>,
     document.body,

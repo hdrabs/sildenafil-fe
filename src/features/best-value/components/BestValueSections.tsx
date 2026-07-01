@@ -47,6 +47,6 @@ export const BestValueSections = ({ theme, onGetStarted }: BestValueSectionsProp
     <BestValueFaq theme={theme} />
     <BestValueBottomCta theme={theme} onGetStarted={onGetStarted} />
     {/* AUM's best-value renders the no-drug footer variant → brand-blue bg, not the navy theme default */}
-    <Footer theme={theme} className="bg-[#1b53af]" />
+    <Footer theme={theme} bgColor="#1b53af" />
   </>
 );
