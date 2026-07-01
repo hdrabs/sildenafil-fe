@@ -108,6 +108,10 @@ textarea {
   font-family: var(--font-sans), sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: #f1f8fb;
 }
