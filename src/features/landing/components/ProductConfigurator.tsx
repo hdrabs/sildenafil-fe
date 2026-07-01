@@ -166,6 +166,8 @@ interface ProductConfiguratorProps {
   onAddToCart?: (qty: number) => void;
   isSubmitting?: boolean;
   allowDrugSwitch?: boolean;
+  /** Overrides the selected strength/qty border colour (best-value uses coral). */
+  selectedColor?: string;
   className?: string;
 }
 
@@ -181,6 +183,7 @@ export const ProductConfigurator = ({
   onAddToCart,
   isSubmitting = false,
   allowDrugSwitch = false,
+  selectedColor,
   className,
 }: Omit<ProductConfiguratorProps, "theme">) => {
   const [drugInfoOpen, setDrugInfoOpen] = useState(false);
@@ -220,14 +223,26 @@ export const ProductConfigurator = ({
   const tabletImgs = getTabletImages(drug, dosage);
 
   const isTadalafil = activeDrug === "tadalafil";
-  const selectedBorderColor = isTadalafil ? "#cd8f24" : "#204ad7";
-  const selectedBgColor = isTadalafil ? "#f8e9d6" : "#d6e0f8";
+  const themeBorderColor = isTadalafil ? "#cd8f24" : "#204ad7";
+  // best-value (selectedColor set) recolours only the strength/qty border to coral and keeps
+  // the card's white bg; the drug selector always uses the theme border.
+  const selectedBorderColor = selectedColor ?? themeBorderColor;
+  const selectedBgColor = selectedColor ? "#ffffff" : isTadalafil ? "#f8e9d6" : "#d6e0f8";
   const selectorSelectedStyle = {
     borderColor: selectedBorderColor,
     backgroundColor: selectedBgColor,
   };
+  const drugSelectedStyle = {
+    borderColor: selectedColor ? "#cbd5e1" : themeBorderColor,
+    backgroundColor: selectedBgColor,
+  };
   const badgeColor = isTadalafil ? "#cd8f24" : "#0657dd";
   const badgeStyle = { backgroundColor: badgeColor, borderColor: badgeColor };
+
+  // Add-to-cart button — best-value uses the brand primary; else aum .btn-aum.{drug}-free-tier.
+  const ctaColor = selectedColor ? "#1b53af" : isTadalafil ? "#CD8F24" : "#204AD7";
+  const ctaHover = selectedColor ? "#143d82" : isTadalafil ? "#956004" : "#08299A";
+  const ctaDisabled = isSubmitting || !activeVariant || selectedQty === 0;
 
   const priceHeaderRef = useRef<HTMLDivElement>(null);
   const [priceHeaderHeight, setPriceHeaderHeight] = useState(0);
@@ -400,7 +415,7 @@ export const ProductConfigurator = ({
                   onClick={() => onDrugChange(d)}
                   style={
                     isActive
-                      ? selectorSelectedStyle
+                      ? drugSelectedStyle
                       : { "--hover-border": d === "tadalafil" ? "#cd8f24" : "#204ad7" } as React.CSSProperties
                   }
                   className={cn(
@@ -422,7 +437,7 @@ export const ProductConfigurator = ({
           </div>
         ) : (
           <div
-            style={selectorSelectedStyle}
+            style={drugSelectedStyle}
             className="rounded border-[2.5px] px-[18px] py-[14px] text-center text-sm font-medium text-text-primary"
           >
             {activeDrug ? (DRUG_DISPLAY_NAMES[activeDrug] ?? activeDrug) : "—"}
@@ -563,13 +578,18 @@ export const ProductConfigurator = ({
       <div className="px-6 pb-8 sm:px-10">
         <button
           onClick={() => onAddToCart?.(selectedQty)}
-          disabled={isSubmitting || !activeVariant || selectedQty === 0}
-          style={
-            isSubmitting || !activeVariant || selectedQty === 0
-              ? undefined
-              : { backgroundColor: badgeColor, borderColor: badgeColor }
-          }
-          className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border-2 py-4 text-base font-bold uppercase tracking-wide text-white hover:opacity-90 transition-opacity disabled:bg-border-input disabled:border-border-input disabled:cursor-not-allowed"
+          disabled={ctaDisabled}
+          style={ctaDisabled ? undefined : { backgroundColor: ctaColor, borderColor: ctaColor }}
+          onMouseEnter={(e) => {
+            if (!ctaDisabled) e.currentTarget.style.backgroundColor = ctaHover;
+          }}
+          onMouseLeave={(e) => {
+            if (!ctaDisabled) e.currentTarget.style.backgroundColor = ctaColor;
+          }}
+          className={cn(
+            "mt-12 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border py-3 text-base uppercase text-white transition-all hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] disabled:cursor-not-allowed disabled:border-border-input disabled:bg-border-input disabled:shadow-none",
+            selectedColor ? "font-normal" : "font-bold",
+          )}
         >
           {isSubmitting ? (
             <>

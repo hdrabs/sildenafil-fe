@@ -209,6 +209,7 @@ export const ProductLandingPage = ({
           onAddToCart={handleAddToCart}
           isSubmitting={isPending}
           allowDrugSwitch={(allowDrugSwitch ?? leftVariant === "bottle") && !isMarketingUrl}
+          selectedColor={marketingVariant === "best-value" ? "#ec534b" : undefined}
           className={
             leftVariant === "hero"
               ? "w-full md:mx-auto xl:w-[80%]"
