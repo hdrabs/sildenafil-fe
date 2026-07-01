@@ -4,6 +4,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Modal } from "@/components/ui/Modal";
+import { useUser } from "@/store";
+import { useOpenChat } from "@/features/chat/hooks/useChat";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
 import { DrugInfoModal } from "@/features/landing/components/DrugInfoModal";
 import { MedicalVisit, VisitAction, VisitPharmacy } from "@/types/medicalVisit";
@@ -84,6 +86,8 @@ const BackArrow = () => (
 
 export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: () => void }) => {
   const router = useRouter();
+  const hasChat = !!useUser()?.pocketmedUuid;
+  const openChat = useOpenChat();
   const [showPharmacy, setShowPharmacy] = useState(false);
   const [showMedication, setShowMedication] = useState(false);
   const detail = visit.presentation.detail;
@@ -174,6 +178,26 @@ export const VisitDetail = ({ visit, onBack }: { visit: MedicalVisit; onBack: ()
                 className="rounded-full border border-[#d1d1d1] bg-white px-[30px] py-2.5 text-sm font-medium text-black transition-colors hover:bg-[#e7f3f8]"
               >
                 Medication Info
+              </button>
+            </div>
+          )}
+
+          {/* Completed visit → let the patient revisit their plan or reach the doctor via chat. */}
+          {visit.presentation.badge_tone === "completed" && hasChat && (
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={openChat}
+                className="rounded-full border border-[#d1d1d1] bg-white px-[30px] py-2.5 text-sm font-medium text-black transition-colors hover:bg-[#e7f3f8]"
+              >
+                Review treatment plan
+              </button>
+              <button
+                type="button"
+                onClick={openChat}
+                className="rounded-full bg-primary px-[30px] py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              >
+                Chat with a doctor
               </button>
             </div>
           )}

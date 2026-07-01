@@ -25,7 +25,7 @@ export const useBecomeUser = (token: string) => {
       try {
         const { token: jwt } = await mutateAsync(token);
         // Seed the token first so the /me request is authenticated.
-        setUser({ id: 0, email: "", firstName: "", lastName: "", token: jwt, jti: "" });
+        setUser({ id: 0, email: "", firstName: "", lastName: "", token: jwt, jti: "", pocketmedUuid: null });
 
         const me = await authService.me();
         if (cancelled) return;
@@ -37,6 +37,7 @@ export const useBecomeUser = (token: string) => {
           lastName: me.last_name,
           token: jwt,
           jti: me.jti,
+          pocketmedUuid: me.pocketmed_uuid ?? null,
         });
         router.replace(ROUTES.ORDERS);
       } catch {

@@ -5,6 +5,8 @@ export interface User {
   lastName: string;
   token: string;
   jti: string;
+  // PocketMed telemedicine id; present once the patient has a visit. Gates chat.
+  pocketmedUuid: string | null;
 }
 
 export interface UserState {
@@ -33,6 +35,7 @@ export interface UserMeResponse {
   info_provided?: boolean;
   phone_contact_allowed?: boolean;
   drugs_names_included?: boolean;
+  pocketmed_uuid?: string | null;
 }
 
 export interface ChangePasswordRequest {

@@ -41,6 +41,7 @@ export const useSignupUser = () => {
             lastName: values.lastName,
             token,
             jti: "",
+            pocketmedUuid: null,
           });
           try {
             const me = await authService.me();
@@ -51,6 +52,7 @@ export const useSignupUser = () => {
               lastName: me.last_name,
               token,
               jti: me.jti,
+              pocketmedUuid: me.pocketmed_uuid ?? null,
             });
 
             if (cart && redirect_path) {

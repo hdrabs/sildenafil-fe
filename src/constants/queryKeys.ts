@@ -96,6 +96,11 @@ export const retakeKeys = {
   pending: () => [...retakeKeys.all, "pending"] as const,
 };
 
+export const chatKeys = {
+  all: ["chat"] as const,
+  detail: () => [...chatKeys.all, "detail"] as const,
+};
+
 export const deliveryKeys = {
   all: ["deliveryOptions"] as const,
   // Keyed by address (not just zip): pickup availability/pricing is per-address,

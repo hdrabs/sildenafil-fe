@@ -29,6 +29,7 @@ export const useLoginUser = () => {
             lastName: "",
             token,
             jti: "",
+            pocketmedUuid: null,
           });
           try {
             const me = await authService.me();
@@ -39,6 +40,7 @@ export const useLoginUser = () => {
               lastName: me.last_name,
               token,
               jti: me.jti,
+              pocketmedUuid: me.pocketmed_uuid ?? null,
             });
             // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
             const redirectTo = searchParams.get("redirectTo");

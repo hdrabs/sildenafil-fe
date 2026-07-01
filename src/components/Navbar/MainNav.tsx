@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import { useUser, useActiveCart, useSetActiveCart } from "@/store";
 import { useGetActiveCart } from "@/api/hooks/useCartQueries";
+import { useChatUnread, useOpenChat } from "@/features/chat/hooks/useChat";
 import dynamic from "next/dynamic";
 
 // Drawers only render on click — keep them out of the navbar's initial bundle
@@ -29,6 +30,8 @@ export const MainNav = ({ showAnnouncement = false, announcement }: MainNavProps
   const activeCart = useActiveCart();
   const setActiveCart = useSetActiveCart();
   const pathname = usePathname();
+  const chatUnread = useChatUnread();
+  const openChat = useOpenChat();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
 
@@ -143,6 +146,23 @@ export const MainNav = ({ showAnnouncement = false, announcement }: MainNavProps
               <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Call Us</span>
             </a>
+
+            {/* Message Center (only for patients with a telemedicine account) */}
+            {user?.pocketmedUuid && (
+              <button
+                aria-label="Messages"
+                onClick={openChat}
+                className="relative flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors"
+              >
+                <Image src="/icons/chat.svg" alt="" width={20} height={20} className="shrink-0" />
+                {chatUnread && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                )}
+                <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">
+                  Chat
+                </span>
+              </button>
+            )}
 
             {/* Cart */}
             <button

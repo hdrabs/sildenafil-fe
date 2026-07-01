@@ -86,9 +86,9 @@ export const LoginPage = () => {
     if (!otpIdentifier) return;
     // Let errors propagate so the modal surfaces them inline.
     const { token } = await authService.verifyPhoneOtp(otpIdentifier, code);
-    setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "" });
+    setUser({ id: 0, email: "", firstName: "", lastName: "", token, jti: "", pocketmedUuid: null });
     const me = await authService.me();
-    setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti });
+    setUser({ id: me.id, email: me.email, firstName: me.first_name, lastName: me.last_name, token, jti: me.jti, pocketmedUuid: me.pocketmed_uuid ?? null });
     // Honor a bounced-from-protected-page redirect; a plain sign-in → home.
     const redirectTo = searchParams.get("redirectTo");
     router.replace(redirectTo ?? ROUTES.HOME);

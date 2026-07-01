@@ -39,7 +39,7 @@ export const useMagicLink = (token: string) => {
 
     const signInAndResume = async (jwt: string, res: MagicLinkResolution) => {
       // Seed the token first so /me is authenticated (mirrors useBecomeUser).
-      setUser({ id: 0, email: "", firstName: "", lastName: "", token: jwt, jti: "" });
+      setUser({ id: 0, email: "", firstName: "", lastName: "", token: jwt, jti: "", pocketmedUuid: null });
       const me = await authService.me();
       if (cancelled) return;
       setUser({
@@ -49,6 +49,7 @@ export const useMagicLink = (token: string) => {
         lastName: me.last_name,
         token: jwt,
         jti: me.jti,
+        pocketmedUuid: me.pocketmed_uuid ?? null,
       });
       router.replace(refillDetailPath(res));
     };

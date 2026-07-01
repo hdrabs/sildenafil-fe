@@ -34,6 +34,7 @@ export const useResetPassword = (resetToken: string) => {
               lastName: me.last_name,
               token,
               jti: me.jti,
+              pocketmedUuid: me.pocketmed_uuid ?? null,
             });
             router.replace(ROUTES.DASHBOARD);
           } catch {
