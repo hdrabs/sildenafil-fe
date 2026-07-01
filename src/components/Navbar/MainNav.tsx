@@ -20,9 +20,11 @@ const CartDrawer = dynamic(() => import("@/components/Navbar/CartDrawer").then((
 
 interface MainNavProps {
   showAnnouncement?: boolean;
+  /** Overrides the announcement copy — e.g. a funnel page's dynamic discount banner. */
+  announcement?: string;
 }
 
-export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
+export const MainNav = ({ showAnnouncement = false, announcement }: MainNavProps) => {
   const user = useUser();
   const activeCart = useActiveCart();
   const setActiveCart = useSetActiveCart();
@@ -50,7 +52,7 @@ export const MainNav = ({ showAnnouncement = false }: MainNavProps) => {
     <>
       {showAnnouncement && (
         <div className="border-b border-[#b8daff] bg-[#cce5ff] py-2 text-center text-sm font-semibold text-[#004085]">
-          Save Up To 90% + FREE Consultation + FREE Shipping
+          {announcement ?? "Save Up To 90% + FREE Consultation + FREE Shipping"}
         </div>
       )}
 

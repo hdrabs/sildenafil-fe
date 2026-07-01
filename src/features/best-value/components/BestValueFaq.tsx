@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { LandingTheme } from "@/features/landing/components/ProductConfigurator";
 
-interface FaqSectionProps {
-  /** Drug drives the open-question + chevron accent. Defaults to sildenafil. */
+interface BestValueFaqProps {
+  /** Drug drives the open-question accent colour. Defaults to sildenafil. */
   theme?: LandingTheme;
   className?: string;
 }
@@ -75,26 +76,26 @@ const FAQS: { q: string; a: ReactNode }[] = [
   },
 ];
 
-export const FaqSection = ({ theme = "sildenafil", className }: FaqSectionProps) => {
+export const BestValueFaq = ({ theme = "sildenafil", className }: BestValueFaqProps) => {
   const [open, setOpen] = useState<number | null>(null);
-  const accent = theme === "tadalafil" ? "#CD8F24" : "#1B53AF";
+  const accent = theme === "tadalafil" ? "#CD8F24" : "#1b53af";
 
   return (
     <section id="faq" className={cn("bg-[#f4f6fb]", className)}>
-      <div className="mx-auto w-full max-w-[1320px] px-6 py-[40px] md:py-[60px]">
-        <h2 className="mb-[9px] text-[32px] font-medium leading-[142.5%] text-black md:mb-[56px] md:text-[45px]">
+      <div className="mx-auto w-full max-w-[1320px] px-[18px] py-[75px] md:py-[100px]">
+        <h2 className="mb-[30px] text-left text-[24px] font-semibold leading-[34px] text-black md:text-[32px] md:leading-[46px]">
           Frequently Asked Questions
         </h2>
 
-        <div className="flex flex-col gap-6">
+        <div>
           {FAQS.map((faq, i) => {
             const isOpen = open === i;
             return (
               <div
                 key={faq.q}
                 className={cn(
-                  "overflow-hidden rounded-[6px] border border-[#d1d8ea]/50 transition-shadow",
-                  isOpen ? "bg-white shadow-[0px_0px_45px_rgba(21,41,71,0.1)]" : "bg-transparent",
+                  "mb-6 rounded-[6px] border border-[#d1d8ea]/50 transition-shadow",
+                  isOpen && "bg-white shadow-[0px_0px_45px_rgba(21,41,71,0.1)]",
                 )}
               >
                 <button
@@ -102,35 +103,44 @@ export const FaqSection = ({ theme = "sildenafil", className }: FaqSectionProps)
                   aria-expanded={isOpen}
                   onClick={() => setOpen(isOpen ? null : i)}
                   className={cn(
-                    "flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-[16px] font-semibold transition-colors md:px-8",
-                    !isOpen && "hover:bg-[rgba(209,216,234,0.5)]",
+                    "flex w-full items-center justify-between gap-4 rounded-[6px] px-6 py-5 text-left text-[16px] font-semibold transition-colors min-[441px]:px-12 min-[441px]:py-[22px]",
+                    isOpen ? "bg-white" : "bg-transparent text-black hover:bg-[rgba(209,216,234,0.5)]",
                   )}
-                  style={{ color: isOpen ? accent : "#000000" }}
+                  style={isOpen ? { color: accent } : undefined}
                 >
                   <span>{faq.q}</span>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden
-                    className="shrink-0 transition-transform duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
-                    style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
-                  >
-                    <path
-                      d="M10.3881 11.8374L11.5002 10.8837L15.9165 14.6738C16.0406 14.78 16.1845 14.8608 16.3398 14.9115C16.4952 14.9621 16.659 14.9816 16.8219 14.9689C16.9847 14.9562 17.1435 14.9115 17.2891 14.8373C17.4348 14.7632 17.5644 14.6611 17.6705 14.5368C17.7767 14.4125 17.8574 14.2686 17.908 14.1131C17.9586 13.9576 17.9781 13.7937 17.9654 13.6306C17.9527 13.4676 17.908 13.3087 17.834 13.1629C17.7599 13.0172 17.6579 12.8875 17.5337 12.7812L12.3088 8.29881C12.0835 8.10591 11.7967 7.9999 11.5002 7.9999C11.2037 7.9999 10.9169 8.10591 10.6916 8.29881L5.46672 12.7812C5.34256 12.8875 5.24054 13.0172 5.16647 13.1629C5.0924 13.3087 5.04773 13.4676 5.03502 13.6306C5.02231 13.7937 5.04181 13.9576 5.09241 14.1131C5.143 14.2686 5.22369 14.4125 5.32988 14.5368C5.43607 14.6611 5.56567 14.7632 5.71129 14.8373C5.85691 14.9115 6.01569 14.9562 6.17857 14.9689C6.34145 14.9816 6.50524 14.9621 6.66058 14.9115C6.81592 14.8608 6.95979 14.78 7.08394 14.6738L10.3881 11.8374Z"
-                      fill={accent}
+                  {isOpen ? (
+                    <Image
+                      src="/images/best-value/faq/close.svg"
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 shrink-0"
                     />
-                  </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden
+                      className="ml-3 shrink-0"
+                    >
+                      <path
+                        d="M10.3881 11.8374L11.5002 10.8837L15.9165 14.6738C16.0406 14.78 16.1845 14.8608 16.3398 14.9115C16.4952 14.9621 16.659 14.9816 16.8219 14.9689C16.9847 14.9562 17.1435 14.9115 17.2891 14.8373C17.4348 14.7632 17.5644 14.6611 17.6705 14.5368C17.7767 14.4125 17.8574 14.2686 17.908 14.1131C17.9586 13.9576 17.9781 13.7937 17.9654 13.6306C17.9527 13.4676 17.908 13.3087 17.834 13.1629C17.7599 13.0172 17.6579 12.8875 17.5337 12.7812L12.3088 8.29881C12.0835 8.10591 11.7967 7.9999 11.5002 7.9999C11.2037 7.9999 10.9169 8.10591 10.6916 8.29881L5.46672 12.7812C5.34256 12.8875 5.24054 13.0172 5.16647 13.1629C5.0924 13.3087 5.04773 13.4676 5.03502 13.6306C5.02231 13.7937 5.04181 13.9576 5.09241 14.1131C5.143 14.2686 5.22369 14.4125 5.32988 14.5368C5.43607 14.6611 5.56567 14.7632 5.71129 14.8373C5.85691 14.9115 6.01569 14.9562 6.17857 14.9689C6.34145 14.9816 6.50524 14.9621 6.66058 14.9115C6.81592 14.8608 6.95979 14.78 7.08394 14.6738L10.3881 11.8374Z"
+                        fill="#000000"
+                      />
+                    </svg>
+                  )}
                 </button>
                 <div
                   className={cn(
                     "overflow-hidden transition-[max-height] duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
-                    isOpen ? "max-h-[700px]" : "max-h-0",
+                    isOpen ? "max-h-[700px] bg-white" : "max-h-0",
                   )}
                 >
-                  <div className="px-6 pb-5 text-[16px] leading-[28px] text-black md:px-8">{faq.a}</div>
+                  <div className="px-12 py-[22px] text-[16px] leading-[28px] text-black">{faq.a}</div>
                 </div>
               </div>
             );

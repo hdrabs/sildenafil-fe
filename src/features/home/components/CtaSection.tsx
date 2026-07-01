@@ -37,7 +37,7 @@ export const CtaSection = ({ theme = "sildenafil", cta, className }: CtaSectionP
   const accent = isTada ? "#CD8F24" : "#204AD7";
 
   const btnClass =
-    "inline-flex w-full max-w-[280px] items-center justify-center gap-2 rounded-[30px] bg-white px-6 py-3 text-[16px] font-semibold transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)] sm:w-auto";
+    "mx-auto flex w-full max-w-[340px] items-center justify-center gap-2 rounded-[30px] bg-white px-6 py-3 text-[16px] font-semibold transition-shadow hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]";
   const btnInner = (
     <>
       <span>{cta?.label}</span>
@@ -73,7 +73,7 @@ export const CtaSection = ({ theme = "sildenafil", cta, className }: CtaSectionP
 
         <a
           href="tel:(844) 745-3362"
-          className="inline-flex items-center justify-center rounded-[30px] border border-white px-[50px] py-3 text-[16px] font-semibold transition-colors hover:bg-white/10"
+          className="mx-auto flex w-full max-w-[340px] items-center justify-center rounded-[30px] border border-white py-3 text-[16px] font-semibold transition-colors hover:bg-white/10"
         >
           (844) 745-3362
         </a>

@@ -39,6 +39,11 @@ const CtaSection = dynamic(() =>
 );
 const Footer = dynamic(() => import("@/components/Footer/Footer").then((m) => m.Footer));
 
+// The /best-value page swaps the default home sections for its own AUM-faithful set.
+const BestValueSections = dynamic(() =>
+  import("@/features/best-value/components/BestValueSections").then((m) => m.BestValueSections),
+);
+
 interface ProductLandingPageProps {
   slug: string;
   initialQty?: number;
@@ -49,6 +54,8 @@ interface ProductLandingPageProps {
   leftVariant?: "sidebar" | "bottle" | "hero";
   /** Marketing sections below the fold — off for the bare /checkout/product-detail page. */
   showMarketingSections?: boolean;
+  /** Which below-the-fold section set to render. "best-value" uses the AUM-faithful best-value set. */
+  marketingVariant?: "default" | "best-value";
   /** Preselect the slug's strength on load (default true). Off → "pick your strength" with nothing selected. */
   autoSelectDosage?: boolean;
   /** Preselect the popular/default quantity on load (default true). */
@@ -67,6 +74,7 @@ export const ProductLandingPage = ({
   theme,
   leftVariant = "sidebar",
   showMarketingSections = true,
+  marketingVariant = "default",
   autoSelectDosage = true,
   autoSelectPopular = true,
   resumeFromActiveCart = false,
@@ -210,7 +218,14 @@ export const ProductLandingPage = ({
         </div>
       </div>
 
-      {showMarketingSections && (
+      {showMarketingSections && marketingVariant === "best-value" && (
+        <BestValueSections
+          theme={bottleTheme}
+          onGetStarted={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        />
+      )}
+
+      {showMarketingSections && marketingVariant === "default" && (
         <>
           <ReviewVideosSection theme={bottleTheme} />
           <ProcessSection theme={bottleTheme} />

@@ -28,6 +28,8 @@ const BestValuePage = async ({ params, searchParams }: Props) => {
         discountCode={discount}
         landingContext={landingContext}
         theme="sildenafil"
+        leftVariant="bottle"
+        marketingVariant="best-value"
       />
     </HydrationBoundary>
   );

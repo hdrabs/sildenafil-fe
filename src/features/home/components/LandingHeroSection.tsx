@@ -47,6 +47,41 @@ const DISPLAY_NAME: Record<LandingTheme, string> = {
   tadalafil: "Tadalafil (Cialis®)",
 };
 
+// Per-drug tablet cluster layout (aum hero.module.scss desktopTadalafilImg /
+// desktopSildenafilImg + regularMobileContainer). Tadalafil pills are larger and
+// rotated differently from sildenafil.
+const TABLETS: Record<
+  LandingTheme,
+  {
+    mobile: number;
+    desktop: number;
+    mM1: { top: string; transform: string };
+    mM2: { top: string; transform: string };
+    dM1: { top: string; transform: string };
+    dM2: { top: string; transform: string };
+  }
+> = {
+  sildenafil: {
+    mobile: 76,
+    desktop: 140,
+    mM1: { top: "top-[-3px] min-[480px]:top-[10px]", transform: "translateX(-50%)" },
+    mM2: { top: "top-[72px] min-[480px]:top-[80px]", transform: "translateX(-90%) rotate(10deg)" },
+    dM1: { top: "top-[11px]", transform: "translateX(-50%)" },
+    dM2: { top: "top-[145px]", transform: "translateX(-65%) rotate(-20deg)" },
+  },
+  // Regular-mode desktop = aum .regularDesktopContainer .desktopTadalafilImg (190px,
+  // m1 rotate 6deg / m2 rotate -30deg). aum shifts this container to top:175 (41px below
+  // sildenafil) so aum tops -60/83 become -19/124 against our shared top-[134px] container.
+  tadalafil: {
+    mobile: 110,
+    desktop: 190,
+    mM1: { top: "top-[-57px] min-[450px]:top-[-20px]", transform: "translateX(-50%)" },
+    mM2: { top: "top-[15px] min-[450px]:top-[52px]", transform: "translateX(-65%) rotate(-20deg)" },
+    dM1: { top: "top-[-19px]", transform: "translateX(-45%) rotate(6deg)" },
+    dM2: { top: "top-[124px]", transform: "translateX(-23%) rotate(-30deg)" },
+  },
+};
+
 const tabletSrc = (theme: LandingTheme, dosage: string, n: 1 | 2) => {
   const prefix = dosage.includes("2.5") ? "2-5m" : `${dosage.replace(/\D/g, "")}m`;
   return `/images/tablets/${theme}/${prefix}${n}.png`;
@@ -77,6 +112,7 @@ export const LandingHeroSection = ({
   className,
 }: LandingHeroSectionProps) => {
   const t = THEME[theme];
+  const tab = TABLETS[theme];
   const m1 = dosage ? tabletSrc(theme, dosage, 1) : null;
   const m2 = dosage ? tabletSrc(theme, dosage, 2) : null;
   const buttonText = theme === "tadalafil" ? "Try Tadalafil" : "Try Sildenafil";
@@ -139,15 +175,23 @@ export const LandingHeroSection = ({
             {m1 && m2 && (
               <div className="ml-[60px] mr-[40px] flex flex-col">
                 <div className="relative h-[120px]">
-                  <Image src={m1} alt="" width={76} height={76} unoptimized className="absolute left-1/2 top-[-3px] h-[76px] w-[76px] -translate-x-1/2 object-contain min-[480px]:top-[10px]" />
+                  <Image
+                    src={m1}
+                    alt=""
+                    width={tab.mobile}
+                    height={tab.mobile}
+                    unoptimized
+                    style={{ transform: tab.mM1.transform, width: tab.mobile, height: tab.mobile }}
+                    className={cn("absolute left-1/2 object-contain", tab.mM1.top)}
+                  />
                   <Image
                     src={m2}
                     alt=""
-                    width={76}
-                    height={76}
+                    width={tab.mobile}
+                    height={tab.mobile}
                     unoptimized
-                    style={{ transform: "translateX(-90%) rotate(10deg)" }}
-                    className="absolute left-1/2 top-[72px] z-[2] h-[76px] w-[76px] object-contain min-[480px]:top-[80px]"
+                    style={{ transform: tab.mM2.transform, width: tab.mobile, height: tab.mobile }}
+                    className={cn("absolute left-1/2 z-[2] object-contain", tab.mM2.top)}
                   />
                 </div>
               </div>
@@ -160,15 +204,23 @@ export const LandingHeroSection = ({
           <div className="pointer-events-none absolute right-0 top-[134px] hidden h-[514px] w-[514px] min-[1000px]:block">
             <div className={cn("absolute bottom-[100px] h-[514px] w-[514px] rounded-full opacity-30 blur-[50px]", t.glow)} />
             <div className="relative z-[1] h-[120px]">
-              <Image src={m1} alt="" width={140} height={140} unoptimized className="absolute right-[100px] top-[11px] z-[1] h-[140px] w-[140px] -translate-x-1/2 object-contain" />
+              <Image
+                src={m1}
+                alt=""
+                width={tab.desktop}
+                height={tab.desktop}
+                unoptimized
+                style={{ transform: tab.dM1.transform, width: tab.desktop, height: tab.desktop }}
+                className={cn("absolute right-[100px] z-[1] object-contain", tab.dM1.top)}
+              />
               <Image
                 src={m2}
                 alt=""
-                width={140}
-                height={140}
+                width={tab.desktop}
+                height={tab.desktop}
                 unoptimized
-                style={{ transform: "translateX(-65%) rotate(-20deg)" }}
-                className="absolute right-[150px] top-[145px] z-[2] h-[140px] w-[140px] object-contain"
+                style={{ transform: tab.dM2.transform, width: tab.desktop, height: tab.desktop }}
+                className={cn("absolute right-[150px] z-[2] object-contain", tab.dM2.top)}
               />
             </div>
           </div>
