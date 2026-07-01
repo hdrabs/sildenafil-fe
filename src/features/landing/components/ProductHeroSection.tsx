@@ -107,7 +107,8 @@ const JAR_CONFIG: Record<LandingTheme, { jar: Box; shadow: Box; jarMobile: Box }
   sildenafil: {
     jar: { width: 181, height: 414.5, top: 42, right: -14 },
     shadow: { width: 379, height: 598, top: -32, right: -135 },
-    jarMobile: { width: 112, height: 100, bottom: 0, right: 12 },
+    // height matches the image's intrinsic ~1.03 ratio (was 112x100 = 1.12, which squished it).
+    jarMobile: { width: 112, height: 109, bottom: 0, right: 12 },
   },
   tadalafil: {
     jar: { width: 181, height: 414.5, top: 12, right: -14 },
@@ -243,6 +244,7 @@ const Jar = ({ theme, mobile }: { theme: LandingTheme; mobile?: boolean }) => {
         width={t.jarMobileW}
         height={t.jarMobileH}
         priority
+        fetchPriority="high"
         sizes={`${d.jarMobile.width}px`}
         style={d.jarMobile}
         className="pointer-events-none absolute max-w-none select-none"
@@ -253,23 +255,25 @@ const Jar = ({ theme, mobile }: { theme: LandingTheme; mobile?: boolean }) => {
     <div className="relative z-0 flex items-center justify-center self-center min-[1620px]:right-[50px]">
       {/* Coloured ambient glow */}
       <div className={cn("absolute right-[-126px] top-[13px] z-[1] h-[501px] w-[499px] rounded-[421px] opacity-30 blur-[50px]", t.glow)} />
-      {/* Soft jar-silhouette shadow */}
+      {/* Soft jar-silhouette shadow. No `priority`: this desktop-only column is hidden
+          below 992px, so preloading it would compete with the mobile jar's LCP on mobile.
+          On desktop it's in-viewport and loads promptly anyway. */}
       <Image
         src="/images/jars/jar-shadow.png"
         alt=""
         width={377}
         height={595}
-        priority
         sizes={`${d.shadow.width}px`}
         style={d.shadow}
         className="pointer-events-none absolute z-[1] max-w-none select-none"
       />
+      {/* Desktop LCP jar — same reasoning: not `priority`, so mobile doesn't preload this
+          large hidden image ahead of the mobile jar it actually paints. */}
       <Image
         src={t.jar}
         alt={`${theme} jar`}
         width={t.jarW}
         height={t.jarH}
-        priority
         sizes={`${d.jar.width}px`}
         style={d.jar}
         className="relative z-[2] mb-[44px] max-w-none"

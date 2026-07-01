@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
 import { buildCatalogParams } from "@/features/landing/catalogParams";
@@ -33,8 +34,17 @@ export const useMarketingBanner = () => {
     }),
   );
 
-  const text =
-    variants?.find((v) => v.discount?.banner_text)?.discount?.banner_text?.trim() || DEFAULT_BANNER;
+  // The navbar sits in the marketing layout — outside the page's HydrationBoundary — so the
+  // catalog isn't resolved during SSR and the discount banner can't be known server-side.
+  // Render the default banner for SSR + first paint, then swap in the discount copy after
+  // mount, so the server and client trees match (no hydration mismatch on the banner text).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const bannerText = variants
+    ?.find((v) => v.discount?.banner_text)
+    ?.discount?.banner_text?.trim();
+  const text = mounted && bannerText ? bannerText : DEFAULT_BANNER;
 
   return { text, isTadalafil: slug.includes("tadalafi") };
 };

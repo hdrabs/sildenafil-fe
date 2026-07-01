@@ -1,7 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import { Inter } from "next/font/google";
 import { UpsellOffer } from "@/types/upsell";
+
+// Inter is used only for the numeric price rows on this view. Scoped here (not the
+// root layout) so its weights aren't preloaded on every route. The `--font-inter-google`
+// variable is applied to the root element below; `font-inter` (globals.css) reads it.
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter-google",
+});
 
 interface UpsellOfferViewProps {
   offer: UpsellOffer;
@@ -88,7 +98,7 @@ export const UpsellOfferView = ({
   isSubmitting,
 }: UpsellOfferViewProps) => {
   return (
-    <div className="min-h-screen bg-upsell-bg font-sans max-md:bg-white">
+    <div className={`${inter.variable} min-h-screen bg-upsell-bg font-sans max-md:bg-white`}>
       <header className="fixed inset-x-0 top-0 z-[800] flex max-h-[69px] items-center justify-between border-b border-upsell-border bg-bg-card px-[68px] py-5 max-md:px-5 max-md:py-[15px]">
         <Image
           src="/icons/logo-mobile.svg"

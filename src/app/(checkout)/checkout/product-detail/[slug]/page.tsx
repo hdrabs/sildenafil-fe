@@ -13,7 +13,7 @@ const CheckoutProductDetailPage = async ({ params, searchParams }: Props) => {
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
   const landingContext = landing_context ?? "product-selection";
-  const dehydratedState = await prefetchCatalog({
+  const { dehydratedState, variants } = await prefetchCatalog({
     slug,
     discountCode: discount,
     initialQty,
@@ -33,6 +33,7 @@ const CheckoutProductDetailPage = async ({ params, searchParams }: Props) => {
         autoSelectDosage={false}
         autoSelectPopular={false}
         resumeFromActiveCart
+        initialVariants={variants}
       />
     </HydrationBoundary>
   );

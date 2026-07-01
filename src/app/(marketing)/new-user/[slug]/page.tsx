@@ -13,7 +13,7 @@ const NewUserPage = async ({ params, searchParams }: Props) => {
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
   const landingContext = landing_context ?? "new-user";
-  const dehydratedState = await prefetchCatalog({
+  const { dehydratedState, variants } = await prefetchCatalog({
     slug,
     discountCode: discount,
     initialQty,
@@ -29,6 +29,7 @@ const NewUserPage = async ({ params, searchParams }: Props) => {
         landingContext={landingContext}
         theme="sildenafil"
         leftVariant="hero"
+        initialVariants={variants}
       />
     </HydrationBoundary>
   );

@@ -6,6 +6,7 @@ import { BottleSection } from "./BottleSection";
 import { ProductHeroSection } from "./ProductHeroSection";
 import dynamic from "next/dynamic";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
+import { CatalogVariant } from "@/types/catalog";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
 import { useGetActiveCart } from "@/api/hooks/useCartQueries";
 import { useActiveCart, useCartToken, useSetConfiguratorDrug, useUser } from "@/store";
@@ -64,6 +65,9 @@ interface ProductLandingPageProps {
   resumeFromActiveCart?: boolean;
   /** Show the drug switcher in the configurator. Defaults to the "bottle" layout only. */
   allowDrugSwitch?: boolean;
+  /** Variants prefetched on the server → seed the catalog query so SSR renders the real
+   *  page (not the loading spinner) and hydration matches. See useCatalog / prefetchCatalog. */
+  initialVariants?: CatalogVariant[];
 }
 
 export const ProductLandingPage = ({
@@ -79,6 +83,7 @@ export const ProductLandingPage = ({
   autoSelectPopular = true,
   resumeFromActiveCart = false,
   allowDrugSwitch,
+  initialVariants,
 }: ProductLandingPageProps) => {
   // Resume the open cart only for non-marketing entries (the drawer drug-name pages). A URL
   // carrying an explicit ?qty / ?discount is a marketing link — its slug/qty/discount win.
@@ -118,6 +123,7 @@ export const ProductLandingPage = ({
     autoSelectDosage,
     autoSelectPopular,
     resumeCart,
+    initialVariants,
   });
 
   // Publish the configurator's active drug so the marketing navbar's banner + theme follow

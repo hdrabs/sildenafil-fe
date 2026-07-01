@@ -71,9 +71,9 @@ export const BestValueAboutEd = ({ theme = "sildenafil", className }: BestValueA
               maintaining an erection adequate for sex.
             </p>
 
-            <h5 className="my-6 text-[18px] font-bold uppercase tracking-[0.3px] text-primary">
+            <h3 className="my-6 text-[18px] font-bold uppercase tracking-[0.3px] text-primary">
               Common Questions
-            </h5>
+            </h3>
 
             <div>
               {QUESTIONS.map((item, i) => {

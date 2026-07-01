@@ -16,7 +16,7 @@ const TryPage = async ({ params, searchParams }: Props) => {
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
   const landingContext = landing_context ?? "try";
-  const dehydratedState = await prefetchCatalog({
+  const { dehydratedState, variants } = await prefetchCatalog({
     slug,
     discountCode: discount,
     initialQty,
@@ -40,6 +40,7 @@ const TryPage = async ({ params, searchParams }: Props) => {
         query={forwarded.toString()}
         configPrefix="try"
         regular={false}
+        initialVariants={variants}
       />
     </HydrationBoundary>
   );

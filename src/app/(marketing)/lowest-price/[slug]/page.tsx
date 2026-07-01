@@ -16,7 +16,7 @@ const LowestPricePage = async ({ params, searchParams }: Props) => {
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
   const landingContext = landing_context ?? "lowest-price";
-  const dehydratedState = await prefetchCatalog({
+  const { dehydratedState, variants } = await prefetchCatalog({
     slug,
     discountCode: discount,
     initialQty,
@@ -39,6 +39,7 @@ const LowestPricePage = async ({ params, searchParams }: Props) => {
         landingContext={landingContext}
         query={forwarded.toString()}
         regular
+        initialVariants={variants}
       />
     </HydrationBoundary>
   );

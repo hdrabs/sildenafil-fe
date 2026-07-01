@@ -23,9 +23,10 @@ export const HeroSection = () => (
 
       {/* Left copy column */}
       <div className="relative z-10 w-full text-left lg:w-[76%]">
-        <h5 className="mb-2 text-[16px] font-medium leading-[1.2] text-[#1b53af] lg:text-[18px]">
+        {/* Eyebrow/kicker — not a heading (keeps the page's heading order h1-first for a11y). */}
+        <p className="mb-2 text-[16px] font-medium leading-[1.2] text-[#1b53af] lg:text-[18px]">
           Official Lab Tested Source for Sildenafil
-        </h5>
+        </p>
 
         <h1 className="mb-5 text-[24px] font-extrabold leading-[36px] text-[#262a32] md:text-[26px] md:leading-[42px] lg:text-[48px] lg:leading-[68px]">
           Generic Sildenafil <span className="text-[#1b53af]">(Viagra)</span>
@@ -45,12 +46,14 @@ export const HeroSection = () => (
             <Image src="/icons/rating-stars.svg" alt="5 star rating" width={84} height={15} className="h-[15px] w-auto" />
           </div>
 
-          {/* Mobile bottle (hero image hidden below md) */}
+          {/* Mobile bottle (hero image hidden below md). This is the mobile LCP element,
+              so it must load eagerly with a high fetchpriority — not Next's default lazy. */}
           <Image
             src="/images/home/sildenafil_bottle.webp"
             alt="Sildenafil bottle"
             width={310}
             height={310}
+            priority
             className="mx-auto mt-3 w-[280px] md:hidden"
           />
         </div>

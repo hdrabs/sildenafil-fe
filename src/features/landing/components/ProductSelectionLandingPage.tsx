@@ -7,6 +7,7 @@ import { useProductConfigurator } from "@/features/landing/hooks/useProductConfi
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
 import { useCartToken } from "@/store";
 import { Modal } from "@/components/ui/Modal";
+import { CatalogVariant } from "@/types/catalog";
 
 // aum FreeTierProductSelection sections (below the configurator), code-split.
 const WhatsIncludedSection = dynamic(() =>
@@ -35,6 +36,9 @@ interface ProductSelectionLandingPageProps {
   discountCode?: string;
   landingContext?: string;
   theme: LandingTheme;
+  /** Server-prefetched variants → seed the catalog query so SSR renders the real page
+   *  (not the loading spinner) and hydration matches. See useCatalog / prefetchCatalog. */
+  initialVariants?: CatalogVariant[];
 }
 
 // Page 2 (aum FreeTierProductSelection): configurator LEFT + dark bottle hero RIGHT,
@@ -45,6 +49,7 @@ export const ProductSelectionLandingPage = ({
   initialQty,
   discountCode,
   landingContext,
+  initialVariants,
 }: ProductSelectionLandingPageProps) => {
   const {
     variants,
@@ -56,7 +61,7 @@ export const ProductSelectionLandingPage = ({
     handleQtyChange,
     handleStrengthChange,
     handleDrugChange,
-  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext });
+  } = useProductConfigurator({ slug, initialQty, discountCode, landingContext, initialVariants });
 
   const resolved = activeVariant ?? contextVariant;
   const bottleTheme: LandingTheme = resolved?.product.drug === "tadalafil" ? "tadalafil" : "sildenafil";

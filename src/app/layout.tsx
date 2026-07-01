@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Poppins, Inter } from "next/font/google";
+import { Poppins} from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { RetakeGate } from "@/features/retake/components/RetakeGate";
@@ -16,12 +16,8 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-// Inter is used for the numeric price rows on the upsell offer page.
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-inter-google",
-});
+// Inter (numeric price rows) is loaded only where it's used — the upsell view —
+// so its weights aren't preloaded on every route. See UpsellOfferView.
 
 export const metadata: Metadata = {
   title: "Sildenafil — Generic Viagra Prescribed & Delivered",
@@ -29,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en" className={`${poppins.variable} ${inter.variable}`}>
+  <html lang="en" className={poppins.variable}>
     {/* Browser extensions inject attributes (bis_register, __processed_*) onto <body>
         before hydration; suppress the resulting one-level attribute mismatch warning. */}
     <body suppressHydrationWarning>
