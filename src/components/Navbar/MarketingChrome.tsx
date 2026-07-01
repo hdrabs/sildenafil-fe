@@ -6,12 +6,15 @@ import { MainNav } from "@/components/Navbar/MainNav";
 import { MarketingNavbar } from "@/components/Navbar/MarketingNavbar";
 import { MarketingMainNav } from "@/components/Navbar/MarketingMainNav";
 import { SecondaryNavbar } from "@/components/Navbar/SecondaryNavbar";
+import { PlainNavbar } from "@/components/Navbar/PlainNavbar";
 
 /**
- * Picks the navbar for the (marketing) route group: the home page keeps the full
- * MainNav; /best-value uses the full MainNav with the funnel's dynamic banner; the
- * funnel's product_selection (configurator) step gets the white SecondaryNavbar;
- * the other funnel landing pages get the slim MarketingNavbar.
+ * Picks the navbar for the (marketing) route group:
+ *  - home (`/`)                              → full MainNav
+ *  - /best-value                             → full MainNav with the funnel's banner
+ *  - funnel `…/product_selection/…` step     → white SecondaryNavbar (back + centered logo)
+ *  - /product-selection and /new-user        → plain white PlainNavbar (logo left + call us)
+ *  - lowest-price / try landings, etc.       → themed MarketingNavbar
  */
 export const MarketingChrome = () => {
   const pathname = usePathname();
@@ -22,6 +25,8 @@ export const MarketingChrome = () => {
     <MarketingMainNav />
   ) : pathname.includes("/product_selection") ? (
     <SecondaryNavbar />
+  ) : pathname.startsWith("/product-selection") || pathname.startsWith("/new-user") ? (
+    <PlainNavbar />
   ) : (
     <MarketingNavbar />
   );

@@ -50,6 +50,8 @@ interface MarketingLandingPageProps {
   query?: string;
   /** lowest-price = regular (per-tablet pricing); try = free-tier sample pack. */
   regular?: boolean;
+  /** Route prefix for the configurator hand-off — "lowest-price" | "try". */
+  configPrefix?: string;
 }
 
 export const MarketingLandingPage = ({
@@ -59,6 +61,7 @@ export const MarketingLandingPage = ({
   landingContext,
   query,
   regular = true,
+  configPrefix = "lowest-price",
 }: MarketingLandingPageProps) => {
   const { contextVariant, activeVariant, activeDrug, isLoading } = useProductConfigurator({
     slug,
@@ -76,8 +79,13 @@ export const MarketingLandingPage = ({
   const lowestPerTablet = packages.length ? Math.min(...packages.map((p) => p.per_tablet)) : undefined;
 
   // Hero + CTAs hand off to the configurator page, preserving the query string.
-  const configHref = `/lowest-price/product_selection/${slug}${query ? `?${query}` : ""}`;
+  const configHref = `/${configPrefix}/product_selection/${slug}${query ? `?${query}` : ""}`;
   const getStarted = { label: "Get Started", href: configHref };
+
+  // Free-tier (try) hero values come from the resolved variant's default sample pack.
+  const defaultPkg = variant?.default_package;
+  const freeTierQuantity = defaultPkg ? String(defaultPkg.quantity) : undefined;
+  const shippingCost = defaultPkg?.shipping_cost ? Number(defaultPkg.shipping_cost) : undefined;
 
   if (isLoading) {
     return (
@@ -95,6 +103,9 @@ export const MarketingLandingPage = ({
         pricePerTablet={lowestPerTablet?.toFixed(2)}
         regular={regular}
         href={configHref}
+        discountAmount={defaultPkg?.original_price}
+        quantity={freeTierQuantity}
+        shippingCost={shippingCost}
       />
       <HeroTestimonialSection theme={theme} />
       <VideoSeoSection />
