@@ -218,7 +218,7 @@ export const RightStrengthSection = ({ theme = "sildenafil", dosage, className }
               <div className="mb-1.5 text-2xl font-semibold text-[#1a1a1a] max-[1024px]:text-xl">{current?.tagLine}</div>
               <div className="text-base text-[#374151] max-[1024px]:text-[13px]">{current?.supportingCopy}</div>
               {current?.referenceNote && (
-                <div className="mt-5 text-xs font-normal italic text-[#777] max-[1024px]:text-[11px]">
+                <div className="mt-5 text-xs font-normal italic text-[#767676] max-[1024px]:text-[11px]">
                   {current.referenceNote}
                 </div>
               )}

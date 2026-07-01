@@ -41,6 +41,8 @@ export const CtaSection = ({ theme = "sildenafil", cta, className }: CtaSectionP
   const btnInner = (
     <>
       <span>{cta?.label}</span>
+      {/* Visually-hidden context so the link's text isn't the generic "Learn More" (SEO link-text). */}
+      <span className="sr-only"> about {drugName} treatment options</span>
       <Caret color={accent} />
     </>
   );
@@ -57,11 +59,22 @@ export const CtaSection = ({ theme = "sildenafil", cta, className }: CtaSectionP
 
         {cta &&
           (cta.href ? (
-            <Link href={cta.href} onClick={cta.onClick} className={cn("mt-8", btnClass)} style={{ color: accent }}>
+            // Descriptive accessible name — the visible "Learn More" alone fails SEO link-text.
+            <Link
+              href={cta.href}
+              onClick={cta.onClick}
+              className={cn("mt-8", btnClass)}
+              style={{ color: accent }}
+            >
               {btnInner}
             </Link>
           ) : (
-            <button type="button" onClick={cta.onClick} className={cn("mt-8 cursor-pointer", btnClass)} style={{ color: accent }}>
+            <button
+              type="button"
+              onClick={cta.onClick}
+              className={cn("mt-8 cursor-pointer", btnClass)}
+              style={{ color: accent }}
+            >
               {btnInner}
             </button>
           ))}

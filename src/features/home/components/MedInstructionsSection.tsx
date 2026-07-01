@@ -134,7 +134,7 @@ export const MedInstructionsSection = ({ theme = "sildenafil", className }: MedI
                 </ul>
               </div>
               {q.disclaimer && (
-                <div className="mt-[30px] text-[11px] font-normal italic leading-[172.5%] text-[#777]">{q.disclaimer}</div>
+                <div className="mt-[30px] text-[11px] font-normal italic leading-[172.5%] text-[#767676]">{q.disclaimer}</div>
               )}
             </div>
           );
