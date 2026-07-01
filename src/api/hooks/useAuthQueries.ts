@@ -24,6 +24,11 @@ export const useBecome = () =>
     mutationFn: (token: string) => authService.become(token),
   });
 
+export const useConfirmEmail = () =>
+  useMutation({
+    mutationFn: (token: string) => authService.confirmEmail(token),
+  });
+
 export const useLogout = () =>
   useMutation({
     mutationFn: () => authService.logout(),

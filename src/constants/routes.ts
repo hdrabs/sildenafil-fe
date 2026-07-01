@@ -4,6 +4,8 @@ export const ROUTES = {
   SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
+  // Email-confirmation landing (link is `/confirmation?confirmation_token=…`).
+  CONFIRMATION: "/confirmation",
 
   // Account hub
   DASHBOARD:       "/account",
@@ -30,6 +32,8 @@ export const ROUTES = {
   PRODUCT_SELECTION:       (drug: string) => `/product-selection/${drug}`,
   PRODUCT_DETAIL:   "/product-detail",
   REFILL_PRODUCT_DETAIL: "/refill-product-detail",
+  // Magic-link deep link (SMS refill nudge); token in the path.
+  MAGIC_LINK: (token: string) => `/magic-link/${token}`,
 
   // ── Checkout flow ──────────────────────────────────────────────────────────
   INTRO_QUESTIONS:            (slug: string) => `/intro-questions/${slug}`,

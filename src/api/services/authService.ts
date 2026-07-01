@@ -92,6 +92,11 @@ export const authService = {
   resendEmailVerification: (): Promise<{ sent: boolean }> =>
     api.post<{ sent: boolean }>("/v2/email_verifications", {}),
 
+  // Confirm the email via the token from the emailed link; returns a Bearer so
+  // the /confirmation page can auto-log-in (public endpoint).
+  confirmEmail: (token: string): Promise<AuthTokenResponse> =>
+    api.put<AuthTokenResponse>(`/v2/email_verifications/${encodeURIComponent(token)}`, {}),
+
   generateOtp: (): Promise<void> =>
     api.post<void>("/v2/otp", {}),
 
