@@ -13,7 +13,9 @@ const BestValuePage = async ({ params, searchParams }: Props) => {
 
   const initialQty = qty ? parseInt(qty, 10) : undefined;
   const landingContext = landing_context ?? "best-value";
-  const dehydratedState = await prefetchCatalog({
+  // `variants` seeds the client catalog query as initialData so SSR renders the real page
+  // instead of the loading spinner (and server/client trees match). See prefetchCatalog.
+  const { dehydratedState, variants } = await prefetchCatalog({
     slug,
     discountCode: discount,
     initialQty,
@@ -30,6 +32,7 @@ const BestValuePage = async ({ params, searchParams }: Props) => {
         theme="sildenafil"
         leftVariant="bottle"
         marketingVariant="best-value"
+        initialVariants={variants}
       />
     </HydrationBoundary>
   );

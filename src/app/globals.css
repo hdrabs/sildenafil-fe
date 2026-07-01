@@ -45,7 +45,7 @@
 
   /* Status */
   --color-success: #22c55e;
-  --color-save: #2bb673;
+  --color-save: #13723f; /* WCAG AA on white (6.1:1) AND the #d6e0f8/#f8e9d6 configurator panels (4.6:1) */
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-selected: #e05252;

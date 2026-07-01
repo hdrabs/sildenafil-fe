@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useCatalog } from "@/api/hooks/useCatalogQueries";
 import { DEFAULT_SLUG, normalizeSlug, buildCatalogParams } from "@/features/landing/catalogParams";
+import { CatalogVariant } from "@/types/catalog";
 
 // Variants only shown when the URL slug explicitly requests them
 const GATED_SLUGS = ["sildenafil-citrate-20-mg"];
@@ -25,6 +26,9 @@ interface UseProductConfiguratorOptions {
   // Auth-independent: matches the catalog variant list, not a server-resolved
   // default_package. Ignored when the cart's variant isn't in the catalog.
   resumeCart?: { label: string; quantity: number } | null;
+  // Server-prefetched variants → seed the catalog query so SSR renders real content
+  // (not the loading spinner) and the server/client trees match. See useCatalog.
+  initialVariants?: CatalogVariant[];
 }
 
 export const useProductConfigurator = ({
@@ -36,11 +40,13 @@ export const useProductConfigurator = ({
   autoSelectDosage = true,
   includeGated = false,
   resumeCart = null,
+  initialVariants,
 }: UseProductConfiguratorOptions) => {
   const catalogSlug = normalizeSlug(slug ?? DEFAULT_SLUG);
 
   const { data: rawVariants, isLoading } = useCatalog(
     buildCatalogParams({ slug, discountCode, initialQty, landingContext }),
+    { initialData: initialVariants },
   );
 
   const normalizedVariants = rawVariants?.map((v) => ({

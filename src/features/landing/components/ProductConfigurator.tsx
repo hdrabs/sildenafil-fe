@@ -333,7 +333,7 @@ export const ProductConfigurator = ({
               ${total.toFixed(2)}
             </span>
             {selectedSavePct > 0 && (
-              <span className="ml-2 text-[30px] font-medium not-italic leading-[140%] line-through opacity-[0.36] text-[rgb(38,42,50)]">
+              <span className="ml-2 text-[30px] font-medium not-italic leading-[140%] line-through text-[#767676]">
                 ${selectedOriginalTotal.toFixed(2)}
               </span>
             )}
@@ -555,7 +555,7 @@ export const ProductConfigurator = ({
                 <div className="text-right">
                   <div className="flex items-baseline justify-end gap-1.5">
                     {pkgSavePct > 0 && (
-                      <span className="text-text-muted line-through">
+                      <span className="text-[#526077] line-through">
                         ${pkgOriginalPrice.toFixed(2)}
                       </span>
                     )}

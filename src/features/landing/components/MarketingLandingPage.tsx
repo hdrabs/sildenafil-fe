@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { LandingTheme } from "./ProductConfigurator";
+import { CatalogVariant } from "@/types/catalog";
 import { LandingHeroSection } from "@/features/home/components/LandingHeroSection";
 import { HeroTestimonialSection } from "@/features/home/components/HeroTestimonialSection";
 import { VideoSeoSection } from "@/features/home/components/VideoSeoSection";
@@ -52,6 +53,9 @@ interface MarketingLandingPageProps {
   regular?: boolean;
   /** Route prefix for the configurator hand-off — "lowest-price" | "try". */
   configPrefix?: string;
+  /** Server-prefetched variants → seed the catalog query so SSR renders the real page
+   *  (not the loading spinner) and hydration matches. See useCatalog / prefetchCatalog. */
+  initialVariants?: CatalogVariant[];
 }
 
 export const MarketingLandingPage = ({
@@ -62,12 +66,14 @@ export const MarketingLandingPage = ({
   query,
   regular = true,
   configPrefix = "lowest-price",
+  initialVariants,
 }: MarketingLandingPageProps) => {
   const { contextVariant, activeVariant, activeDrug, isLoading } = useProductConfigurator({
     slug,
     initialQty,
     discountCode,
     landingContext,
+    initialVariants,
   });
 
   const variant = activeVariant ?? contextVariant;

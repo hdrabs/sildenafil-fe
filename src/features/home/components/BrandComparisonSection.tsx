@@ -29,7 +29,7 @@ const COPY: Record<ComparisonTheme, {
 }> = {
   sildenafil: {
     heading: "Viagra vs Sildenafil, which is better?",
-    accent: "#056cb6",
+    accent: "#1b53af", // brand blue — clears WCAG AA (5.7:1) on the #e1e4eb/#ebeff8 label cells; #056cb6 was 4.31:1
     brand: { src: "/images/comparison/viagra.png", w: 203, h: 147, dw: 124, mdw: 88, label: "Viagra" },
     generic: { src: "/images/comparison/sildenafil.png", w: 270, h: 270, dw: 80, mdw: 64, label: "Sildenafil" },
     para1:
