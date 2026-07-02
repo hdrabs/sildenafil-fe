@@ -40,11 +40,18 @@ export const cartService = {
   /**
    * GET /api/v2/visit_eligibility
    * Pre-cart gate — call before creating or updating a cart.
-   * Pass cart_token for guest sessions to check for an existing open cart.
+   * Pass cart_token for guest sessions to check for an existing open cart, and slug so
+   * the backend can recognise a REFILL intent (a covering prescription for that drug).
    */
-  visitEligibility: (params?: { cart_token?: string }): Promise<VisitEligibilityResponse> => {
-    const qs = params?.cart_token ? `?cart_token=${encodeURIComponent(params.cart_token)}` : "";
-    return api.get<VisitEligibilityResponse>(`/v2/visit_eligibility${qs}`);
+  visitEligibility: (
+    params?: { cart_token?: string; slug?: string; quantity?: number },
+  ): Promise<VisitEligibilityResponse> => {
+    const qs = new URLSearchParams();
+    if (params?.slug) qs.set("slug", params.slug);
+    if (params?.quantity != null) qs.set("quantity", String(params.quantity));
+    if (params?.cart_token) qs.set("cart_token", params.cart_token);
+    const query = qs.toString();
+    return api.get<VisitEligibilityResponse>(`/v2/visit_eligibility${query ? `?${query}` : ""}`);
   },
 
   /**

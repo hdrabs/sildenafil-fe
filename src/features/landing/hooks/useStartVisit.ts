@@ -41,9 +41,16 @@ export const useStartVisit = ({ landingContext, landingUrl, cartToken, discountC
 
   const startVisit = async ({ slug, quantity, variantLabel }: StartVisitParams) => {
     try {
-      const eligibility = await checkEligibility(
-        cartToken ? { cart_token: cartToken } : undefined,
-      );
+      // slug lets the backend spot a refill intent (a covering Rx for this drug) and
+      // return the refill-scoped decision (resume an editable refill / block a same-drug
+      // collision) instead of the visit gates. quantity distinguishes a genuine refill
+      // (within the Rx → independent) from one that would become a visit (over the Rx →
+      // still gated).
+      const eligibility = await checkEligibility({
+        slug,
+        quantity,
+        ...(cartToken && { cart_token: cartToken }),
+      });
 
       if (eligibility.action === "show_modal" && eligibility.modal) {
         setBlockingModal(eligibility.modal);

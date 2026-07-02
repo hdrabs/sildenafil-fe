@@ -57,7 +57,7 @@ export const useOrder = (id: number) =>
  */
 export const useCheckEligibility = () =>
   useMutation({
-    mutationFn: (params?: { cart_token?: string }) =>
+    mutationFn: (params?: { cart_token?: string; slug?: string; quantity?: number }) =>
       cartService.visitEligibility(params),
   });
 
