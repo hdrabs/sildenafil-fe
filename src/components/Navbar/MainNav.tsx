@@ -143,7 +143,7 @@ export const MainNav = ({ showAnnouncement = false, announcement }: MainNavProps
               aria-label="Call us"
               className="flex flex-col items-center justify-center gap-0 px-1.5 py-1 cursor-pointer rounded-lg transition-colors sm:hidden"
             >
-              <Image src="/icons/navbar/phone-blue.svg" alt="" width={18} height={18} className="shrink-0" />
+              <Image src="/icons/navbar/phone-black.svg" alt="" width={18} height={18} className="shrink-0" />
               <span className="mt-0.5 whitespace-nowrap text-[10px] font-medium leading-[135%] text-black">Call Us</span>
             </a>
 

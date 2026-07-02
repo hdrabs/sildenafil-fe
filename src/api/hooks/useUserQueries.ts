@@ -8,6 +8,10 @@ export const useCurrentUser = (enabled = true) =>
     queryKey: userKeys.current(),
     queryFn: () => userService.getProfile(),
     enabled,
+    // Revalidate on every mount so post-visit profile changes — notably
+    // pocketmed_uuid, which gates the chat icon/notification — surface as soon
+    // as a consumer remounts, instead of being masked by the 5-min staleTime.
+    refetchOnMount: "always",
   });
 
 export const useUpdateProfile = () => {

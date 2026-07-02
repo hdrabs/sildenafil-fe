@@ -12,6 +12,7 @@ interface ModalProps {
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  bodyClassName?: string;
 }
 
 const sizeClasses = {
@@ -28,6 +29,7 @@ export const Modal = ({
   children,
   size = "md",
   className,
+  bodyClassName,
 }: ModalProps) => {
   useEffect(() => {
     if (!isOpen) return;
@@ -80,7 +82,9 @@ export const Modal = ({
             </button>
           </div>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">{children}</div>
+        <div className={cn("min-h-0 flex-1 overflow-y-auto p-6", bodyClassName)}>
+          {children}
+        </div>
       </div>
     </div>,
     document.body,
