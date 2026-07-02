@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { attachHls, thumbnailFor } from "@/features/home/lib/hlsVideo";
 import type Hls from "hls.js";
 
 type ReviewTheme = "sildenafil" | "tadalafil";
@@ -14,22 +15,12 @@ interface ReviewVideosSectionProps {
 }
 
 const VIDEOS = [
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-5/review-five-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-1/review-one-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-7/review-seven-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-2/review-two-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-3/review-three-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-4/review-four-vid.m3u8",
-  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/cr-6/review-six-vid.m3u8",
+  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/fe-cr-1/review-one-vid.m3u8",
+  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/fe-cr-2/review-two-vid.m3u8",
+  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/fe-cr-3/review-three-vid.m3u8",
+  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/fe-cr-4/review-four-vid.m3u8",
+  "https://d3959x8cuku1ma.cloudfront.net/review%20videos/fe-cr-5/review-five-vid.m3u8",
 ];
-
-// Thumbnails mirror the video path on the S3 bucket: .../{folder}/{name}-thumb.jpg
-const thumbnailFor = (videoUrl: string) => {
-  const parts = videoUrl.split("/");
-  const folder = parts[parts.length - 2];
-  const name = parts[parts.length - 1].replace(".m3u8", "");
-  return `https://aum-videos.s3.us-west-1.amazonaws.com/review+videos/${folder}/${name}-thumb.jpg`;
-};
 
 const PlayIcon = () => (
   <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 group-hover:scale-110">
@@ -52,6 +43,9 @@ interface VideoCardProps {
 const VideoCard = ({ src, poster, index, isPlaying, onPlay, onPause }: VideoCardProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
+  // Show the thumbnail overlay only before the first play; a later pause then
+  // leaves the frozen frame on screen with native controls (matches HowItWorksVideo).
+  const [started, setStarted] = useState(false);
 
   // Free the HLS decoder/buffers on unmount.
   useEffect(() => () => hlsRef.current?.destroy(), []);
@@ -64,22 +58,7 @@ const VideoCard = ({ src, poster, index, isPlaying, onPlay, onPause }: VideoCard
   const ensureSource = async () => {
     const video = videoRef.current;
     if (!video || hlsRef.current || video.src) return;
-
-    // Safari plays HLS natively; everyone else needs hls.js — loaded lazily so
-    // it stays out of the initial bundle and only downloads on first play.
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      return;
-    }
-    const HlsCtor = (await import("hls.js")).default;
-    if (HlsCtor.isSupported()) {
-      const hls = new HlsCtor({ enableWorker: true });
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
-    } else {
-      video.src = src;
-    }
+    hlsRef.current = await attachHls(video, src);
   };
 
   const handlePlayClick = async () => {
@@ -98,17 +77,20 @@ const VideoCard = ({ src, poster, index, isPlaying, onPlay, onPause }: VideoCard
           ref={videoRef}
           preload="none"
           playsInline
-          controls={isPlaying}
+          controls={started}
           controlsList="nodownload nopictureinpicture"
           disablePictureInPicture
-          onPlay={() => onPlay(index)}
+          onPlay={() => {
+            setStarted(true);
+            onPlay(index);
+          }}
           onPause={() => onPause(index)}
           className="h-full w-full rounded-xl object-contain"
         >
           Your browser does not support the video tag.
         </video>
 
-        {!isPlaying && (
+        {!started && (
           <button
             type="button"
             onClick={handlePlayClick}
