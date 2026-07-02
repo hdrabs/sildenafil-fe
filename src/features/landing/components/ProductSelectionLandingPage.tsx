@@ -71,6 +71,9 @@ export const ProductSelectionLandingPage = ({
   const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } = useStartVisit({
     landingContext,
     cartToken: cartToken ?? undefined,
+    // Forward the URL ?discount= onto the created cart so the free-tier promo (fee +
+    // free tablets) is applied — matches ProductLandingPage / ProductDetailPage.
+    discountCode,
   });
 
   const handleAddToCart = (qty: number) => {

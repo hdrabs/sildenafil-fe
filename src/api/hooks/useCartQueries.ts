@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { cartService } from "@/api/services/cartService";
-import { cartKeys, checkoutKeys, orderKeys } from "@/constants/queryKeys";
+import { cartKeys, checkoutKeys, orderKeys, deliveryKeys } from "@/constants/queryKeys";
 import {
   CartListParams,
   OrderListParams,
@@ -88,6 +88,10 @@ export const useUpdateCartV2 = () => {
       cartService.updateCartV2(id, data),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: cartKeys.all });
+      // A quantity/dosage change shifts the cart total across free-shipping thresholds,
+      // so delivery-option prices must be refetched — their query key is (cart, address,
+      // zip) and doesn't include quantity/variant, so they'd otherwise serve stale prices.
+      queryClient.invalidateQueries({ queryKey: deliveryKeys.all });
     },
   });
 };

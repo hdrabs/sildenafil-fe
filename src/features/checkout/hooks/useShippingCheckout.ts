@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { checkoutKeys } from "@/constants/queryKeys";
 import { useActiveCart, useSetActiveCart } from "@/store";
 import { useStepNavigation } from "@/features/checkout/hooks/useStepNavigation";
 import { useShippingAddressesV2 } from "@/api/hooks/useShippingAddressQueries";
@@ -23,6 +25,7 @@ interface Options {
 
 export const useShippingCheckout = ({ returnTo, initialView }: Options = {}) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const activeCart = useActiveCart();
   const setActiveCart = useSetActiveCart();
   const cartId = activeCart?.cart.id ?? 0;
@@ -121,6 +124,9 @@ export const useShippingCheckout = ({ returnTo, initialView }: Options = {}) => 
     });
     // Keep the stored cart in sync so a return to confirmation shows the new choice.
     if (activeCart) setActiveCart({ ...activeCart, cart });
+    // The order-verification summary (5-min staleTime) caches the pre-change total;
+    // drop it so returning to that page refetches the recomputed shipping + total.
+    queryClient.invalidateQueries({ queryKey: checkoutKeys.orderSummary(cartId) });
     // Editing delivery from confirmation: persist, then return there.
     router.push(returnTo ?? redirect_path);
   };
