@@ -22,6 +22,7 @@ export const OrderPayPage = ({ id }: { id: number }) => {
     deliveryOption,
     cutoff,
     cards,
+    cardsLoading,
     defaultCardId,
     selectCard,
     isSelectingCard,
@@ -113,6 +114,7 @@ export const OrderPayPage = ({ id }: { id: number }) => {
                 completeOrder={completeOrder}
                 isCompleting={isCompleting}
                 hasSelectedCard={hasSelectedCard}
+                isLoadingCards={cardsLoading}
               />
             </div>
           )}

@@ -48,7 +48,16 @@ export const useAddCreditCardV2 = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateCreditCardPayload) => creditCardService.createV2(payload),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: creditCardKeys.listV2() }),
+    // Fire-and-forget (block body, no returned promise): if this returned the
+    // invalidate promise, mutateAsync would block until the card-list refetch
+    // completes (~1.5s). The checkout/pay "Complete my order" flow adds the card
+    // then immediately completes on mutateAsync resolving — during that refetch gap
+    // the button re-enables with the new card shown, so the user clicks Complete a
+    // second time before the auto-complete fires. Completion uses cardJustAdded and
+    // doesn't need the refreshed list, so don't await it here.
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: creditCardKeys.listV2() });
+    },
   });
 };
 

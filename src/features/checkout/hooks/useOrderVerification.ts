@@ -73,27 +73,35 @@ export const useOrderVerification = () => {
 
   // Payment method: list saved cards; selecting one sets it as the default (the
   // card that will be charged). Adding a card makes the new one the default.
-  const { data: cardsData } = useCreditCardsV2();
+  const { data: cardsData, isLoading: cardsLoading } = useCreditCardsV2();
   const cards = cardsData?.credit_cards ?? [];
   const defaultCardId = cardsData?.default_payment_profile_id ?? null;
   const setDefault = useSetDefaultCardV2();
   const selectCard = (paymentProfileId: string) => setDefault.mutate(paymentProfileId);
 
   const complete = useCompleteOrderVerification();
+  const [completeError, setCompleteError] = useState<string | null>(null);
   // `cardJustAdded`: a card added via the inline form is already the backend default,
   // but the cards query hasn't refetched yet — so don't gate on the stale client-side
   // `defaultCardId` (which made the first "Complete" click silently no-op).
   const completeOrder = async (opts?: { cardJustAdded?: boolean }) => {
     if (!enabled) return;
     if (!opts?.cardJustAdded && !defaultCardId) return;
-    const { redirect_path } = await complete.mutateAsync({ cart_id: cartId, cart_token: cartToken });
-    // The cart is now a placed order: clear it from the navbar and refresh the orders
-    // list + active-cart query so the destination page shows it without a manual
-    // refresh (the global 5-min staleTime would otherwise serve stale data).
-    clearActiveCart();
-    queryClient.invalidateQueries({ queryKey: orderKeys.all });
-    queryClient.invalidateQueries({ queryKey: cartKeys.active() });
-    router.push(redirect_path);
+    setCompleteError(null);
+    try {
+      const { redirect_path } = await complete.mutateAsync({ cart_id: cartId, cart_token: cartToken });
+      // The cart is now a placed order: clear it from the navbar and refresh the orders
+      // list + active-cart query so the destination page shows it without a manual
+      // refresh (the global 5-min staleTime would otherwise serve stale data).
+      clearActiveCart();
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      queryClient.invalidateQueries({ queryKey: cartKeys.active() });
+      router.push(redirect_path);
+    } catch (e) {
+      // Without this the failure was silent (the card was already saved), so the user
+      // saw nothing happen and re-clicked. Surface it and stay on the page to retry.
+      setCompleteError(e instanceof APIError ? e.message : "We couldn't complete your order. Please try again.");
+    }
   };
 
   return {
@@ -117,11 +125,14 @@ export const useOrderVerification = () => {
     closeEdit: () => setEditing(false),
     onEditSaved,
     cards,
+    cardsLoading,
     defaultCardId,
     selectCard,
     isSelectingCard: setDefault.isPending,
     hasSelectedCard: !!defaultCardId,
     completeOrder,
     isCompleting: complete.isPending,
+    completeError,
+    clearCompleteError: () => setCompleteError(null),
   };
 };

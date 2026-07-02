@@ -81,7 +81,9 @@ const tokenizeCard = (cardData: {
   });
 
 interface UseAddCreditCardFormOptions {
-  onSuccess: () => void;
+  // May be async (e.g. checkout completes the order on success) — it's awaited so
+  // the button stays in its processing state until the whole flow settles.
+  onSuccess: () => void | Promise<void>;
   // The account page adds cards via v2 (matching its v2 card list/delete); the
   // legacy v1 path remains for callers that still need it.
   apiVersion?: "v1" | "v2";
@@ -145,7 +147,9 @@ export const useAddCreditCardForm = ({ onSuccess, apiVersion = "v1" }: UseAddCre
       return;
     }
 
-    onSuccess();
+    // Awaited so a slow/failed completion keeps the form in its processing state;
+    // the completion path surfaces its own error (it doesn't throw here).
+    await onSuccess();
   });
 
   return {

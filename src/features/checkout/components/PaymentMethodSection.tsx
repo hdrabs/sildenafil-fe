@@ -100,6 +100,12 @@ interface Props {
   completeOrder: (opts?: { cardJustAdded?: boolean }) => void;
   isCompleting: boolean;
   hasSelectedCard: boolean;
+  // Order-completion failure (distinct from the card-save error). Optional: callers
+  // that surface it another way (e.g. the order-pay page toasts) leave it unset.
+  completeError?: string | null;
+  // While the saved-cards query is still loading, show a skeleton instead of the
+  // add-card form — an empty `cards` list otherwise looks like the user's cards were lost.
+  isLoadingCards?: boolean;
 }
 
 export const PaymentMethodSection = ({
@@ -110,23 +116,36 @@ export const PaymentMethodSection = ({
   completeOrder,
   isCompleting,
   hasSelectedCard,
+  completeError,
+  isLoadingCards,
 }: Props) => {
   const hasCards = cards.length > 0;
   const [adding, setAdding] = useState(false);
   const [open, setOpen] = useState(false);
-  const showForm = adding || !hasCards;
 
   // Adding a card and completing are one action: "Complete My Order" submits this
   // form, which tokenizes + saves the card, then completes via onSuccess. The card is
   // already the backend default at this point, so flag it so completion doesn't gate
   // on the not-yet-refetched client card list.
   const { form, submit, isLoading: isAddingCard, error: cardError } = useAddCreditCardForm({
-    onSuccess: () => completeOrder({ cardJustAdded: true }),
+    onSuccess: () => {
+      // Card is saved now; clear "adding" so a failed completion reverts to the
+      // dropdown (with the new card selected) and a retry completes instead of
+      // re-adding the card. The form stays visible through completion via `processing`.
+      setAdding(false);
+      return completeOrder({ cardJustAdded: true });
+    },
     apiVersion: "v2",
   });
 
   const selectedCard = cards.find((c) => c.payment_profile_id === defaultCardId) ?? cards[0] ?? null;
   const processing = isCompleting || isAddingCard;
+  // Keep the add-card form up for the whole add → complete flow. Once the card saves,
+  // the list refetches and (for a first card) `hasCards` flips true, which would swap
+  // the form out for the freshly-populated dropdown mid-submit — a confusing flicker
+  // while the button still reads "Processing…". Hold the form until completion, which
+  // then redirects away.
+  const showForm = adding || !hasCards || processing;
 
   return (
     <div>
@@ -146,10 +165,21 @@ export const PaymentMethodSection = ({
         ))}
       </div>
 
+      {isLoadingCards ? (
+        // Saved cards still loading: skeleton, not the add-card form (an empty `cards`
+        // list would render the form and read as "your cards were lost").
+        <div className="mt-4 animate-pulse space-y-4" aria-hidden="true">
+          <div className="h-[46px] w-full rounded-[5px] bg-[#eef1f5]" />
+          <div className="h-[50px] w-full rounded-full bg-[#eef1f5]" />
+        </div>
+      ) : (
+        <>
       {/* The selector: its options are the saved cards + "Add Payment Method".
           The header shows the current choice; switching back to a saved card is
-          done from this dropdown (no separate link). */}
-      {hasCards && selectedCard && (
+          done from this dropdown (no separate link). Hidden while processing so a
+          just-added card doesn't flash into the list mid-submit — the form stays up
+          with "Processing…" until completion redirects. */}
+      {hasCards && selectedCard && !processing && (
         <div className="relative mt-4">
           {/* Header — the bordered "selected card" box (AUM .selected-card); hover
               turns the border blue. The list overlays the content below it. */}
@@ -215,6 +245,10 @@ export const PaymentMethodSection = ({
 
       {showForm && <AddCardForm formId={CARD_FORM_ID} form={form} onSubmit={submit} error={cardError} />}
 
+      {completeError && (
+        <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-text-error">{completeError}</p>
+      )}
+
       <button
         type={showForm ? "submit" : "button"}
         form={showForm ? CARD_FORM_ID : undefined}
@@ -224,6 +258,8 @@ export const PaymentMethodSection = ({
       >
         {processing ? "Processing…" : "Complete my order"}
       </button>
+        </>
+      )}
 
       <p className="mt-[15px] flex items-center justify-center gap-[5px] text-xs font-normal uppercase tracking-wide text-black">
         <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="#c1c6c9" aria-hidden="true">

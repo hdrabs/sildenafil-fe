@@ -37,12 +37,14 @@ export const OrderVerificationPage = () => {
     closeEdit,
     onEditSaved,
     cards,
+    cardsLoading,
     defaultCardId,
     selectCard,
     isSelectingCard,
     hasSelectedCard,
     completeOrder,
     isCompleting,
+    completeError,
   } = useOrderVerification();
 
   return (
@@ -117,6 +119,8 @@ export const OrderVerificationPage = () => {
                 completeOrder={completeOrder}
                 isCompleting={isCompleting}
                 hasSelectedCard={hasSelectedCard}
+                completeError={completeError}
+                isLoadingCards={cardsLoading}
               />
             </div>
           )}

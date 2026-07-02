@@ -28,7 +28,7 @@ export const useOrderPay = (id: number) => {
   // guard keeps the page on its loader (isLoading below) so it never flashes first.
   const redirecting = useRedirectGuard(!isLoading && (isError || !order || order.paid), ROUTES.ORDERS);
 
-  const { data: cardsData } = useCreditCardsV2();
+  const { data: cardsData, isLoading: cardsLoading } = useCreditCardsV2();
   const selectCard = useSetDefaultCardV2();
   const pay = usePayOrder(id);
 
@@ -81,6 +81,7 @@ export const useOrderPay = (id: number) => {
     deliveryOption,
     cutoff: deliveryData?.cutoff_time_remaining ?? null,
     cards,
+    cardsLoading,
     defaultCardId,
     selectCard: selectCard.mutate,
     isSelectingCard: selectCard.isPending,
