@@ -6,7 +6,7 @@ import { ProductSelectionHero } from "./ProductSelectionHero";
 import { useProductConfigurator } from "@/features/landing/hooks/useProductConfigurator";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
 import { useCartToken } from "@/store";
-import { Modal } from "@/components/ui/Modal";
+import { VisitBlockingModal } from "./VisitBlockingModal";
 import { CatalogVariant } from "@/types/catalog";
 
 // aum FreeTierProductSelection sections (below the configurator), code-split.
@@ -68,7 +68,7 @@ export const ProductSelectionLandingPage = ({
   const dosage = resolved?.product.dosage ?? "";
 
   const cartToken = useCartToken();
-  const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } = useStartVisit({
+  const { startVisit, isPending, blockingModal, dismissModal } = useStartVisit({
     landingContext,
     cartToken: cartToken ?? undefined,
     // Forward the URL ?discount= onto the created cart so the free-tier promo (fee +
@@ -132,17 +132,7 @@ export const ProductSelectionLandingPage = ({
       />
       <Footer theme={bottleTheme} />
 
-      {blockingModalContent && (
-        <Modal isOpen={!!blockingModal} onClose={dismissModal} title={blockingModalContent.title} size="sm">
-          <p className="text-sm text-text-muted">{blockingModalContent.body}</p>
-          <button
-            onClick={dismissModal}
-            className="mt-4 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-          >
-            Got it
-          </button>
-        </Modal>
-      )}
+      <VisitBlockingModal modal={blockingModal} onDismiss={dismissModal} />
     </>
   );
 };
