@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { HowItWorksVideo } from "@/features/home/components/HowItWorksVideo";
+import { thumbnailFor } from "@/features/home/lib/hlsVideo";
 
 type HowItWorksTheme = "sildenafil" | "tadalafil";
 
@@ -15,8 +17,10 @@ const ICONS = {
   bloodVessel: "/images/how-it-works/bloodVessel.png",
 };
 
-// Thumbnail only for now — the interactive video player is wired up separately.
-const THUMBNAIL = "/images/how-it-works/howitworks-thumb.jpg";
+// Adaptive HLS ladder (native 1080p top rung + 480p/360p fallbacks), served from
+// the fe-how-it-works/ folder at the aum-videos bucket root. Same video for both
+// drug themes.
+const VIDEO_URL = "https://d3959x8cuku1ma.cloudfront.net/fe-how-it-works/howitworks.m3u8";
 
 const getSteps = (drugName: string) => [
   {
@@ -45,15 +49,6 @@ const getSteps = (drugName: string) => [
   },
 ];
 
-const PlayButton = () => (
-  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 group-hover:scale-110">
-    <svg width="80" height="80" viewBox="0 0 80 80" aria-hidden>
-      <circle cx="40" cy="40" r="40" fill="rgba(0,0,0,0.7)" />
-      <polygon points="32,24 56,40 32,56" fill="#fff" />
-    </svg>
-  </span>
-);
-
 export const HowItWorksSection = ({ theme = "sildenafil", className }: HowItWorksSectionProps) => {
   const isTada = theme === "tadalafil";
   const drugName = isTada ? "Tadalafil" : "Sildenafil";
@@ -73,18 +68,7 @@ export const HowItWorksSection = ({ theme = "sildenafil", className }: HowItWork
               Same active ingredient as {brandName}
             </p>
 
-            {/* Video thumbnail placeholder — player added later */}
-            <div className="group relative aspect-[16/9] w-full max-w-[520px] cursor-pointer overflow-hidden rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] max-lg:mx-auto">
-              <Image
-                src={THUMBNAIL}
-                alt="How it works video"
-                fill
-                sizes="(max-width: 1024px) 100vw, 520px"
-                className="object-cover transition-[filter] duration-300 group-hover:brightness-90"
-              />
-              <div className="absolute inset-0 bg-black/30" />
-              <PlayButton />
-            </div>
+            <HowItWorksVideo src={VIDEO_URL} poster={thumbnailFor(VIDEO_URL)} />
           </div>
 
           {/* Right: steps */}
