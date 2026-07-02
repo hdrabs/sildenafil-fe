@@ -10,7 +10,7 @@ import { CatalogVariant } from "@/types/catalog";
 import { useStartVisit } from "@/features/landing/hooks/useStartVisit";
 import { useGetActiveCart } from "@/api/hooks/useCartQueries";
 import { useActiveCart, useCartToken, useSetConfiguratorDrug, useUser } from "@/store";
-import { Modal } from "@/components/ui/Modal";
+import { VisitBlockingModal } from "./VisitBlockingModal";
 
 // Below-the-fold marketing sections — code-split so they stay out of the initial
 // client bundle; the configurator above the fold is what must be interactive first.
@@ -145,8 +145,11 @@ export const ProductLandingPage = ({
 
   const cartToken = useCartToken();
 
-  const { startVisit, isPending, blockingModal, blockingModalContent, dismissModal } =
-    useStartVisit({ landingContext, cartToken: cartToken ?? undefined, discountCode });
+  const { startVisit, isPending, blockingModal, dismissModal } = useStartVisit({
+    landingContext,
+    cartToken: cartToken ?? undefined,
+    discountCode,
+  });
 
   const handleAddToCart = (qty: number) => {
     const activeSlug = (activeVariant ?? contextVariant)?.product.slug ?? slug;
@@ -258,22 +261,7 @@ export const ProductLandingPage = ({
         </>
       )}
 
-      {blockingModalContent && (
-        <Modal
-          isOpen={!!blockingModal}
-          onClose={dismissModal}
-          title={blockingModalContent.title}
-          size="sm"
-        >
-          <p className="text-sm text-text-muted">{blockingModalContent.body}</p>
-          <button
-            onClick={dismissModal}
-            className="mt-4 w-full rounded-full bg-primary py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-          >
-            Got it
-          </button>
-        </Modal>
-      )}
+      <VisitBlockingModal modal={blockingModal} onDismiss={dismissModal} />
     </>
   );
 };

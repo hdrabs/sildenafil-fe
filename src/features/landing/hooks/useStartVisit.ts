@@ -27,21 +27,6 @@ interface StartVisitParams {
   variantLabel: string;
 }
 
-const MODAL_MESSAGES: Record<VisitEligibilityModal, { title: string; body: string }> = {
-  retake: {
-    title: "Questionnaire Required",
-    body: "Please complete your health questionnaire before placing a new order.",
-  },
-  under_review: {
-    title: "Order Under Review",
-    body: "Your previous order is currently under review. Please wait for it to be processed.",
-  },
-  order_processing: {
-    title: "Order In Progress",
-    body: "You already have an order being processed. Please wait until it is complete before placing a new order.",
-  },
-};
-
 export const useStartVisit = ({ landingContext, landingUrl, cartToken, discountCode }: UseStartVisitOptions = {}) => {
   const originId = landingUrl ?? landingContext;
   const router = useRouter();
@@ -111,7 +96,6 @@ export const useStartVisit = ({ landingContext, landingUrl, cartToken, discountC
     startVisit,
     isPending,
     blockingModal,
-    blockingModalContent: blockingModal ? MODAL_MESSAGES[blockingModal] : null,
     dismissModal,
   };
 };
