@@ -29,12 +29,17 @@ export const VisitConsultationPage = ({ slug }: Props) => {
     isSingleRadioStep,
     isAutoAdvanceStep,
     isAnswered,
+    textRequiredSelected,
+    searchYesSelected,
     progressFraction,
   } = useVisitConsultation(slug);
 
-  // medication_search: with nothing added the Continue button reads "I don't
-  // take any medications" (submitting an empty list is a valid answer); once a
-  // medication is added it reverts to the normal Continue label.
+  // medication_search: with nothing added the Continue button shows the step's
+  // custom button_text — q_16_01's "I don't take any medications" (submitting
+  // an empty list is a valid answer); once a medication is added it reverts to
+  // plain Continue. The other med-search steps (q_11_04, q_11_49) carry no
+  // custom text and always read Continue, matching AUM. The label fallback
+  // covers question sets seeded before button_text was restored in the data.
   const medQuestion = currentStep?.questions.find(
     (q) => q.question_type === "medication_search",
   );
@@ -47,10 +52,13 @@ export const VisitConsultationPage = ({ slug }: Props) => {
   const medCount = medSelectedId
     ? (medResponse![medSelectedId] as AnswerResponseEntry).metadata?.medication_search?.length ?? 0
     : 0;
-  const continueLabel =
-    medQuestion && medCount === 0
-      ? "I don't take any medications"
-      : currentStep?.button_text || "Continue";
+  const customButtonText =
+    currentStep?.button_text && currentStep.button_text !== "Continue"
+      ? currentStep.button_text
+      : currentStep?.label === "q_16_01"
+        ? "I don't take any medications"
+        : undefined;
+  const continueLabel = medCount === 0 && customButtonText ? customButtonText : "Continue";
 
   // While the slug is still being resolved (the no-slug resolver route, or a
   // step transition before the new fetch lands), currentStep.label won't match
@@ -70,7 +78,12 @@ export const VisitConsultationPage = ({ slug }: Props) => {
   // step it's about to navigate, so show "Processing" rather than flashing the
   // enabled button for a frame.
   const busy =
-    isSubmitting || (isAutoAdvanceStep && responses.hasInteracted && enableButton);
+    isSubmitting ||
+    (isAutoAdvanceStep &&
+      !textRequiredSelected &&
+      !searchYesSelected &&
+      responses.hasInteracted &&
+      enableButton);
 
   return (
     <>
@@ -105,13 +118,19 @@ export const VisitConsultationPage = ({ slug }: Props) => {
         );
       })}
 
-      {/* A single-radio step auto-advances on tap, so its Continue button only
-          shows on a back-nav revisit — an already-answered step the user hasn't
-          touched yet (isAnswered && !hasInteracted). Gating on !hasInteracted is
-          what kills the flash: the instant the user taps to advance forward,
-          hasInteracted flips true, so the button can't appear even if isAnswered
-          momentarily becomes true while the step saves/redirects. */}
-      {(!isSingleRadioStep || (isAnswered && !responses.hasInteracted)) && (
+      {/* A single-radio (or allergy-search) step auto-advances on tap, so its
+          Continue button only shows on a back-nav revisit — an already-answered
+          step the user hasn't touched yet (isAnswered && !hasInteracted) — or
+          when the selected option holds the step open: a text-requiring radio
+          option, or "Yes" on an allergy search (fill the box / add the entries,
+          then press Continue). Gating on !hasInteracted is what kills the
+          flash: the instant the user taps to advance forward, hasInteracted
+          flips true, so the button can't appear even if isAnswered momentarily
+          becomes true while the step saves/redirects. */}
+      {(!isSingleRadioStep ||
+        textRequiredSelected ||
+        searchYesSelected ||
+        (isAnswered && !responses.hasInteracted)) && (
         <div className="mt-6">
           <button
             onClick={onContinue}

@@ -413,20 +413,20 @@ export const Question = ({
       ? [genderFilteredOptions[1], genderFilteredOptions[0]]
       : genderFilteredOptions;
 
-  // A radio option that needs a free-text explanation (q_7_01's "Yes, but there
-  // were issues"): when it's the selected option we show a textbox below the
-  // list, and its text is saved onto the same response entry.
-  const radioSelectedId =
-    question.question_type === "radio"
-      ? Object.keys(response).find((k) => k !== "question_id" && k !== "position")
-      : undefined;
-  const radioSelectedOption = radioSelectedId
-    ? question.answer_options.find((ao) => ao.id.toString() === radioSelectedId)
-    : undefined;
-  const textRequiredOption =
-    radioSelectedOption && answerOptionRequiresText(radioSelectedOption)
-      ? radioSelectedOption
-      : undefined;
+  // A selected option that needs a free-text explanation — a radio like
+  // q_7_01's "Yes, but there were issues" / the side-effect "Yes" gates, or the
+  // side-effect "Other" checkbox on q_6_02_01–05. The textbox renders BELOW the
+  // whole option list as its own block (AUM renders these the same way), never
+  // nested under the option row; its text is saved onto the same response
+  // entry. Only allow_text-flagged options qualify — a plain "Other" on the
+  // condition multis (q_11_XX, q_15_01) collects its detail on its own
+  // follow-up text step instead.
+  const selectedOptionIds = ["radio", "multi"].includes(question.question_type)
+    ? Object.keys(response).filter((k) => k !== "question_id" && k !== "position")
+    : [];
+  const textRequiredOption = selectedOptionIds
+    .map((id) => question.answer_options.find((ao) => ao.id.toString() === id))
+    .find((ao) => ao && answerOptionRequiresText(ao));
   const textRequiredEntry = textRequiredOption
     ? ((response as Record<string, unknown>)[textRequiredOption.id] as
         | AnswerResponseEntry
@@ -571,6 +571,9 @@ export const Question = ({
 
       {textRequiredOption && (
         <div className="mt-4">
+          {textRequiredOption.extra_label && (
+            <p className="mb-1 text-xs text-gray-400">{textRequiredOption.extra_label}</p>
+          )}
           <textarea
             className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
             defaultValue={textRequiredEntry?.metadata?.text ?? ""}

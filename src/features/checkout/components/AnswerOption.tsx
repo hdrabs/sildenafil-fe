@@ -56,7 +56,6 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
       !!bpTagClass || question.question_type === "blood_pressure" || isYesOnSearchQuestion;
 
     const isCheckbox = question.question_type === "multi";
-    const isOtherOption = isCheckbox && answerOption.label === "Other";
 
     return (
       <div className="mb-[18px]">
@@ -97,32 +96,16 @@ export const AnswerOption = ({ question, answerOption, currentResponse, dispatch
           ) : (
             <div>
               <p className="font-medium text-gray-900">{answerOption.label}</p>
-              {answerOption.extra_label && (
+              {/* On allow_text options extra_label is the textarea prompt
+                  ("Please describe…"), not a sub-label — it renders with the
+                  text box instead of under the option. */}
+              {answerOption.extra_label && !answerOption.allow_text && (
                 <p className="mt-0.5 text-xs text-gray-500">{answerOption.extra_label}</p>
               )}
             </div>
           )}
         </div>
 
-        {isOtherOption && isChecked && (
-          <div className="mt-1">
-            <p className="mb-1 text-xs text-gray-400">
-              Please describe the side effect(s) that you experienced
-            </p>
-            <textarea
-              className="w-full min-h-[200px] resize-y overflow-auto rounded-[5px] border border-[#bfd9e4] bg-white p-[10px] text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-              defaultValue={currentResponse?.metadata?.text ?? ""}
-              placeholder="Type here..."
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => {
-                dispatch({
-                  type: "SELECT_ANSWER",
-                  payload: { answerOption, question, metadata: { text: e.target.value } },
-                });
-              }}
-            />
-          </div>
-        )}
       </div>
     );
   }
