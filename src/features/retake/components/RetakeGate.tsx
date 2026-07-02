@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useIsAuthenticated } from "@/store";
+import { useIsAuthenticated, useUser } from "@/store";
 import { useRetakePending } from "@/api/hooks/useRetakeQueries";
+import { useOpenChat } from "@/features/chat/hooks/useChat";
 import { RetakeModal } from "@/features/retake/components/RetakeModal";
 import { ROUTES } from "@/constants/routes";
 
@@ -34,6 +35,8 @@ export const RetakeGate = () => {
   const router = useRouter();
   const pathname = usePathname();
   const isAuthenticated = useIsAuthenticated();
+  const hasPocketmed = !!useUser()?.pocketmedUuid;
+  const openChat = useOpenChat();
   const { data } = useRetakePending(isAuthenticated);
   const [dismissed, setDismissed] = useState(false);
 
@@ -57,6 +60,12 @@ export const RetakeGate = () => {
       onRetake={() => {
         setDismissed(true);
         router.push(ROUTES.RETAKE_PHOTOS);
+      }}
+      onOpenChat={() => {
+        setDismissed(true);
+        // Retake users are in the telemedicine branch and normally have a chat;
+        // guard so a rare non-pocketmed user's "here" click doesn't fire mark-read.
+        if (hasPocketmed) openChat();
       }}
     />
   );

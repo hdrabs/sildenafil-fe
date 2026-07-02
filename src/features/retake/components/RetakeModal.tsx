@@ -7,23 +7,58 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onRetake: () => void;
+  onOpenChat: () => void;
 }
 
-export const RetakeModal = ({ isOpen, onClose, onRetake }: Props) => (
-  <Modal isOpen={isOpen} onClose={onClose} title="Action needed on your photos">
-    <div className="space-y-5">
-      <p className="text-text-muted">
-        There was an issue with the quality of your selfie and/or ID photo. Please re-take them so
-        we can complete your visit.
-      </p>
-      <div className="flex flex-col gap-2">
-        <Button fullWidth size="lg" onClick={onRetake}>
-          Re-take photos
-        </Button>
-        <Button fullWidth variant="ghost" onClick={onClose}>
-          Not now
-        </Button>
-      </div>
+// Styled to match the legacy AUM #retake-photos-modal: borderless header with a
+// bare close glyph, big centered title, centered body copy with the inline "here"
+// chat link, and the coral/grey-outline pill pair (stacked on mobile, side-by-side
+// on desktop). The coral variant CSS-uppercases the label → "RETAKE NEW PHOTO(S)".
+export const RetakeModal = ({ isOpen, onClose, onRetake, onOpenChat }: Props) => (
+  <Modal
+    isOpen={isOpen}
+    onClose={onClose}
+    size="lg"
+    className="rounded-[5px] max-w-[800px]"
+    bodyClassName="p-[30px]"
+  >
+    <div className="mb-2 flex justify-end">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="-mr-2 -mt-2 text-2xl font-bold leading-none text-black opacity-50 transition-opacity hover:opacity-75"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <h5 className="mb-[15px] px-2 text-center text-[25px] font-semibold leading-[46px] text-text-primary">
+      There is an issue with the quality of your Selfie and/or ID Card image.
+    </h5>
+    <p className="px-2 pb-[25px] text-center text-base text-text-primary">
+      If you have any questions please contact us by phone at (714) 276-2040 or start a chat by
+      clicking{" "}
+      <button
+        type="button"
+        onClick={onOpenChat}
+        className="text-link-blue underline-offset-2 hover:underline"
+      >
+        here
+      </button>
+    </p>
+    <div className="mt-6 flex flex-col gap-2 md:flex-row md:gap-4">
+      <Button variant="outline-muted" size="lg" fullWidth onClick={onClose}>
+        Cancel
+      </Button>
+      <Button
+        variant="coral"
+        size="lg"
+        fullWidth
+        className="font-normal tracking-normal"
+        onClick={onRetake}
+      >
+        Retake new photo(s)
+      </Button>
     </div>
   </Modal>
 );

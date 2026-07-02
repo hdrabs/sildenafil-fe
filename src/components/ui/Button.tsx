@@ -5,7 +5,15 @@ import { cn } from "@/lib/utils";
 import { Spinner } from "./Spinner";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger" | "coral" | "dark" | "outline-dark";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "ghost"
+    | "danger"
+    | "coral"
+    | "dark"
+    | "outline-dark"
+    | "outline-muted";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   fullWidth?: boolean;
@@ -26,6 +34,10 @@ const variantClasses = {
     "bg-primary text-white hover:opacity-90 disabled:opacity-60 rounded-full uppercase tracking-wide",
   "outline-dark":
     "bg-transparent text-primary border border-[#bfd9e4] hover:bg-primary hover:text-white disabled:opacity-60 rounded-full font-bold",
+  // AUM `.btn-outline` — the neutral grey outline pill (Cancel in the confirm modals):
+  // near-black uppercase label, transparent fill that lightens (not fills blue) on hover.
+  "outline-muted":
+    "bg-transparent text-text-primary border border-border-soft hover:bg-bg-card-hover hover:border-border-default disabled:opacity-60 rounded-full uppercase font-normal",
 };
 
 const sizeClasses = {

@@ -9,7 +9,7 @@ interface Props {
   /** Current form value — the 2-letter state code. */
   value: string;
   error?: string;
-  /** Pushes the selected code (or raw text, so the schema can flag it) to the form. */
+  /** Pushes the selected code (or raw ≤2-char text, so the schema can flag it) to the form. */
   onChange: (value: string) => void;
   onBlur: () => void;
 }
@@ -20,35 +20,45 @@ const matchExact = (text: string) => {
 };
 
 /**
- * State typeahead (ports the legacy StateInput): a dropdown of state names,
- * filterable by name or code; selecting stores the canonical 2-letter code.
+ * State typeahead (ports the legacy StateInput): the input is capped at 2 chars
+ * and force-uppercased like a state code, and it stays synced to the external
+ * `value` so the street autocomplete's auto-fill always shows through (mirrors
+ * the legacy field syncing to `smartyState`). The dropdown filters by name or
+ * code; selecting stores the canonical 2-letter code.
  */
 export const StateAutocompleteField = ({ label, value, error, onChange, onBlur }: Props) => {
   const [focused, setFocused] = useState(false);
-  // null = not actively typing → display the stored value (the 2-letter code, like
-  // the legacy field). A string = the user's in-progress input. Deriving the display
-  // this way keeps it synced when `value` is set externally (e.g. the street
-  // autocomplete) without an effect.
-  const [typed, setTyped] = useState<string | null>(null);
-
-  const display = typed ?? value;
+  // Mirror the external value into the input, re-syncing (during render, the
+  // React-recommended way to derive from a changing prop) whenever the value is
+  // set elsewhere — e.g. the street autocomplete auto-fill — so the field never
+  // gets stuck showing stale in-progress text.
+  const [text, setText] = useState(value);
+  const [syncedValue, setSyncedValue] = useState(value);
+  if (value !== syncedValue) {
+    setSyncedValue(value);
+    setText(value);
+  }
 
   const matches = useMemo(() => {
-    const q = (typed ?? "").trim().toLowerCase();
+    const q = text.trim().toLowerCase();
     if (!q) return US_STATES;
     return US_STATES.filter(
       (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q),
     );
-  }, [typed]);
+  }, [text]);
 
-  const handleType = (text: string) => {
-    setTyped(text);
-    const exact = matchExact(text);
-    onChange(exact ? exact.code : text.trim());
+  const handleType = (raw: string) => {
+    // Hard 2-char cap + uppercase, exactly like the legacy field: a state is a
+    // 2-letter code, so a 3rd character is rejected outright.
+    if (raw.length > 2) return;
+    const next = raw.toUpperCase();
+    setText(next);
+    const exact = matchExact(next);
+    onChange(exact ? exact.code : next);
   };
 
   const pick = (s: { name: string; code: string }) => {
-    setTyped(null);
+    setText(s.code);
     onChange(s.code);
     setFocused(false);
   };
@@ -60,17 +70,17 @@ export const StateAutocompleteField = ({ label, value, error, onChange, onBlur }
       <label className="mb-1.5 block text-sm text-text-muted">{label}</label>
       <input
         autoComplete="off"
-        value={display}
+        value={text}
+        maxLength={2}
         onChange={(e) => handleType(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => {
           onBlur();
-          setTyped(null);
           // Delay so an onMouseDown pick still registers.
           setTimeout(() => setFocused(false), 120);
         }}
         className={cn(
-          "h-12 w-full rounded-lg border-[1.5px] bg-white px-4 text-sm text-text-primary outline-none transition-colors",
+          "h-12 w-full rounded-lg border-[1.5px] bg-white px-4 text-sm uppercase text-text-primary outline-none transition-colors",
           "focus:border-[#e05c4b] focus:ring-1 focus:ring-[#e05c4b]",
           error ? "border-[#e05c4b]" : "border-[#c5d4dc]",
         )}

@@ -43,13 +43,18 @@ export const MessageCenter = () => {
       )}
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-bg-card shadow-xl transition-transform duration-300",
+          // Rounded left edge matches the burger-menu / shared Drawer (rounded-l-2xl);
+          // overflow-hidden clips the iframe to the corner, and it drops to square once
+          // the panel is full-width on phones (breakpoint tracks max-w-lg = 512px).
+          "fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col overflow-hidden rounded-l-2xl bg-bg-card shadow-xl transition-transform duration-300 max-[512px]:rounded-none",
           isOpen ? "translate-x-0" : "pointer-events-none translate-x-full",
         )}
         aria-hidden={!isOpen}
       >
-        <div className="flex items-center justify-between border-b border-border-default px-5 py-4">
-          <h2 className="text-lg font-semibold text-text-primary">Message Center</h2>
+        <div className="flex items-center justify-between px-5 py-4">
+          <h2 className="mr-2 flex-1 font-sans text-[18px] font-semibold leading-[172.5%] text-[#152E56] md:text-[24px]">
+            Message Center
+          </h2>
           <button
             type="button"
             onClick={closeChat}
