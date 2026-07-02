@@ -21,6 +21,8 @@ export interface AnswerOption {
   position: number;
   gender: "both" | "male" | "female";
   solo: boolean;
+  /** This option requires a free-text explanation before Continue unlocks. */
+  allow_text?: boolean;
   disqualify: boolean;
   next_step_label: string | null;
   /**

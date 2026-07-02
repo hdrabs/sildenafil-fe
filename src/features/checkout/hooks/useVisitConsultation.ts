@@ -15,10 +15,7 @@ import { ROUTES } from "@/constants/routes";
 import { questionnaireKeys } from "@/constants/queryKeys";
 import { AnswerResponseEntry, Question, ResponseShape } from "@/types/questionnaire";
 import { isQuestionVisible } from "@/features/checkout/lib/questionVisibility";
-import {
-  answerOptionRequiresText,
-  questionHasTextRequiredOption,
-} from "@/features/checkout/lib/answerOptionText";
+import { answerOptionRequiresText } from "@/features/checkout/lib/answerOptionText";
 
 // The PocketMed questionnaire branches on answers, so it has no knowable length. The
 // progress bar paces off the user's actual position in it (tracked in questionnaireStore):
@@ -254,25 +251,65 @@ export const useVisitConsultation = (slug: string) => {
     }
   }, [goBackMutation, cartAuth, slug, cartId, queryClient, router]);
 
-  // A lone radio with a text-requiring option (e.g. q_7_01's "Yes, but there
-  // were issues") is NOT a tap-to-advance step: the patient must fill the box
-  // and press Continue, so it keeps its button instead of auto-advancing.
+  // Whether the option the patient has currently SELECTED requires a free-text
+  // explanation (e.g. q_7_01's "Yes, but there were issues", the side-effect
+  // "Yes" gates on q_6_02_XX). AUM gates per selected option — the mere
+  // presence of such an option in the question must not affect its siblings,
+  // which tap-to-advance like any other radio.
+  const textRequiredSelected = useMemo(() => {
+    if (!currentStep) return false;
+    return currentStep.questions.some((q) => {
+      if (q.question_type !== "radio") return false;
+      const qResponse = responses.questions[q.id.toString()];
+      if (!qResponse) return false;
+      const selectedId = Object.keys(qResponse).find(
+        (k) => k !== "question_id" && k !== "position",
+      );
+      const selectedOption = selectedId
+        ? q.answer_options.find((ao) => ao.id.toString() === selectedId)
+        : undefined;
+      return !!selectedOption && answerOptionRequiresText(selectedOption);
+    });
+  }, [currentStep, responses.questions]);
+
+  // "Yes" on an allergy_search opens the inline search: the patient adds
+  // entries and confirms with Continue, so that selection must neither
+  // auto-advance nor hide the button — while "No" tap-advances like a radio
+  // (AUM's hasAllergyApi guard). Matches Question.tsx's showSearch rule
+  // (anything but "No" shows the search) so the two can't disagree.
+  const searchYesSelected = useMemo(() => {
+    if (!currentStep) return false;
+    return currentStep.questions.some((q) => {
+      if (q.question_type !== "allergy_search") return false;
+      const qResponse = responses.questions[q.id.toString()];
+      if (!qResponse) return false;
+      const selectedId = Object.keys(qResponse).find(
+        (k) => k !== "question_id" && k !== "position",
+      );
+      const selectedOption = selectedId
+        ? q.answer_options.find((ao) => ao.id.toString() === selectedId)
+        : undefined;
+      return !!selectedOption && selectedOption.label.toLowerCase() !== "no";
+    });
+  }, [currentStep, responses.questions]);
+
+  // Steps whose Continue button is hidden until a selection needs it (radio =
+  // tap-to-advance; allergy_search = tap-to-advance on "No").
   const isSingleRadioStep =
     currentStep?.questions.length === 1 &&
-    currentStep.questions[0].question_type === "radio" &&
-    !questionHasTextRequiredOption(currentStep.questions[0]);
+    ["radio", "allergy_search"].includes(currentStep.questions[0].question_type);
 
   // Auto-advance also covers a lone multi (checkbox) step — but only when a
   // `solo` answer ("No"/"None of the above") is picked, mirroring AUM where solo
   // checkbox options behave like radios. The reducer sets `hasInteracted` true
-  // ONLY for radio/solo selections, so the effect below advances a radio on any
-  // tap and a multi only on its solo option, while a normal multi-select tap
-  // leaves the Continue button in place. Kept separate from isSingleRadioStep so
-  // multi steps still render their Continue button (for non-solo selections).
+  // ONLY for radio/solo/search selections, so the effect below advances a radio
+  // on any tap and a multi only on its solo option, while a normal multi-select
+  // tap leaves the Continue button in place. Kept separate from
+  // isSingleRadioStep so multi steps still render their Continue button (for
+  // non-solo selections).
   const isAutoAdvanceStep =
     currentStep?.questions.length === 1 &&
-    ["radio", "multi"].includes(currentStep.questions[0].question_type) &&
-    !questionHasTextRequiredOption(currentStep.questions[0]);
+    ["radio", "multi", "allergy_search"].includes(currentStep.questions[0].question_type);
 
   // On back-navigation the server returns the step with its saved answer. A
   // single-radio step that's already answered keeps its Continue button (AUM
@@ -284,10 +321,17 @@ export const useVisitConsultation = (slug: string) => {
   // (hasInteracted). Mount / back-navigation leaves hasInteracted false, so a
   // revisited answer is shown (with its Continue button) instead of jumping
   // forward — yet tapping a radio (or a solo checkbox) still advances.
+  // A text-requiring selection never auto-advances — without this guard the
+  // step would jump forward the moment the explanation box turns non-empty
+  // (enableButton flips true on the first character); the patient must finish
+  // typing and press Continue. Same for "Yes" on an allergy search — the step
+  // would jump the moment the first allergy is added, but the patient may have
+  // more to add.
   useEffect(() => {
     if (!isAutoAdvanceStep || !responses.hasInteracted || !enableButton) return;
+    if (textRequiredSelected || searchYesSelected) return;
     advance();
-  }, [isAutoAdvanceStep, enableButton, responses.hasInteracted, advance]);
+  }, [isAutoAdvanceStep, enableButton, responses.hasInteracted, textRequiredSelected, searchYesSelected, advance]);
 
   // pos is 0-based; steps reached = pos + 1 (−1 → 0 when this cart has no path yet).
   const pos = consultationSteps?.cartId === cartId ? consultationSteps.pos : -1;
@@ -306,6 +350,8 @@ export const useVisitConsultation = (slug: string) => {
     isSingleRadioStep,
     isAutoAdvanceStep,
     isAnswered,
+    textRequiredSelected,
+    searchYesSelected,
     progressFraction,
   };
 };
